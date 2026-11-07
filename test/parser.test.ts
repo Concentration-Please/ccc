@@ -138,7 +138,7 @@ test('reads OpenDocument attachment text and parses an attachment-only article',
   }
 });
 
-test('skips identical model records within and across articles', async () => {
+test('skips identical model records within an article and preserves other source URLs', async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'ccc-dedup-parser-test-'));
   const secondUrl = `${SOURCE_URL}&article=second`;
   const { conditions, ...otherFields } = subsidy;
@@ -167,11 +167,11 @@ test('skips identical model records within and across articles', async () => {
       },
     });
     assert.equal(result.total, 2);
-    assert.equal(result.records, 3);
+    assert.equal(result.records, 4);
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'dedup-test.json'), 'utf8'));
-    assert.deepEqual(output.records.map(({ id }: { id: number }) => id), [1, 2, 3]);
-    assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [testArticleUrl, testArticleUrl, secondUrl]);
-    assert.deepEqual(output.records.map(({ subsidy_target }: { subsidy_target: string }) => subsidy_target), [subsidy.subsidy_target, subsidy.subsidy_target, distinctTarget.subsidy_target]);
+    assert.deepEqual(output.records.map(({ id }: { id: number }) => id), [1, 2, 3, 4]);
+    assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [testArticleUrl, testArticleUrl, secondUrl, secondUrl]);
+    assert.deepEqual(output.records.map(({ subsidy_target }: { subsidy_target: string }) => subsidy_target), [subsidy.subsidy_target, subsidy.subsidy_target, subsidy.subsidy_target, distinctTarget.subsidy_target]);
     assert.deepEqual(output.records[1].conditions, distinctConditions.conditions);
   } finally {
     await rm(rootDir, { recursive: true, force: true });

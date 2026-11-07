@@ -102,17 +102,15 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const cache: Cache = { version: 5, entries: {} };
   const listings = await source.discover(options.fetchHtml);
   const records: SubsidyRecord[] = [];
-  const seenSubsidies: (Subsidy | YouthSubsidy)[] = [];
   const attachments: { article_url: string; url: string; title: string; file: string }[] = [];
   const failures: RunSummary['failures'] = [];
   let reused = 0;
 
   const appendSubsidies = (article: Article, subsidies: (Subsidy | YouthSubsidy)[]) => {
-    const unique = subsidies.filter((subsidy) => {
-      if (seenSubsidies.some((seen) => isDeepStrictEqual(seen, subsidy))) return false;
-      seenSubsidies.push(subsidy);
-      return true;
-    });
+    const unique: (Subsidy | YouthSubsidy)[] = [];
+    for (const subsidy of subsidies) {
+      if (!unique.some((seen) => isDeepStrictEqual(seen, subsidy))) unique.push(subsidy);
+    }
     records.push(...toRecords(article, unique, records.length + 1));
   };
 
