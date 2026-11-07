@@ -2,6 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import importIcon from '@/assets/importIcon.svg'
 import { FILTER_GROUPS, type FilterGroup } from '@/services/filter'
+import { requestUserInfo } from '@/services/townpass'
+import { applyUserInfoFilters } from '@/services/userinfo'
 
 const props = defineProps<{
   initialSelectedIds: string[]
@@ -74,6 +76,23 @@ function onApply() {
 function onClose() {
   emit('close')
 }
+
+const consentOpen = ref(false)
+
+function onImportClick() {
+  consentOpen.value = true
+}
+
+function onDeclineImport() {
+  consentOpen.value = false
+}
+
+async function onAgreeImport() {
+  consentOpen.value = false
+  const info = await requestUserInfo()
+  if (!info) return
+  selectedIds.value = applyUserInfoFilters(selectedIds.value, info)
+}
 </script>
 
 <template>
@@ -92,7 +111,7 @@ function onClose() {
         :key="group.id"
         class="filter-page__section"
       >
-        <button v-if="index === 0" type="button" class="filter-page__import">
+        <button v-if="index === 0" type="button" class="filter-page__import" @click="onImportClick">
           <img class="filter-page__import-icon" :src="importIcon" alt="" width="24" height="24" />
           匯入用戶資訊
         </button>
@@ -155,6 +174,23 @@ function onClose() {
         搜尋
       </button>
     </footer>
+
+    <div v-if="consentOpen" class="import-consent">
+      <div
+        class="import-consent__card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="import-consent-text"
+      >
+        <p id="import-consent-text" class="import-consent__body">
+          將您的「原住民身份別、出生年月日」帶入篩選功能。個資使用期間為資料帶入之時起至您停止使用本微服務，授權對象僅限於本服務之系統。
+        </p>
+        <div class="import-consent__actions">
+          <button type="button" class="import-consent__decline" @click="onDeclineImport">不同意</button>
+          <button type="button" class="import-consent__agree" @click="onAgreeImport">同意</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -419,5 +455,59 @@ function onClose() {
 
 .filter-page__submit--active:active {
   opacity: 0.92;
+}
+
+.import-consent {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgb(0 0 0 / 40%);
+}
+
+.import-consent__card {
+  width: min(20rem, 100%);
+  overflow: hidden;
+  background: #fff;
+  border-radius: 1rem;
+}
+
+.import-consent__body {
+  margin: 0;
+  padding: 1.35rem 1.15rem 1.2rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  text-align: center;
+  color: #000;
+}
+
+.import-consent__actions {
+  display: flex;
+  border-top: 1px solid #c8c8c8;
+}
+
+.import-consent__decline,
+.import-consent__agree {
+  flex: 1;
+  min-height: 3rem;
+  padding: 0.75rem 0.5rem;
+  font: inherit;
+  font-size: 1.05rem;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.import-consent__decline {
+  color: #000;
+}
+
+.import-consent__agree {
+  color: #5ab4c5;
+  border-left: 1px solid #c8c8c8;
 }
 </style>
