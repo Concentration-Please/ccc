@@ -2,13 +2,13 @@ import { createHash, randomUUID } from 'node:crypto';
 import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { subsidySchema, type Article, type Subsidy, type SubsidyRecord } from './schema.js';
+import { subsidySchema, youthSubsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord, type YouthSubsidy } from './schema.js';
 import { createAttachmentFetcher, discoverArticles, normalizeText, parseArticle, parseAttachments, SOURCE_URL, type AttachmentFetcher, type HtmlFetcher } from './source.js';
 
 const cacheEntrySchema = z.object({
   signature: z.string(),
   status: z.enum(['done', 'skipped', 'error']),
-  subsidies: z.array(subsidySchema),
+  subsidies: z.array(z.union([subsidySchema, youthSubsidySchema])),
   error: z.string().optional(),
 });
 const cacheSchema = z.object({ version: z.literal(5), entries: z.record(z.string(), cacheEntrySchema) });
@@ -21,6 +21,14 @@ export interface RunOptions {
   dataDir: string;
   stateDir: string;
   revision: string;
+  source?: {
+    url: string;
+    name: string;
+    outputFile: string;
+    discover: (fetchHtml: HtmlFetcher) => Promise<ArticleListing[]>;
+    parseArticle: typeof parseArticle;
+    parseAttachments: typeof parseAttachments;
+  };
   log?: (message: string) => void;
 }
 
@@ -54,33 +62,46 @@ async function writeJson(path: string, value: unknown): Promise<void> {
   await rename(temporary, path);
 }
 
-function toRecords(article: Article, subsidies: Subsidy[]): SubsidyRecord[] {
-  return subsidies.map((subsidy) => ({
-    category: article.category,
-    is_organization: subsidy.is_organization,
-    registration_months: subsidy.registration_months,
-    age_lower: subsidy.age_lower,
-    age_upper: subsidy.age_upper,
-    isNative: subsidy.isNative,
-    source_url: article.url,
-    name: subsidy.name,
-    summary: subsidy.summary,
-    subsidy_target: subsidy.subsidy_target,
-    conditions: subsidy.conditions,
-  }));
+function toRecords(article: Article, subsidies: (Subsidy | YouthSubsidy)[]): SubsidyRecord[] {
+  return subsidies.map((subsidy) => {
+    const isYouth = 'category' in subsidy;
+    const isOrganization = subsidy.is_organization || (isYouth && subsidy.conditions.some((condition) =>
+      /^(?:申請人|對象|適用對象)(?:須)?為.*?(?:公司、商業|營利事業|人民團體|高級中等學校|大專院校|公私立學校|機構或團體)/.test(condition)));
+    return {
+      category: isYouth ? subsidy.category : article.category,
+      is_organization: isOrganization,
+      registration_months: isYouth && isOrganization ? null : subsidy.registration_months,
+      age_lower: isYouth && isOrganization ? null : subsidy.age_lower,
+      age_upper: isYouth && isOrganization ? null : subsidy.age_upper,
+      isNative: subsidy.isNative,
+      source_url: article.url,
+      name: subsidy.name,
+      summary: subsidy.summary,
+      subsidy_target: subsidy.subsidy_target,
+      conditions: subsidy.conditions,
+    };
+  });
 }
 
 export async function runParser(options: RunOptions): Promise<RunSummary> {
+  const source = options.source ?? {
+    url: SOURCE_URL,
+    name: 'ipc',
+    outputFile: 'indigenous.json',
+    discover: discoverArticles,
+    parseArticle,
+    parseAttachments,
+  };
   await mkdir(options.dataDir, { recursive: true });
   await mkdir(options.stateDir, { recursive: true });
-  const cachePath = join(options.stateDir, 'ipc-parser-state.json');
-  const attachmentDir = join(options.stateDir, 'ipc-attachments');
-  const attachmentManifestPath = join(options.stateDir, 'ipc-attachments.json');
-  const outputPath = join(options.dataDir, 'indigenous.json');
+  const cachePath = join(options.stateDir, `${source.name}-parser-state.json`);
+  const attachmentDir = join(options.stateDir, `${source.name}-attachments`);
+  const attachmentManifestPath = join(options.stateDir, `${source.name}-attachments.json`);
+  const outputPath = join(options.dataDir, source.outputFile);
   await mkdir(attachmentDir, { recursive: true });
   const fetchAttachment = options.fetchAttachment ?? createAttachmentFetcher();
   const cache = await loadCache(cachePath);
-  const listings = await discoverArticles(options.fetchHtml);
+  const listings = await source.discover(options.fetchHtml);
   const records: SubsidyRecord[] = [];
   const attachments: { article_url: string; url: string; title: string; file: string }[] = [];
   const failures: RunSummary['failures'] = [];
@@ -91,7 +112,7 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
     await writeJson(cachePath, cache);
     await writeJson(attachmentManifestPath, attachments);
     await writeJson(outputPath, {
-      source: SOURCE_URL,
+      source: source.url,
       generated_at: now.toISOString(),
       updated_at: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().replace('Z', '+08:00'),
       complete,
@@ -103,8 +124,8 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   for (const [index, listing] of listings.entries()) {
     try {
       const html = await options.fetchHtml(listing.url);
-      const article = parseArticle(html, listing);
-      for (const attachment of parseAttachments(html, listing.url)) {
+      const article = source.parseArticle(html, listing);
+      for (const attachment of source.parseAttachments(html, listing.url)) {
         const file = `${createHash('sha256').update(attachment.url).digest('hex')}.${attachment.extension}`;
         const path = join(attachmentDir, file);
         try {
@@ -116,7 +137,7 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
           await writeFile(temporary, bytes);
           await rename(temporary, path);
         }
-        attachments.push({ article_url: article.url, url: attachment.url, title: attachment.title, file: join('ipc-attachments', file) });
+        attachments.push({ article_url: article.url, url: attachment.url, title: attachment.title, file: join(`${source.name}-attachments`, file) });
       }
       const hash = signature(article, options.revision);
       const cached = cache.entries[article.url];
