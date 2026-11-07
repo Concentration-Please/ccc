@@ -5,7 +5,7 @@ import { extractionSchema, sharedCategories, youthExtractionSchema, type Article
 
 export const MODEL_ID = 'google/gemma-4-26b-a4b-it';
 export const EXTRACTION_REVISION = `${MODEL_ID}:ipc-prompt-11:schema-6`;
-export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-10:schema-6`;
+export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-9:schema-6`;
 
 type ExtractSource = 'indigenous' | 'youth';
 const SOURCE_PROMPTS: Record<ExtractSource, string> = {
@@ -14,7 +14,7 @@ const SOURCE_PROMPTS: Record<ExtractSource, string> = {
 };
 const OUTPUT_RULES: Record<ExtractSource, string> = {
   indigenous: '每筆紀錄須對應一項獨立給付或一條有不同給付內容的申請資格路徑。同一給付不可僅因金額級距、申請管道或文件不同而重複拆筆；不同給付不可合成一筆總覽。僅輸出以下欄位，不要輸出來源網址或分類，這兩項由程式填入。',
-  youth: '每筆紀錄須對應一項獨立給付或一條有不同給付內容的申請資格路徑。同一給付不可僅因金額級距、申請管道或文件不同而重複拆筆；不同給付不可合成一筆總覽。貸款與利息補貼若有不同的給付內容或資格，利息補貼另輸出一筆；附屬給付若以取得主要給付為前提，須保留主要給付的共同資格。同頁各項目共享的申請資格及申請方式，須完整保留在每筆資料。僅輸出以下欄位與 category，不要輸出來源網址，這項由程式填入。',
+  youth: '每筆紀錄須對應一項獨立給付或一條有不同給付內容的申請資格路徑。同一給付不可僅因金額級距、申請管道或文件不同而重複拆筆；不同給付不可合成一筆總覽。貸款與利息補貼若有不同的給付內容或資格，利息補貼另輸出一筆；同頁各項目共享的申請資格及申請方式，須完整保留在每筆資料。僅輸出以下欄位與 category，不要輸出來源網址，這項由程式填入。',
 };
 
 const FIELD_PROMPT = `name：直接取用網頁標題或正文的原話，可以截短，但盡量不改語意，不要自創名稱。
@@ -22,12 +22,12 @@ summary：用一句中文概述這項補助及其受益對象。
 subsidy_target：詳細記錄補助的費用、物品、服務、活動、金額、頻率或上限；只寫提供的正文或附件文字確實提及的內容。
 is_organization：實際受益或可申請者是團體／機構時為 true；個人或家庭為 false。機構代個人送件或請款時仍為 false。
 registration_months：實際受益或可申請者本人明確需要設籍滿幾個月時填整數。原文以年表示時換算為月；未明示設籍期間時填 null。團體代表人、家長等其他角色的設籍期間不要填在這裡，要完整列入 conditions。只要求設籍某地而未指定期間時也填 null。
-age_lower、age_upper：實際受益或可申請者本人明確的最低、最高年齡界線，以歲數整數填入；未明示該界線時填 null。「滿 55 歲」的 age_lower 為 55，「未滿 65 歲」的 age_upper 為 64，是否含界線仍依原文寫入 conditions。不要從學校年級、就學階段、出生日期、發布日期或其他間接資訊推算年齡；只寫月齡時不要換算或四捨五入為整數歲。不要把家長、代表人等其他角色的年齡填在這兩欄。不同資格路徑有不同年齡界線時分筆輸出。可以從成年推論，成年是18歲。
+age_lower、age_upper：實際受益或可申請者本人明確的最低、最高年齡界線，以歲數整數填入；未明示該界線時填 null。「滿 55 歲」的 age_lower 為 55，「未滿 65 歲」的 age_upper 為 65，是否含界線仍依原文寫入 conditions。不要從學校年級、就學階段、出生日期、發布日期或其他間接資訊推算年齡；只寫月齡時不要換算或四捨五入為整數歲。不要把家長、代表人等其他角色的年齡填在這兩欄。不同資格路徑有不同年齡界線時分筆輸出。
 isNative：提供的正文或附件文字明確要求實際受益或可申請者具原住民身分才能申請時為 true；沒有明確要求時為 false。不要僅因網站、分類或方案名稱提及原住民就推定為 true；其他角色的原住民身分限制只保留在 conditions。
 conditions：所有明確的申請或受益資格與限制，逐項寫成字串；一個獨立條件一項。保留條件所屬對象、數值、單位及例外，例如原住民身分、設籍地與期間、年齡、性別、收入、就學、團體組成、服務提供者、申請期間、不得重複申請等。對象不同的條件不要混成一項。沒有明確條件時用空陣列。不要根據發布日推算年齡或有效性，也不要補上正文沒有的條件。
 application_method_or_documents：逐項記錄提供的正文或附件文字明示的申請方式、送件管道或步驟，以及應備文件。不要把申請資格、補助內容或僅供參考的連結填入此欄；未提及時用空陣列，不要推測未提供文字的附件或外部頁面的內容。`;
 const YOUTH_CATEGORY_PROMPT = `category：依每筆補助的實際用途選一個分類：${sharedCategories.join('、')}。只有明確符合分類名稱時才使用該分類；沒有適合分類時選「其他」。不得因服務來自青年局而自行新增分類。`;
-const YOUTH_ROLE_PROMPT = '若申請人是公司、商業、有限合夥、學校、機構或團體，即使其代表人是青年，is_organization 仍為 true，age_lower 和 age_upper 都為代表人年齡限制；代表人的年齡也保留在 conditions。';
+const YOUTH_ROLE_PROMPT = '若申請人是公司、商業、有限合夥、學校、機構或團體，即使其代表人是青年，is_organization 仍為 true，age_lower 和 age_upper 都為 null；代表人的年齡保留在 conditions。個人「已成年」不是明示的整數歲數，不可換算為 18 歲。';
 const eligibilityReviewSchema = z.object({
   reviews: z.array(z.object({
     index: z.number().int().nonnegative(),
@@ -94,7 +94,7 @@ async function reviewEligibility(article: Article, subsidies: Subsidy[], model: 
 
   const result = await generateText({
     model,
-    system: '你是補助資料複查員。只核對列出的欄位，不要新增或刪除補助。年齡欄只填實際個人申請者或受益者本人明示的歲數界線；附屬給付以取得主要給付為前提時，共同的年齡資格也適用。公司、團體代表人或家長的年齡不可填入。isNative 只有實際申請者或受益者明確須具原住民身分時才為 true；不得僅由網站、分類或名稱推定。每個年齡界線和原住民身分修正都要分別提供正文或附件文字中的原句作為 evidence；沒有明確原句就回傳 null 並保持原值。',
+    system: '你是補助資料複查員。只核對列出的欄位，不要新增或刪除補助。年齡欄只填實際個人申請者或受益者本人明示的歲數界線；公司、團體代表人或家長的年齡不可填入。isNative 只有實際申請者或受益者明確須具原住民身分時才為 true；不得僅由網站、分類或名稱推定。每個年齡界線和原住民身分修正都要分別提供正文或附件文字中的原句作為 evidence；沒有明確原句就回傳 null 並保持原值。',
     prompt: `來源文字：\n${sourceText}\n\n待複查紀錄：\n${JSON.stringify(candidates)}`,
     output: Output.object({ schema: eligibilityReviewSchema }),
     temperature: 0,
