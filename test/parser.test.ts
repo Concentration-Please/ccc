@@ -69,7 +69,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     conditions: ['申請人須具原住民身分', '申請人年滿55歲、未滿65歲'],
     application_method_or_documents: ['向區公所提出申請', '檢附身分證明文件'],
     age_lower: 55,
-    age_upper: 65,
+    age_upper: 64,
   };
   const youthSubsidy = { ...agedSubsidy };
   const openrouter = createOpenRouter({
@@ -99,9 +99,13 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
   assert.match(JSON.stringify(request?.messages), /application_method_or_documents/);
   assert.match(JSON.stringify(request?.messages), /應備文件：戶籍謄本/);
+  assert.match(JSON.stringify(request?.messages), /「成年」或「已成年」可推為 age_lower 18/);
+  assert.match(JSON.stringify(request?.messages), /「未滿 65 歲」的 age_upper 為 64/);
   assert.deepEqual(await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth'), [youthSubsidy]);
   assert.match(JSON.stringify(request?.messages), /政策性貸款/);
   assert.match(JSON.stringify(request?.messages), /利息補貼須另輸出一筆/);
+  assert.match(JSON.stringify(request?.messages), /代表人或負責人的年齡限制須填入 age_lower、age_upper/);
+  assert.match(JSON.stringify(request?.messages), /「成年」或「已成年」的 age_lower 為 18/);
 });
 
 test('reads OpenDocument attachment text and parses an attachment-only article', async () => {
@@ -203,7 +207,7 @@ test('flags indigenous extraction conflicts without discarding distinct source p
   ]);
 });
 
-test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {
+test('rechecks an empty youth extraction and preserves organization representative age bounds', async () => {
   let calls = 0;
   const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45 };
   const openrouter = createOpenRouter({
@@ -223,11 +227,11 @@ test('rechecks an empty youth extraction and excludes organization representativ
     title: '活動補助',
     category: '其他',
     publishedAt: null,
-    body: '團體可申請活動補助，代表人須年滿18歲。',
+    body: '團體可申請活動補助，代表人須已成年且未滿46歲。',
   };
   const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth');
   assert.equal(calls, 2);
-  assert.deepEqual(result, [{ ...organization, age_lower: null, age_upper: null }]);
+  assert.deepEqual(result, [organization]);
 });
 
 test('rechecks an empty indigenous extraction when the page describes an application', async () => {
@@ -290,7 +294,9 @@ test('reads youth subsidy pages and writes a separate output with shared categor
         const record = {
           ...subsidy,
           isNative: false,
-          conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥'] : [],
+          age_lower: article.title.includes('貸款') ? 18 : null,
+          age_upper: article.title.includes('貸款') ? 45 : null,
+          conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥', '代表人已成年且未滿46歲'] : [],
         };
         return article.title.includes('貸款') ? [record, { ...record, subsidy_target: '另一貸款額度' }] : [record];
       },
@@ -327,7 +333,10 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     assert.deepEqual(updated.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl]);
     await assert.rejects(runParser({ ...options, source: { ...options.source, discover: async () => { throw new Error('discovery failed'); } } }), /discovery failed/);
     await assert.rejects(readFile(join(rootDir, 'data', 'youth.json')), { code: 'ENOENT' });
-    assert.equal(output.records[0].age_lower, null);
+    assert.equal(output.records[0].age_lower, 18);
+    assert.equal(output.records[0].age_upper, 45);
+    assert.equal(output.records[1].age_lower, 18);
+    assert.equal(output.records[2].age_lower, null);
     assert.equal(output.records[0].isNative, false);
     assert.equal(output.records[0].is_organization, true);
     assert.equal(output.records[2].is_organization, false);

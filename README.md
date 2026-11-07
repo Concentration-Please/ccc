@@ -81,7 +81,7 @@ Parser 完成時會提示可疑紀錄；也可執行 `npm run audit:indigenous`�
 - `label`：依每筆 `summary` 判斷受益對象的 label key 陣列，可有多個或為空；名稱定義於 `data/label.json`。
 - `is_organization`：團體或機構為實際受益／申請者時為 `true`；個人或家庭為 `false`。
 - `registration_months`：受益／申請者本人明確要求的最短設籍月數，否則為 `null`；其他設籍限制保留在 `conditions`。
-- `age_lower`、`age_upper`：受益／申請者本人明示的年齡下限與上限（歲），未明示時為 `null`；不從年級或就學階段推算。
+- `age_lower`、`age_upper`：可申請的整數歲年齡下限與上限；「成年」或「已成年」下限為 18，「未滿 65 歲」上限為 64。團體補助的代表人或負責人年齡限制也計入；未明示時為 `null`，不從年級或就學階段推算。
 - `isNative`：正文明確要求受益／申請者具原住民身分時為 `true`，否則為 `false`。
 - `source_url`：原始公告或服務網頁連結。
 - `name`：取自原文的補助名稱，可截短但不改寫語意。
