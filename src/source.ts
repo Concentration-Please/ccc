@@ -60,7 +60,7 @@ export function parseServiceLinks(html: string, pageUrl: string, excludeVenue = 
   return links;
 }
 
-export function parseListing(html: string, pageUrl: string): { entries: ArticleListing[]; totalCount: number | null; rowCount: number } {
+export function parseListing(html: string, pageUrl: string, category: string): { entries: ArticleListing[]; totalCount: number | null; rowCount: number } {
   const $ = load(html);
   const totalText = normalizeText($('.C_Pager .count').first().text());
   const totalMatch = /^\/\s*(\d+)$/.exec(totalText);
@@ -81,7 +81,7 @@ export function parseListing(html: string, pageUrl: string): { entries: ArticleL
       throw new Error(`Unexpected article URL: ${url}`);
     }
     const date = normalizeText($(row).find('td[data-title="發布日期"], td[data-title="上版日期"]').text());
-    entries.push({ url: url.toString(), title, publishedAt: date ? parseRocDate(date) : null });
+    entries.push({ url: url.toString(), title, category, publishedAt: date ? parseRocDate(date) : null });
   });
 
   const totalCount = totalMatch ? Number(totalMatch[1]) : null;
@@ -117,7 +117,8 @@ export function parseAttachments(html: string, pageUrl: string): AttachmentLink[
 }
 
 export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleListing[]> {
-  const queue = parseServiceLinks(await fetchHtml(SOURCE_URL), SOURCE_URL, true);
+  const queue = parseServiceLinks(await fetchHtml(SOURCE_URL), SOURCE_URL, true)
+    .map((link) => ({ ...link, category: link.title }));
   const visitedSections = new Set([SOURCE_URL]);
   const articles = new Map<string, ArticleListing>();
 
@@ -126,7 +127,8 @@ export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleL
     visitedSections.add(section.url);
     const pathname = new URL(section.url).pathname.toLowerCase();
     if (pathname === '/content_list.aspx') {
-      queue.push(...parseServiceLinks(await fetchHtml(section.url), section.url));
+      queue.push(...parseServiceLinks(await fetchHtml(section.url), section.url)
+        .map((link) => ({ ...link, category: section.category })));
     } else if (pathname === '/news.aspx') {
       const firstUrl = new URL(section.url);
       firstUrl.searchParams.set('page', '1');
@@ -138,7 +140,7 @@ export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleL
       let current;
       do {
         firstUrl.searchParams.set('page', String(page));
-        current = parseListing(await fetchHtml(firstUrl.toString()), firstUrl.toString());
+        current = parseListing(await fetchHtml(firstUrl.toString()), firstUrl.toString(), section.category);
         if (page === 1) expectedCount = current.totalCount;
         if (expectedCount !== null && current.totalCount !== null && current.totalCount !== expectedCount) {
           throw new Error(`Listing changed while crawling ${section.url}`);
@@ -149,7 +151,7 @@ export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleL
         observed += current.rowCount;
         for (const article of current.entries) {
           seenInSection.add(article.url);
-          articles.set(article.url, article);
+          if (!articles.has(article.url)) articles.set(article.url, article);
         }
         page += 1;
       } while (expectedCount !== null ? observed < expectedCount : current.rowCount === PAGE_SIZE);
@@ -157,7 +159,7 @@ export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleL
         throw new Error(`Listing count changed at ${section.url}: expected ${expectedCount}, found ${observed}`);
       }
     } else if (pathname === '/cp.aspx' || pathname === '/news_content.aspx') {
-      articles.set(section.url, { ...section, publishedAt: null });
+      if (!articles.has(section.url)) articles.set(section.url, { ...section, publishedAt: null });
     } else {
       throw new Error(`Unsupported service page: ${section.url}`);
     }

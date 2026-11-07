@@ -23,27 +23,12 @@ function articleHtml(body: string): string {
 
 const testArticleUrl = 'https://www.ipc.gov.taipei/News_Content.aspx?n=TEST&s=A';
 const subsidy: Subsidy = {
-  name: '原住民托育補助',
-  beneficiary_type: 'individual',
-  application_process: '家長申請，收托機構彙整送件',
-  age_min_months: null,
-  age_min_inclusive: null,
-  age_max_months: null,
-  age_max_inclusive: null,
-  school_stage: null,
-  indigenous_requirement: 'required',
-  gender_restriction: 'unspecified',
-  registered_in: null,
-  registration_min_months: null,
-  actual_residence_required: null,
-  income_requirement: null,
-  other_requirements: [],
-  benefit_detail: null,
-  application_period: null,
-  required_documents: [],
-  source_kind: 'service_detail',
-  source_version: null,
-  evidence: [{ source_url: testArticleUrl, source_title: '托育補助', quote: '原住民家庭可申請托育補助' }],
+  is_organization: false,
+  registration_months: null,
+  name: '托育補助',
+  summary: '原住民家庭可申請托育補助。',
+  subsidy_target: '托育費用補助',
+  conditions: ['申請家庭須具原住民身分'],
 };
 
 test('reads service links, skips venue rental, and extracts page bodies', () => {
@@ -54,12 +39,13 @@ test('reads service links, skips venue rental, and extracts page bodies', () => 
   ]);
   const links = parseServiceLinks(html, SOURCE_URL, true);
   assert.deepEqual(links.map((link) => link.title), ['托育服務', '貸款利息補貼']);
-  const listing = parseListing(listingHtml('A', '托育補助'), links[0]!.url);
+  const listing = parseListing(listingHtml('A', '托育補助'), links[0]!.url, links[0]!.title);
   assert.equal(listing.entries[0]?.publishedAt, '2026-11-07');
+  assert.equal(listing.entries[0]?.category, '托育服務');
   assert.equal(parseArticle(articleHtml('原住民家庭可申請托育補助'), listing.entries[0]!).body, '原住民家庭可申請托育補助');
   assert.equal(parseArticle('<div class="list-text file-download-multiple"><a href="rules.pdf">PDF</a></div>', listing.entries[0]!).body, '');
   assert.equal(parseAttachments('<div class="list-text file-download-multiple"><a data-title="補助要點" href="https://www-ws.gov.taipei/Download.ashx?icon=..pdf">PDF</a></div>', listing.entries[0]!.url)[0]?.title, '補助要點');
-  assert.equal(parseArticle('<div class="area-editor user-edit">可申請貸款利息補貼</div>', { ...links[1]!, publishedAt: null }).body, '可申請貸款利息補貼');
+  assert.equal(parseArticle('<div class="area-editor user-edit">可申請貸款利息補貼</div>', { ...links[1]!, category: links[1]!.title, publishedAt: null }).body, '可申請貸款利息補貼');
 });
 
 test('sends a schema-constrained request through the AI SDK provider', async () => {
@@ -79,6 +65,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
   const article: Article = {
     url: testArticleUrl,
     title: '托育補助',
+    category: '托育服務',
     publishedAt: '2026-11-07',
     body: '原住民家庭可申請托育補助',
   };
@@ -92,6 +79,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'ccc-parser-test-'));
   let modelCalls = 0;
   let attachmentCalls = 0;
+  const articleCategories = new Map<string, string>();
   const fetchHtml = async (input: string): Promise<string> => {
     const url = new URL(input);
     const section = url.searchParams.get('n');
@@ -113,6 +101,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
   };
   const extract = async (article: Article): Promise<Subsidy[]> => {
     modelCalls += 1;
+    articleCategories.set(article.title, article.category);
     return article.body.includes('托育補助') ? [subsidy] : [];
   };
 
@@ -128,6 +117,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(first.failures.length, 0);
     assert.equal(modelCalls, 3);
     assert.equal(attachmentCalls, 1);
+    assert.equal(articleCategories.get('其他服務'), '其他補助');
 
     const second = await runParser(options);
     assert.equal(second.reused, 4);
@@ -138,8 +128,11 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(output.source, SOURCE_URL);
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
-    assert.equal(output.records[0].beneficiary_type, 'individual');
-    assert.equal(output.records[0].application_process, '家長申請，收托機構彙整送件');
+    assert.deepEqual(output.records[0], {
+      ...subsidy,
+      category: '托育服務',
+      source_url: testArticleUrl,
+    });
     const attachments = JSON.parse(await readFile(join(rootDir, 'tmp', 'ipc-attachments.json'), 'utf8'));
     assert.equal(attachments.length, 1);
     assert.equal((await readFile(join(rootDir, 'tmp', attachments[0].file))).toString(), '%PDF-test');

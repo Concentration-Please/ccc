@@ -11,7 +11,7 @@ const cacheEntrySchema = z.object({
   subsidies: z.array(subsidySchema),
   error: z.string().optional(),
 });
-const cacheSchema = z.object({ version: z.literal(3), entries: z.record(z.string(), cacheEntrySchema) });
+const cacheSchema = z.object({ version: z.literal(4), entries: z.record(z.string(), cacheEntrySchema) });
 type Cache = z.infer<typeof cacheSchema>;
 
 export interface RunOptions {
@@ -32,18 +32,18 @@ export interface RunSummary {
 }
 
 function signature(article: Article, revision: string): string {
-  return createHash('sha256').update(JSON.stringify([article.title, article.publishedAt, article.body, revision])).digest('hex');
+  return createHash('sha256').update(JSON.stringify([article.category, article.title, article.publishedAt, article.body, revision])).digest('hex');
 }
 
 async function loadCache(path: string): Promise<Cache> {
   try {
     const value: unknown = JSON.parse(await readFile(path, 'utf8'));
-    if (value && typeof value === 'object' && 'version' in value && (value.version === 1 || value.version === 2)) {
-      return { version: 3, entries: {} };
+    if (value && typeof value === 'object' && 'version' in value && (value.version === 1 || value.version === 2 || value.version === 3)) {
+      return { version: 4, entries: {} };
     }
     return cacheSchema.parse(value);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 3, entries: {} };
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 4, entries: {} };
     throw error;
   }
 }
@@ -56,10 +56,14 @@ async function writeJson(path: string, value: unknown): Promise<void> {
 
 function toRecords(article: Article, subsidies: Subsidy[]): SubsidyRecord[] {
   return subsidies.map((subsidy) => ({
-    ...subsidy,
+    category: article.category,
+    is_organization: subsidy.is_organization,
+    registration_months: subsidy.registration_months,
     source_url: article.url,
-    article_title: article.title,
-    published_at: article.publishedAt,
+    name: subsidy.name,
+    summary: subsidy.summary,
+    subsidy_target: subsidy.subsidy_target,
+    conditions: subsidy.conditions,
   }));
 }
 
