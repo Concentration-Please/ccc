@@ -1,0 +1,79 @@
+/* Roboto: Latin letters, digits, ASCII punctuation (dates, etc.) */
+@font-face {
+  font-family: TownPassUI;
+  src: url('/fonts/Roboto-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-007E,
+    U+00A0-00FF,
+    U+0100-017F;
+}
+
+@font-face {
+  font-family: TownPassUI;
+  src: url('/fonts/Roboto-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-007E,
+    U+00A0-00FF,
+    U+0100-017F;
+}
+
+@font-face {
+  font-family: TownPassUI;
+  src: url('/fonts/Roboto-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-007E,
+    U+00A0-00FF,
+    U+0100-017F;
+}
+
+/* PingFangTC: Traditional Chinese and CJK punctuation */
+@font-face {
+  font-family: TownPassUI;
+  src: url('/fonts/PingFangTC-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+3000-303F,
+    U+3400-4DBF,
+    U+4E00-9FFF,
+    U+F900-FAFF,
+    U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: TownPassUI;
+  src: url('/fonts/PingFangTC-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+3000-303F,
+    U+3400-4DBF,
+    U+4E00-9FFF,
+    U+F900-FAFF,
+    U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: TownPassUI;
+  src: url('/fonts/PingFangTC-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+3000-303F,
+    U+3400-4DBF,
+    U+4E00-9FFF,
+    U+F900-FAFF,
+    U+FF00-FFEF;
+}
