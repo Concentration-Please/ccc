@@ -6,6 +6,13 @@ const PAGE_SIZE = 200;
 const SOURCE_ORIGIN = 'https://www.ipc.gov.taipei';
 
 export type HtmlFetcher = (url: string) => Promise<string>;
+export type AttachmentFetcher = (url: string) => Promise<Uint8Array>;
+
+export interface AttachmentLink {
+  url: string;
+  title: string;
+  extension: string;
+}
 
 export function normalizeText(value: string): string {
   return value.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
@@ -94,6 +101,21 @@ export function parseArticle(html: string, listing: ArticleListing): Article {
   return { ...listing, body };
 }
 
+export function parseAttachments(html: string, pageUrl: string): AttachmentLink[] {
+  const $ = load(html);
+  const links: AttachmentLink[] = [];
+  $('.file-download-multiple a[href], .file-download a[href]').each((_, element) => {
+    const href = $(element).attr('href');
+    if (!href) return;
+    const url = new URL(href, pageUrl);
+    if (url.origin !== 'https://www-ws.gov.taipei') return;
+    const extension = (url.searchParams.get('icon') ?? '').match(/([a-z0-9]+)$/i)?.[1]?.toLowerCase() ?? 'bin';
+    const title = normalizeText($(element).attr('data-title') ?? $(element).attr('title') ?? $(element).text());
+    links.push({ url: url.toString(), title, extension });
+  });
+  return links;
+}
+
 export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleListing[]> {
   const queue = parseServiceLinks(await fetchHtml(SOURCE_URL), SOURCE_URL, true);
   const visitedSections = new Set([SOURCE_URL]);
@@ -167,6 +189,29 @@ export function createHtmlFetcher(fetchImpl: typeof fetch = fetch): HtmlFetcher 
           signal: AbortSignal.timeout(20_000),
         });
         if (response.ok) return response.text();
+        if ((response.status === 429 || response.status >= 500) && attempt < 2) {
+          await pause(retryDelay(response, attempt));
+          continue;
+        }
+        throw new Error(`HTTP ${response.status} fetching ${url}`);
+      } catch (error) {
+        if (attempt === 2 || (error instanceof Error && error.message.startsWith('HTTP '))) throw error;
+        await pause(1000 * 2 ** attempt);
+      }
+    }
+    throw new Error(`Failed to fetch ${url}`);
+  };
+}
+
+export function createAttachmentFetcher(fetchImpl: typeof fetch = fetch): AttachmentFetcher {
+  return async (url: string) => {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const response = await fetchImpl(url, {
+          headers: { 'User-Agent': 'taipei-ipc-subsidy-parser/1.0' },
+          signal: AbortSignal.timeout(60_000),
+        });
+        if (response.ok) return new Uint8Array(await response.arrayBuffer());
         if ((response.status === 429 || response.status >= 500) && attempt < 2) {
           await pause(retryDelay(response, attempt));
           continue;

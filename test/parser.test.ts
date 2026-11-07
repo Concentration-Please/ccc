@@ -6,7 +6,7 @@ import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
-import { parseArticle, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
+import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
 import type { Article, Subsidy } from '../src/schema.js';
 
 function serviceHtml(links: [string, string][]): string {
@@ -58,6 +58,7 @@ test('reads service links, skips venue rental, and extracts page bodies', () => 
   assert.equal(listing.entries[0]?.publishedAt, '2026-11-07');
   assert.equal(parseArticle(articleHtml('原住民家庭可申請托育補助'), listing.entries[0]!).body, '原住民家庭可申請托育補助');
   assert.equal(parseArticle('<div class="list-text file-download-multiple"><a href="rules.pdf">PDF</a></div>', listing.entries[0]!).body, '');
+  assert.equal(parseAttachments('<div class="list-text file-download-multiple"><a data-title="補助要點" href="https://www-ws.gov.taipei/Download.ashx?icon=..pdf">PDF</a></div>', listing.entries[0]!.url)[0]?.title, '補助要點');
   assert.equal(parseArticle('<div class="area-editor user-edit">可申請貸款利息補貼</div>', { ...links[1]!, publishedAt: null }).body, '可申請貸款利息補貼');
 });
 
@@ -90,6 +91,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
 test('crawls nested service pages, sends every body, and resumes', async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'ccc-parser-test-'));
   let modelCalls = 0;
+  let attachmentCalls = 0;
   const fetchHtml = async (input: string): Promise<string> => {
     const url = new URL(input);
     const section = url.searchParams.get('n');
@@ -105,7 +107,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     if (section === 'CENTRAL') return listingHtml('B', '其他服務');
     if (section === 'LOAN') return '<div class="area-editor user-edit">可申請貸款利息補貼</div>';
     if (section === 'GROUP') return '<div class="area-editor user-edit"></div>';
-    if (url.searchParams.get('s') === 'A') return articleHtml('原住民家庭可申請托育補助');
+    if (url.searchParams.get('s') === 'A') return `${articleHtml('原住民家庭可申請托育補助')}<div class="list-text file-download-multiple"><a data-title="補助要點" href="https://www-ws.gov.taipei/Download.ashx?icon=..pdf">PDF</a></div>`;
     if (url.searchParams.get('s') === 'B') return articleHtml('一般政策說明');
     throw new Error(`Unexpected test URL: ${input}`);
   };
@@ -115,16 +117,22 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
   };
 
   try {
-    const options = { fetchHtml, extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-ipc' };
+    const fetchAttachment = async (): Promise<Uint8Array> => {
+      attachmentCalls += 1;
+      return new TextEncoder().encode('%PDF-test');
+    };
+    const options = { fetchHtml, fetchAttachment, extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-ipc' };
     const first = await runParser(options);
     assert.equal(first.total, 4);
     assert.equal(first.records, 1);
     assert.equal(first.failures.length, 0);
     assert.equal(modelCalls, 3);
+    assert.equal(attachmentCalls, 1);
 
     const second = await runParser(options);
     assert.equal(second.reused, 4);
     assert.equal(modelCalls, 3);
+    assert.equal(attachmentCalls, 1);
 
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'subsidies.json'), 'utf8'));
     assert.equal(output.source, SOURCE_URL);
@@ -132,6 +140,9 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(output.records.length, 1);
     assert.equal(output.records[0].beneficiary_type, 'individual');
     assert.equal(output.records[0].application_process, '家長申請，收托機構彙整送件');
+    const attachments = JSON.parse(await readFile(join(rootDir, 'tmp', 'ipc-attachments.json'), 'utf8'));
+    assert.equal(attachments.length, 1);
+    assert.equal((await readFile(join(rootDir, 'tmp', attachments[0].file))).toString(), '%PDF-test');
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }

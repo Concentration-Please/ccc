@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { subsidySchema, type Article, type Subsidy, type SubsidyRecord } from './schema.js';
-import { discoverArticles, normalizeText, parseArticle, SOURCE_URL, type HtmlFetcher } from './source.js';
+import { createAttachmentFetcher, discoverArticles, normalizeText, parseArticle, parseAttachments, SOURCE_URL, type AttachmentFetcher, type HtmlFetcher } from './source.js';
 
 const cacheEntrySchema = z.object({
   signature: z.string(),
@@ -16,6 +16,7 @@ type Cache = z.infer<typeof cacheSchema>;
 
 export interface RunOptions {
   fetchHtml: HtmlFetcher;
+  fetchAttachment?: AttachmentFetcher;
   extract: (article: Article) => Promise<Subsidy[]>;
   dataDir: string;
   stateDir: string;
@@ -66,15 +67,21 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   await mkdir(options.dataDir, { recursive: true });
   await mkdir(options.stateDir, { recursive: true });
   const cachePath = join(options.stateDir, 'ipc-parser-state.json');
+  const attachmentDir = join(options.stateDir, 'ipc-attachments');
+  const attachmentManifestPath = join(options.stateDir, 'ipc-attachments.json');
   const outputPath = join(options.dataDir, 'subsidies.json');
+  await mkdir(attachmentDir, { recursive: true });
+  const fetchAttachment = options.fetchAttachment ?? createAttachmentFetcher();
   const cache = await loadCache(cachePath);
   const listings = await discoverArticles(options.fetchHtml);
   const records: SubsidyRecord[] = [];
+  const attachments: { article_url: string; url: string; title: string; file: string }[] = [];
   const failures: RunSummary['failures'] = [];
   let reused = 0;
 
   const save = async (complete: boolean) => {
     await writeJson(cachePath, cache);
+    await writeJson(attachmentManifestPath, attachments);
     await writeJson(outputPath, {
       source: SOURCE_URL,
       generated_at: new Date().toISOString(),
@@ -86,7 +93,22 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
 
   for (const [index, listing] of listings.entries()) {
     try {
-      const article = parseArticle(await options.fetchHtml(listing.url), listing);
+      const html = await options.fetchHtml(listing.url);
+      const article = parseArticle(html, listing);
+      for (const attachment of parseAttachments(html, listing.url)) {
+        const file = `${createHash('sha256').update(attachment.url).digest('hex')}.${attachment.extension}`;
+        const path = join(attachmentDir, file);
+        try {
+          await access(path);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+          const bytes = await fetchAttachment(attachment.url);
+          const temporary = `${path}.${randomUUID()}.tmp`;
+          await writeFile(temporary, bytes);
+          await rename(temporary, path);
+        }
+        attachments.push({ article_url: article.url, url: attachment.url, title: attachment.title, file: join('ipc-attachments', file) });
+      }
       const hash = signature(article, options.revision);
       const cached = cache.entries[article.url];
       if (cached?.signature === hash && (cached.status === 'done' || cached.status === 'skipped')) {
