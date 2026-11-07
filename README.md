@@ -79,15 +79,13 @@ npm run parse
 - `is_organization`：團體或機構為實際受益／申請者時為 `true`；個人或家庭為 `false`。
 - `registration_months`：受益／申請者本人明確要求的最短設籍月數，否則為 `null`；其他設籍限制保留在 `conditions`。
 - `age_lower`、`age_upper`：受益／申請者本人明示的年齡下限與上限（歲），未明示時為 `null`；不從年級或就學階段推算。
-- `isNative`：正文或可讀附件明確要求受益／申請者具原住民身分時為 `true`，否則為 `false`。
+- `isNative`：正文明確要求受益／申請者具原住民身分時為 `true`，否則為 `false`。
 - `source_url`：原始公告或服務網頁連結。
 - `name`：取自原文的補助名稱，可截短但不改寫語意。
 - `summary`：一句話摘要。
 - `subsidy_target`：詳細的補助標的、金額、頻率或上限。
 - `conditions`：各項明確資格與限制，每個獨立條件為一個字串。
 - `application_method_or_documents`：正文或可讀附件提到的申請方式、送件步驟或應備文件；未提及時為空陣列。
-
-抽取後會複查青年個人補助中條件或來源文字明示年齡、但年齡欄位缺漏的紀錄，以及原民會資料中 `isNative=false` 的紀錄。複查僅依正文或可讀附件中的原句補值；團體代表人的年齡不填入團體補助的年齡欄位。
 
 驗證 parser：
 
