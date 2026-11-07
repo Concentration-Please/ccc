@@ -17,6 +17,7 @@ const birthDate = ref('')
 const identity = ref('')
 const categoryIds = ref<string[]>([])
 const tagIds = ref<string[]>([])
+const expanded = ref<Record<string, boolean>>({})
 
 const identityGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'is_organization'))
 const categoryGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'category'))
@@ -24,11 +25,20 @@ const tagGroups = computed(() =>
   FILTER_GROUPS.filter((group) => group.id !== 'category' && group.id !== 'is_organization'),
 )
 
+function isExpanded(id: string) {
+  return expanded.value[id] !== false
+}
+
+function toggleSection(id: string) {
+  expanded.value = { ...expanded.value, [id]: !isExpanded(id) }
+}
+
 function startDraft() {
   birthDate.value = ''
   identity.value = ''
   categoryIds.value = []
   tagIds.value = []
+  expanded.value = {}
   drafting.value = true
 }
 
@@ -86,7 +96,7 @@ function personaChips(persona: Persona): string[] {
       </div>
 
       <template v-else>
-        <ul v-if="personas.length > 0" class="personas">
+        <ul v-if="!drafting && personas.length > 0" class="personas">
           <li v-for="persona in personas" :key="persona.id" class="persona">
             <div class="persona__row">
               <span v-for="(chip, index) in personaChips(persona)" :key="`${chip}-${index}`" class="persona__chip">
@@ -103,13 +113,37 @@ function personaChips(persona: Persona): string[] {
 
         <form v-else class="draft" @submit.prevent="completeDraft">
           <section class="draft__section">
-            <h2 class="draft__title">出生年月日</h2>
-            <input v-model="birthDate" class="draft__date" type="date" />
+            <button
+              type="button"
+              class="draft__toggle"
+              :aria-expanded="isExpanded('birth')"
+              @click="toggleSection('birth')"
+            >
+              <span class="draft__title">出生年月日</span>
+              <span
+                class="draft__chevron"
+                :class="{ 'draft__chevron--collapsed': !isExpanded('birth') }"
+                aria-hidden="true"
+              />
+            </button>
+            <input v-show="isExpanded('birth')" v-model="birthDate" class="draft__date" type="date" />
           </section>
 
           <section v-if="identityGroup" class="draft__section">
-            <h2 class="draft__title">{{ identityGroup.title }}</h2>
-            <div class="draft__options">
+            <button
+              type="button"
+              class="draft__toggle"
+              :aria-expanded="isExpanded(identityGroup.id)"
+              @click="toggleSection(identityGroup.id)"
+            >
+              <span class="draft__title">{{ identityGroup.title }}</span>
+              <span
+                class="draft__chevron"
+                :class="{ 'draft__chevron--collapsed': !isExpanded(identityGroup.id) }"
+                aria-hidden="true"
+              />
+            </button>
+            <div v-show="isExpanded(identityGroup.id)" class="draft__options">
               <button
                 v-for="option in identityGroup.options"
                 :key="option.id"
@@ -124,8 +158,20 @@ function personaChips(persona: Persona): string[] {
           </section>
 
           <section v-if="categoryGroup" class="draft__section">
-            <h2 class="draft__title">{{ categoryGroup.title }}</h2>
-            <div class="draft__options">
+            <button
+              type="button"
+              class="draft__toggle"
+              :aria-expanded="isExpanded(categoryGroup.id)"
+              @click="toggleSection(categoryGroup.id)"
+            >
+              <span class="draft__title">{{ categoryGroup.title }}</span>
+              <span
+                class="draft__chevron"
+                :class="{ 'draft__chevron--collapsed': !isExpanded(categoryGroup.id) }"
+                aria-hidden="true"
+              />
+            </button>
+            <div v-show="isExpanded(categoryGroup.id)" class="draft__options">
               <button
                 v-for="option in categoryGroup.options"
                 :key="option.id"
@@ -140,8 +186,20 @@ function personaChips(persona: Persona): string[] {
           </section>
 
           <section v-for="group in tagGroups" :key="group.id" class="draft__section">
-            <h2 class="draft__title">{{ group.title }}</h2>
-            <div class="draft__options">
+            <button
+              type="button"
+              class="draft__toggle"
+              :aria-expanded="isExpanded(group.id)"
+              @click="toggleSection(group.id)"
+            >
+              <span class="draft__title">{{ group.title }}</span>
+              <span
+                class="draft__chevron"
+                :class="{ 'draft__chevron--collapsed': !isExpanded(group.id) }"
+                aria-hidden="true"
+              />
+            </button>
+            <div v-show="isExpanded(group.id)" class="draft__options">
               <button
                 v-for="option in group.options"
                 :key="option.id"
@@ -302,10 +360,40 @@ function personaChips(persona: Persona): string[] {
   margin-top: 1.5rem;
 }
 
+.draft__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .draft__title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
+}
+
+.draft__chevron {
+  display: block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-text-secondary);
+  transform: rotate(-135deg);
+  margin-right: 0.35rem;
+  transition: transform 0.15s ease;
+}
+
+.draft__chevron--collapsed {
+  transform: rotate(45deg);
 }
 
 .draft__date {
