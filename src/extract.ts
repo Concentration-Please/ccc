@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { extractionSchema, sharedCategories, youthExtractionSchema, type Article, type Subsidy } from './schema.js';
 
 export const MODEL_ID = 'google/gemma-4-26b-a4b-it';
-export const EXTRACTION_REVISION = `${MODEL_ID}:ipc-prompt-10:schema-6`;
-export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-8:schema-6`;
+export const EXTRACTION_REVISION = `${MODEL_ID}:ipc-prompt-11:schema-6`;
+export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-9:schema-6`;
 
 type ExtractSource = 'indigenous' | 'youth';
 const SOURCE_PROMPTS: Record<ExtractSource, string> = {
@@ -13,8 +13,8 @@ const SOURCE_PROMPTS: Record<ExtractSource, string> = {
   youth: '你是臺北市政府青年局公共服務資訊擷取器。只根據提供的「補助貸款」網頁正文與可讀附件文字，擷取補助、津貼、利息補貼或政策性貸款。只要正文或附件列有具體申請資格與補助內容，即使是修正公告或要點全文也要擷取。當年度預算用罄或暫停受理只是不受理該期間的申請，仍要記錄方案，並將此限制寫入 conditions。純宣導、永久停止的方案，以及只有外部連結而沒有服務內容的頁面，回傳空陣列。不要從未提供文字的附件或連結推測內容。',
 };
 const OUTPUT_RULES: Record<ExtractSource, string> = {
-  indigenous: '每項服務輸出一筆；若不同補助項目或不同資格路徑的補助內容不同，分筆輸出。僅輸出以下欄位，不要輸出來源網址或分類，這兩項由程式填入。',
-  youth: '每項服務輸出一筆；若不同補助項目或不同資格路徑的補助內容不同，分筆輸出。貸款與利息補貼若有不同的補助內容或資格，利息補貼須另輸出一筆；同一頁各項目共享的申請資格及申請方式，須完整保留在每筆資料，利息補貼也須保留同一貸款的年齡、設籍等共同資格。僅輸出以下欄位與 category，不要輸出來源網址，這項由程式填入。',
+  indigenous: '每筆紀錄須對應一項獨立給付或一條有不同給付內容的申請資格路徑。同一給付不可僅因金額級距、申請管道或文件不同而重複拆筆；不同給付不可合成一筆總覽。僅輸出以下欄位，不要輸出來源網址或分類，這兩項由程式填入。',
+  youth: '每筆紀錄須對應一項獨立給付或一條有不同給付內容的申請資格路徑。同一給付不可僅因金額級距、申請管道或文件不同而重複拆筆；不同給付不可合成一筆總覽。貸款與利息補貼若有不同的給付內容或資格，利息補貼另輸出一筆；同頁各項目共享的申請資格及申請方式，須完整保留在每筆資料。僅輸出以下欄位與 category，不要輸出來源網址，這項由程式填入。',
 };
 
 const FIELD_PROMPT = `name：直接取用網頁標題或正文的原話，可以截短，但盡量不改語意，不要自創名稱。
