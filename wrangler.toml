@@ -1,5 +1,5 @@
-# Cloudflare Pages — source of truth when build root is `web/`.
-# Git-connected Pages: set root directory to `web`, build `npm ci && npm run build`.
+# Cloudflare — build at repository root (`npm ci && npm run build`).
+# Git / Workers Builds: leave dashboard root directory blank; deploy `npx wrangler preview`.
 # CLI: npm run cf:pages:deploy
 
 name = "ccc"
