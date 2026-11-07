@@ -37,9 +37,7 @@ function onRemoveFilter(id: string) {
         type="search"
         class="search-filter-bar__input"
         placeholder="搜尋..."
-        enterkeyhint="search"
         autocomplete="off"
-        @keydown.enter.prevent="onSubmit"
       />
       <button
         type="button"

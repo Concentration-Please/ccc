@@ -52,11 +52,12 @@ async function scrollListToTop() {
 }
 
 const searchQuery = ref('')
+const submittedSearchQuery = ref('')
 const appliedFilterIds = ref<string[]>([])
 const filterPageOpen = ref(false)
 
 const filterCriteria = computed<FilterCriteria>(() => ({
-  searchQuery: searchQuery.value.trim() || undefined,
+  searchQuery: submittedSearchQuery.value || undefined,
   selectedOptionIds: appliedFilterIds.value.length ? [...appliedFilterIds.value] : undefined,
 }))
 
@@ -103,6 +104,10 @@ function onOpenFilter() {
   filterPageOpen.value = true
 }
 
+function onSubmitSearch() {
+  submittedSearchQuery.value = searchQuery.value.trim()
+}
+
 function onCloseFilterPage() {
   filterPageOpen.value = false
 }
@@ -126,6 +131,7 @@ function onSaveSubscription(personas: Persona[]) {
     <SearchFilterBar
       v-model:search-query="searchQuery"
       :applied-filters="appliedFilterTags"
+      @submit-search="onSubmitSearch"
       @open-filter="onOpenFilter"
       @open-subscribe="subscriptionOpen = true"
       @remove-filter="onRemoveFilter"
