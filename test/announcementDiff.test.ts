@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { diffAnnouncements, type AnnouncementRecord } from '../src/services/announcementDiff.ts'
+import { diffAnnouncements, type AnnouncementRecord } from '../src/services/announcementDiff.js'
 
 const current: AnnouncementRecord = {
   id: 'https://example.test/a',
