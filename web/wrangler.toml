@@ -1,0 +1,19 @@
+# Cloudflare Pages — source of truth when build root is `web/`.
+# Git-connected Pages: set root directory to `web`, build `npm ci && npm run build`.
+# CLI: npm run cf:pages:deploy
+
+name = "ccc"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "./dist"
+
+# Required for `wrangler preview` (Worker open beta); `pages_build_output_dir` alone is not enough.
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+# Required for `wrangler preview` (can be empty; inherits top-level assets).
+[previews]
+
+# Cloudflare Pages preview deployments (not the same as Workers `wrangler preview`).
+[env.preview.vars]
+APP_ENV = "preview"
