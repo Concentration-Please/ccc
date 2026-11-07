@@ -1,14 +1,14 @@
 # 第三方授權標示
 
-本專案程式以 GPL-3.0-only 授權，見 [LICENSE](LICENSE)。這份文件標示程式以外、或由他人授權的材料。npm 套件的版本與授權取自 `package-lock.json` 的頂層 `node_modules/<name>` 項目；巢狀重複安裝不另列，以 lockfile 為準。
+本專案程式以 AGPL-3.0-only 授權，見 [LICENSE](LICENSE)。這份文件標示程式以外、或由他人授權的材料。npm 套件的版本與授權取自 `package-lock.json` 的頂層 `node_modules/<name>` 項目；巢狀重複安裝不另列，以 lockfile 為準。
 
 掃描時沒有看到 `UNLICENSED`、`CC-BY-NC`、Commons Clause，或授權欄位寫著 “personal use only”／「僅供個人使用」的 npm 套件。依下面兩項判斷，本專案沒有把蘋方或政府公告列為不得再散布的材料。
 
-這些是開源授權。它們和 GPL-3.0 可以併用，但要守各授權自己的條件。
+這些是開源授權。它們和 AGPL-3.0 可以併用，但要守各授權自己的條件。
 
 ### Roboto
 
-`public/fonts/Roboto-Regular.woff2`、`Roboto-Medium.woff2`、`Roboto-SemiBold.woff2` 是 Apache-2.0。著作權屬 Google。可再散布，須保留著作權與授權聲明。與 GPL-3.0 相容。
+`public/fonts/Roboto-Regular.woff2`、`Roboto-Medium.woff2`、`Roboto-SemiBold.woff2` 是 Apache-2.0。著作權屬 Google。可再散布，須保留著作權與授權聲明。與 AGPL-3.0 相容。
 
 ### 有附加義務的傳遞依賴
 
@@ -29,7 +29,7 @@ libvips 平台包：`@img/sharp-libvips-darwin-arm64`、`darwin-x64`、`linux-ar
 | 套件 | 版本 | 授權 | 本專案採用 |
 | --- | --- | --- | --- |
 | jszip | 3.10.2 | MIT OR GPL-3.0-or-later | GPL-3.0-or-later 這一側 |
-| wrangler | 4.158.0 | MIT OR Apache-2.0 | 兩者皆與 GPL-3.0 相容 |
+| wrangler | 4.158.0 | MIT OR Apache-2.0 | 兩者皆與 AGPL-3.0 相容 |
 | @cloudflare/kv-asset-handler | 0.5.0 | MIT OR Apache-2.0 | 同上 |
 | @cloudflare/unenv-preset | 2.16.2 | MIT OR Apache-2.0 | 同上 |
 | json-schema | 0.4.0 | AFL-2.1 OR BSD-3-Clause | BSD-3-Clause 這一側 |
@@ -37,7 +37,7 @@ libvips 平台包：`@img/sharp-libvips-darwin-arm64`、`darwin-x64`、`linux-ar
 
 ## 直接依賴
 
-`package.json` 直接宣告的套件。除了上面已標出的 jszip、wrangler，其餘為 MIT 或 Apache-2.0，與 GPL-3.0 相容。Apache-2.0 的套件再散布時須保留其著作權與授權聲明。
+`package.json` 直接宣告的套件。除了上面已標出的 jszip、wrangler，其餘為 MIT 或 Apache-2.0，與 AGPL-3.0 相容。Apache-2.0 的套件再散布時須保留其著作權與授權聲明。
 
 | 套件 | 版本 | 授權 |
 | --- | --- | --- |
@@ -72,4 +72,4 @@ libvips 平台包：`@img/sharp-libvips-darwin-arm64`、`darwin-x64`、`linux-ar
 
 ## 專案內沒有另附授權的素材
 
-`src/assets/` 的 SVG 圖示為製作團隊繪製的圖形，視為本專案的一部分，隨 [LICENSE](LICENSE) 以 GPL-3.0-only 授權。
+`src/assets/` 的 SVG 圖示為製作團隊繪製的圖形，視為本專案的一部分，隨 [LICENSE](LICENSE) 以 AGPL-3.0-only 授權。
