@@ -47,8 +47,6 @@ watch(sourceUrl, (source) => {
 
 <template>
   <article class="detail">
-    <RouterLink class="detail__back" :to="{ name: 'aid-list' }">返回列表</RouterLink>
-
     <p v-if="loading" class="detail__status" role="status">載入中…</p>
     <p v-else-if="missing" class="detail__status detail__status--error" role="alert">
       找不到此補助
@@ -86,7 +84,7 @@ watch(sourceUrl, (source) => {
       </section>
 
       <p class="detail__source">
-        <a :href="aid.source_url" target="_blank" rel="noopener noreferrer">原始公告</a>
+        <a :href="aid.source_url" target="_blank" rel="noopener noreferrer">公告原文</a>
       </p>
     </template>
   </article>
@@ -94,19 +92,14 @@ watch(sourceUrl, (source) => {
 
 <style scoped>
 .detail {
-  padding: 1rem 1.1rem 2rem;
-}
-
-.detail__back {
-  display: inline-block;
-  margin-bottom: 1rem;
-  color: var(--color-primary);
-  font-size: 1rem;
-  text-decoration: none;
+  --aid-inset: 1.1rem;
+  min-height: 100%;
+  padding-bottom: 2rem;
+  background: #ffffff;
 }
 
 .detail__status {
-  margin: 2rem 0;
+  margin: 2rem var(--aid-inset);
   text-align: center;
   color: var(--color-text-secondary);
 }
@@ -115,66 +108,80 @@ watch(sourceUrl, (source) => {
   color: #c62828;
 }
 
-.detail__header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
+.detail__header,
+.detail__section {
+  position: relative;
+  padding: 1rem var(--aid-inset);
+}
+
+.detail__header::after,
+.detail__section:not(:last-of-type)::after {
+  content: '';
+  position: absolute;
+  left: var(--aid-inset);
+  right: var(--aid-inset);
+  bottom: 0;
+  height: 1px;
+  background: var(--color-border);
 }
 
 .detail__title {
   margin: 0;
-  font-size: 1.5rem;
-  line-height: 1.35;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
 }
 
 .detail__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .detail__chip {
-  padding: 0.25rem 0.6rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-chip-text);
-  background: var(--color-chip-bg);
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #ffffff;
+  background: #5ab4c5;
   border-radius: 999px;
 }
 
-.detail__section {
-  margin: 0 0 1.15rem;
-  padding: 0.9rem 1rem;
-  background: var(--color-surface);
-  border-radius: 0.75rem;
+.detail__section h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
 }
 
-.detail__section h2 {
-  margin: 0 0 0.4rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
+.detail__section p,
+.detail__section ul {
+  margin: 4px 0 0;
 }
 
 .detail__section p,
 .detail__section li {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.5;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
 }
 
 .detail__section ul {
-  margin: 0;
   padding-left: 1.2rem;
 }
 
 .detail__section li + li {
-  margin-top: 0.45rem;
+  margin-top: 4px;
 }
 
 .detail__source {
-  margin: 0.5rem 0 0;
+  margin: 0;
+  padding: 1rem var(--aid-inset) 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
 }
 
 .detail__source a {
