@@ -11,8 +11,8 @@ export const router = createRouter({
       component: AidListView,
     },
     {
-      path: '/aid',
-      name: 'aid-detail',
+      path: '/record',
+      name: 'record-detail',
       component: AidDetailView,
     },
   ],

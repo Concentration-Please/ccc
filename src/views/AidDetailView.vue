@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { fetchGovernmentAidById, fetchGovernmentAidBySource } from '@/services/database'
+import { fetchGovernmentAidById } from '@/services/database'
 import type { AidDataset, GovernmentAidRecord } from '@/types/governmentAid'
 import ExternalLink from '@/components/ExternalLink.vue'
 import { organizationLabel, registrationLabel } from '@/utils/aidLabels'
@@ -23,37 +23,19 @@ const recordId = computed(() => {
   return Number.isSafeInteger(id) ? id : null
 })
 
-const sourceUrl = computed(() => {
-  const value = route.query.source
-  return typeof value === 'string' ? value : ''
-})
-
-const aidName = computed(() => {
-  const value = route.query.name
-  return typeof value === 'string' ? value : ''
-})
-
-async function loadAid(
-  dataset: AidDataset | null,
-  id: number | null,
-  source: string,
-  name: string,
-) {
+async function loadAid(dataset: AidDataset | null, id: number | null) {
   loading.value = true
   missing.value = false
   aid.value = null
 
-  if ((!dataset || id === null) && !source) {
+  if (!dataset || id === null) {
     missing.value = true
     loading.value = false
     return
   }
 
   try {
-    const record =
-      dataset && id !== null
-        ? await fetchGovernmentAidById(dataset, id)
-        : await fetchGovernmentAidBySource(source, name || undefined)
+    const record = await fetchGovernmentAidById(dataset, id)
     if (!record) {
       missing.value = true
       return
@@ -67,9 +49,9 @@ async function loadAid(
 }
 
 watch(
-  [dataset, recordId, sourceUrl, aidName],
-  ([dataset, id, source, name]) => {
-    void loadAid(dataset, id, source, name)
+  [dataset, recordId],
+  ([dataset, id]) => {
+    void loadAid(dataset, id)
   },
   { immediate: true },
 )

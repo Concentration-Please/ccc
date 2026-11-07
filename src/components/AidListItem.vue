@@ -12,7 +12,7 @@ defineProps<{
 <template>
   <RouterLink
     class="aid-item"
-    :to="{ name: 'aid-detail', query: { dataset: aid.dataset, id: aid.id } }"
+    :to="{ name: 'record-detail', query: { dataset: aid.dataset, id: aid.id } }"
   >
     <h2 class="aid-item__title">
       {{ aid.name }}
