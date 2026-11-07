@@ -84,28 +84,33 @@ function onRemoveFilter(id: string) {
 
 <style scoped>
 .search-filter-bar {
-  padding: 0.75rem 1rem 0.5rem;
+  /* Fixed px (was 0.75rem / 1rem / 0.5rem at 18px root) — do not scale with system font. */
+  padding: 14px 18px 9px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
 
 .search-filter-bar__row {
+  --search-bar-control-radius: 9px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
+  height: 48px;
 }
 
 .search-filter-bar__input {
   flex: 1;
   min-width: 0;
   height: 48px;
-  padding: 0 1rem;
-  font: inherit;
-  font-size: 1rem;
+  padding: 0 16px;
+  font-family: TownPassUI, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.25;
   color: var(--color-text);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
+  border-radius: var(--search-bar-control-radius);
   outline: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -128,7 +133,7 @@ function onRemoveFilter(id: string) {
   padding: 0;
   background: var(--color-accent);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--search-bar-control-radius);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -139,17 +144,22 @@ function onRemoveFilter(id: string) {
 
 .search-filter-bar__action--text {
   width: auto;
-  padding: 0 0.85rem;
+  height: 48px;
+  padding: 0 15px;
   color: var(--color-primary-text);
-  font: inherit;
-  font-size: 1rem;
+  font-family: TownPassUI, sans-serif;
+  font-size: 18px;
   font-weight: 600;
+  line-height: 1;
 }
 
 .search-filter-bar__icon {
   display: block;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 24px;
+  height: 24px;
+  max-width: 24px;
+  max-height: 24px;
+  flex-shrink: 0;
   pointer-events: none;
 }
 
