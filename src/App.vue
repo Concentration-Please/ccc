@@ -8,7 +8,11 @@ const route = useRoute()
 <template>
   <div class="app-shell">
     <main class="app-main" :class="{ 'app-main--with-fab': route.name === 'aid-list' }">
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <KeepAlive include="AidListView">
+          <component :is="Component" />
+        </KeepAlive>
+      </RouterView>
     </main>
     <FilterFab v-if="route.name === 'aid-list'" />
   </div>
@@ -20,13 +24,15 @@ const route = useRoute()
   flex-direction: column;
   height: 100%;
   min-height: 100dvh;
+  overflow: hidden;
 }
 
 .app-main {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 .app-main--with-fab {
