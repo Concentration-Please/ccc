@@ -138,6 +138,46 @@ test('reads OpenDocument attachment text and parses an attachment-only article',
   }
 });
 
+test('skips identical model records within and across articles', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-dedup-parser-test-'));
+  const secondUrl = `${SOURCE_URL}&article=second`;
+  const { conditions, ...otherFields } = subsidy;
+  const sameFieldsInDifferentOrder = { conditions: [...conditions], ...otherFields };
+  const distinctConditions = { ...subsidy, conditions: ['申請家庭須設籍臺北市'] };
+  const distinctTarget = { ...subsidy, subsidy_target: '另一項托育費用補助' };
+  try {
+    const result = await runParser({
+      fetchHtml: async () => '',
+      extract: async (article) => article.url === testArticleUrl
+        ? [subsidy, sameFieldsInDifferentOrder, distinctConditions]
+        : [{ ...subsidy }, distinctTarget],
+      dataDir: join(rootDir, 'data'),
+      stateDir: join(rootDir, 'tmp'),
+      revision: 'test-dedup',
+      source: {
+        url: SOURCE_URL,
+        name: 'dedup-test',
+        outputFile: 'dedup-test.json',
+        discover: async () => [
+          { url: testArticleUrl, title: '托育補助', category: '托育服務', publishedAt: null },
+          { url: secondUrl, title: '另一篇托育補助', category: '托育服務', publishedAt: null },
+        ],
+        parseArticle: (_html, listing) => ({ ...listing, body: '原住民家庭可申請托育補助。' }),
+        parseAttachments: () => [],
+      },
+    });
+    assert.equal(result.total, 2);
+    assert.equal(result.records, 3);
+    const output = JSON.parse(await readFile(join(rootDir, 'data', 'dedup-test.json'), 'utf8'));
+    assert.deepEqual(output.records.map(({ id }: { id: number }) => id), [1, 2, 3]);
+    assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [testArticleUrl, testArticleUrl, secondUrl]);
+    assert.deepEqual(output.records.map(({ subsidy_target }: { subsidy_target: string }) => subsidy_target), [subsidy.subsidy_target, subsidy.subsidy_target, distinctTarget.subsidy_target]);
+    assert.deepEqual(output.records[1].conditions, distinctConditions.conditions);
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
 test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {
   let calls = 0;
   const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45, category: '其他' as const };

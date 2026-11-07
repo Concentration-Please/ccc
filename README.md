@@ -68,6 +68,8 @@ npm run parse
 
 完整抓取會對有正文或可讀附件文字的網頁呼叫付費模型，不做關鍵字初篩。每次執行會先刪除該 parser 的舊輸出、狀態及附件，再重新抓取與抽取；程式依序處理網頁，每篇完成後將結果寫入 `data/indigenous.json`，並將當次進度寫入 Git 忽略的 `tmp/ipc-parser-state.json`。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會從頭重跑。
 
+同一次執行中，模型輸出的欄位完全相同時只保留第一筆；同頁的不同補助仍各自輸出。跨文章重複時，保留第一次出現的來源網址。
+
 附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。Parser 會擷取 PDF、ODT、ODS、DOCX 的文字，連同附件標題送給模型；每份附件最多取 8,000 字，每篇合計最多 24,000 字。掃描影像 PDF 與舊版 DOC 無法直接讀取文字，會記錄提示並保留原檔。
 
 `data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十三個欄位：

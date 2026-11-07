@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { extractAttachmentText } from './attachments.js';
 import { subsidySchema, youthSubsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord, type YouthSubsidy } from './schema.js';
@@ -101,9 +102,19 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const cache: Cache = { version: 5, entries: {} };
   const listings = await source.discover(options.fetchHtml);
   const records: SubsidyRecord[] = [];
+  const seenSubsidies: (Subsidy | YouthSubsidy)[] = [];
   const attachments: { article_url: string; url: string; title: string; file: string }[] = [];
   const failures: RunSummary['failures'] = [];
   let reused = 0;
+
+  const appendSubsidies = (article: Article, subsidies: (Subsidy | YouthSubsidy)[]) => {
+    const unique = subsidies.filter((subsidy) => {
+      if (seenSubsidies.some((seen) => isDeepStrictEqual(seen, subsidy))) return false;
+      seenSubsidies.push(subsidy);
+      return true;
+    });
+    records.push(...toRecords(article, unique, records.length + 1));
+  };
 
   const save = async (complete: boolean) => {
     const now = new Date();
@@ -147,12 +158,12 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
       const cached = cache.entries[article.url];
       if (cached?.signature === hash && (cached.status === 'done' || cached.status === 'skipped')) {
         reused += 1;
-        if (cached.status === 'done') records.push(...toRecords(article, cached.subsidies, records.length + 1));
+        if (cached.status === 'done') appendSubsidies(article, cached.subsidies);
       } else if (!article.body && articleAttachments.length === 0) {
         cache.entries[article.url] = { signature: hash, status: 'skipped', subsidies: [] };
       } else {
         const subsidies = await options.extract(articleWithAttachments);
-        records.push(...toRecords(article, subsidies, records.length + 1));
+        appendSubsidies(article, subsidies);
         cache.entries[article.url] = { signature: hash, status: 'done', subsidies };
       }
     } catch (error) {
