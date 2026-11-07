@@ -69,29 +69,13 @@ export function requestUserInfo(): Promise<TownPassUserInfo | null> {
   })
 }
 
-function newsAddress(value: string | undefined): string | undefined {
-  if (!value) return undefined
-  try {
-    const url = new URL(value)
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return undefined
-    return url.toString()
-  } catch {
-    return undefined
-  }
-}
-
-export function notifyMatchingAid(title: string, url?: string): void {
+export function notifyMatchingAid(title: string): void {
   const bridge = flutterObject()
   if (!bridge) return
-  const address = newsAddress(url)
   bridge.postMessage(
     JSON.stringify({
       name: 'notify',
-      data: {
-        title: '符合您訂閱條件的政府補助',
-        content: title,
-        ...(address ? { url: address } : {}),
-      },
+      data: { title: '符合您訂閱條件的政府補助', content: title },
     }),
   )
 }

@@ -2,7 +2,6 @@
 import { onUnmounted } from 'vue'
 import searchIcon from '@/assets/searchIcon.svg'
 import filterIcon from '@/assets/filterIcon.svg'
-import indigenousFile from '@data/indigenous.json'
 import type { AppliedFilterTag } from '@/services/filter'
 import { notifyMatchingAid } from '@/services/townpass'
 
@@ -23,8 +22,8 @@ function onSubmit() {
   emit('submitSearch')
 }
 
-// BEGIN TEMPORARY: delete this block. Three quick taps on the search button notify indigenous record 85.
-const TEMP_ELIGIBLE_AID = indigenousFile.records.find((record) => record.id === 85)
+// BEGIN TEMPORARY: delete this block. Three quick taps on the search button send a mock eligible-aid notification.
+const TEMP_MOCK_ELIGIBLE_AID = '【測試】模擬符合補助'
 const TEMP_CLICK_WINDOW_MS = 600
 let tempSearchClicks = 0
 let tempSearchTimer = 0
@@ -35,7 +34,7 @@ function onSearchClick() {
   window.clearTimeout(tempSearchTimer)
   if (tempSearchClicks >= 3) {
     tempSearchClicks = 0
-    if (TEMP_ELIGIBLE_AID) notifyMatchingAid(TEMP_ELIGIBLE_AID.name, TEMP_ELIGIBLE_AID.source_url)
+    notifyMatchingAid(TEMP_MOCK_ELIGIBLE_AID)
     return
   }
   tempSearchTimer = window.setTimeout(() => {
