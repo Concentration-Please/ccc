@@ -76,7 +76,7 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const cachePath = join(options.stateDir, 'ipc-parser-state.json');
   const attachmentDir = join(options.stateDir, 'ipc-attachments');
   const attachmentManifestPath = join(options.stateDir, 'ipc-attachments.json');
-  const outputPath = join(options.dataDir, 'subsidies.json');
+  const outputPath = join(options.dataDir, 'indigenous.json');
   await mkdir(attachmentDir, { recursive: true });
   const fetchAttachment = options.fetchAttachment ?? createAttachmentFetcher();
   const cache = await loadCache(cachePath);
