@@ -24,6 +24,19 @@ function parseRegistrationMonthsOptionValue(raw: string): number | null {
   return Number.isFinite(months) ? months : null
 }
 
+/** Selected 身份別 labels combine with AND. Every other field combines with OR. */
+const AND_FIELDS = new Set(['label'])
+
+function matchesAge(aid: GovernmentAidRecord, raw: string): boolean {
+  const age = Number(raw)
+  if (!Number.isInteger(age)) return false
+  const lower = typeof aid.age_lower === 'number' ? aid.age_lower : null
+  const upper = typeof aid.age_upper === 'number' ? aid.age_upper : null
+  if (lower !== null && age < lower) return false
+  if (upper !== null && age > upper) return false
+  return true
+}
+
 /** Whether a single aid matches one filter option id (`field:value`). */
 export function recordMatchesFilterOption(
   aid: GovernmentAidRecord,
@@ -43,13 +56,18 @@ export function recordMatchesFilterOption(
       const months = parseRegistrationMonthsOptionValue(value)
       return aid.registration_months === months
     }
+    case 'age':
+      return matchesAge(aid, value)
+    case 'label':
+      return aid.label.includes(value)
     default:
       return false
   }
 }
 
 /**
- * Options sharing the same field prefix (filter header) use OR; distinct fields combine with AND.
+ * Options sharing the same field prefix (filter header) use OR, except 身份別 (`label`),
+ * which uses AND. Distinct fields combine with AND.
  */
 export function recordMatchesFilterGroups(
   aid: GovernmentAidRecord,
@@ -58,8 +76,10 @@ export function recordMatchesFilterGroups(
   if (!selectedOptionIds?.length) return true
 
   const byGroup = groupSelectedOptionIds(selectedOptionIds)
-  for (const optionIds of byGroup.values()) {
-    const matchesGroup = optionIds.some((optionId) => recordMatchesFilterOption(aid, optionId))
+  for (const [field, optionIds] of byGroup) {
+    const matchesGroup = AND_FIELDS.has(field)
+      ? optionIds.every((optionId) => recordMatchesFilterOption(aid, optionId))
+      : optionIds.some((optionId) => recordMatchesFilterOption(aid, optionId))
     if (!matchesGroup) return false
   }
   return true

@@ -22,7 +22,7 @@ const expanded = ref<Record<string, boolean>>({})
 const identityGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'is_organization'))
 const categoryGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'category'))
 const tagGroups = computed(() =>
-  FILTER_GROUPS.filter((group) => group.id !== 'category' && group.id !== 'is_organization'),
+  FILTER_GROUPS.filter((group) => group.id === 'registration_months'),
 )
 
 function isExpanded(id: string) {
