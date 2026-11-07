@@ -1,189 +1,394 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import type { SubscriptionCriteria } from '@/services/matchSubscription'
+import { computed, ref } from 'vue'
+import { FILTER_GROUPS, tagsFromSelectedIds } from '@/services/filter'
+import type { Persona } from '@/services/matchSubscription'
 
 const props = defineProps<{
-  open: boolean
-  categories: string[]
-  initial: SubscriptionCriteria | null
+  personas: Persona[]
 }>()
 
 const emit = defineEmits<{
   close: []
-  save: [criteria: SubscriptionCriteria]
+  save: [personas: Persona[]]
 }>()
 
-const age = ref(0)
-const registrationMonths = ref(0)
-const isNative = ref(false)
-const isOrganization = ref(false)
-const selectedCategories = ref<string[]>([])
+const drafting = ref(false)
+const birthDate = ref('')
+const identity = ref('')
+const categoryIds = ref<string[]>([])
+const tagIds = ref<string[]>([])
 
-watch(
-  () => props.open,
-  (open) => {
-    if (!open) return
-    const current = props.initial
-    age.value = current?.age ?? 0
-    registrationMonths.value = current?.registrationMonths ?? 0
-    isNative.value = current?.isNative ?? false
-    isOrganization.value = current?.isOrganization ?? false
-    selectedCategories.value = current ? [...current.categories] : []
-  },
+const identityGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'is_organization'))
+const categoryGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'category'))
+const tagGroups = computed(() =>
+  FILTER_GROUPS.filter((group) => group.id !== 'category' && group.id !== 'is_organization'),
 )
 
-const canSave = computed(() => age.value >= 0 && registrationMonths.value >= 0)
-
-function toggleCategory(category: string) {
-  const next = new Set(selectedCategories.value)
-  if (next.has(category)) next.delete(category)
-  else next.add(category)
-  selectedCategories.value = [...next]
+function startDraft() {
+  birthDate.value = ''
+  identity.value = ''
+  categoryIds.value = []
+  tagIds.value = []
+  drafting.value = true
 }
 
-function onSubmit() {
-  if (!canSave.value) return
-  emit('save', {
-    age: age.value,
-    registrationMonths: registrationMonths.value,
-    isNative: isNative.value,
-    isOrganization: isOrganization.value,
-    categories: selectedCategories.value,
-  })
+function toggle(selected: string[], id: string): string[] {
+  const next = new Set(selected)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  return [...next]
+}
+
+function selectIdentity(id: string) {
+  identity.value = identity.value === id ? '' : id
+}
+
+function completeDraft() {
+  const persona: Persona = {
+    id: crypto.randomUUID(),
+    birthDate: birthDate.value,
+    identity: identity.value,
+    categoryIds: [...categoryIds.value],
+    tagIds: [...tagIds.value],
+  }
+  drafting.value = false
+  emit('save', [...props.personas, persona])
+}
+
+function removePersona(id: string) {
+  emit('save', props.personas.filter((persona) => persona.id !== id))
+}
+
+function personaChips(persona: Persona): string[] {
+  const labels = [
+    ...(persona.birthDate ? [persona.birthDate] : []),
+    ...tagsFromSelectedIds(
+      [persona.identity, ...persona.categoryIds, ...persona.tagIds].filter((id) => id !== ''),
+    ).map((tag) => tag.label),
+  ]
+  return labels.length > 0 ? labels : ['全部符合']
 }
 </script>
 
 <template>
-  <div v-if="open" class="sheet-root">
-    <button type="button" class="sheet-backdrop" aria-label="關閉" @click="emit('close')" />
-    <form class="sheet" @submit.prevent="onSubmit">
-      <h2 class="sheet__title">訂閱條件</h2>
+  <div class="subscribe-page" role="dialog" aria-modal="true" aria-labelledby="subscribe-page-title">
+    <header class="subscribe-page__header">
+      <button type="button" class="subscribe-page__header-btn" aria-label="返回" @click="emit('close')">
+        <span class="subscribe-page__chevron" aria-hidden="true" />
+      </button>
+      <h1 id="subscribe-page-title" class="subscribe-page__title">訂閱</h1>
+      <span aria-hidden="true" />
+    </header>
 
-      <label class="field">
-        <span>年紀</span>
-        <input v-model.number="age" type="number" min="0" inputmode="numeric" required />
-      </label>
-
-      <fieldset class="field">
-        <legend>類別（不勾選代表不限）</legend>
-        <label v-for="category in categories" :key="category" class="check">
-          <input
-            type="checkbox"
-            :checked="selectedCategories.includes(category)"
-            @change="toggleCategory(category)"
-          />
-          {{ category }}
-        </label>
-      </fieldset>
-
-      <fieldset class="field">
-        <legend>是否有原住民身份</legend>
-        <label class="check"><input v-model="isNative" type="radio" :value="true" /> 是</label>
-        <label class="check"><input v-model="isNative" type="radio" :value="false" /> 否</label>
-      </fieldset>
-
-      <fieldset class="field">
-        <legend>是否為團體</legend>
-        <label class="check"><input v-model="isOrganization" type="radio" :value="true" /> 是</label>
-        <label class="check"><input v-model="isOrganization" type="radio" :value="false" /> 否</label>
-      </fieldset>
-
-      <label class="field">
-        <span>設籍月數</span>
-        <input
-          v-model.number="registrationMonths"
-          type="number"
-          min="0"
-          inputmode="numeric"
-          required
-        />
-      </label>
-
-      <div class="sheet__actions">
-        <button type="button" class="button button--secondary" @click="emit('close')">取消</button>
-        <button type="submit" class="button" :disabled="!canSave">儲存訂閱</button>
+    <div class="subscribe-page__body" :class="{ 'subscribe-page__body--draft': drafting }">
+      <div v-if="!drafting && personas.length === 0" class="subscribe-page__empty">
+        <button type="button" class="plus" aria-label="新增 persona" @click="startDraft">+</button>
       </div>
-    </form>
+
+      <template v-else>
+        <ul v-if="personas.length > 0" class="personas">
+          <li v-for="persona in personas" :key="persona.id" class="persona">
+            <div class="persona__row">
+              <span v-for="(chip, index) in personaChips(persona)" :key="`${chip}-${index}`" class="persona__chip">
+                {{ chip }}
+              </span>
+            </div>
+            <button type="button" class="persona__delete" @click="removePersona(persona.id)">刪除</button>
+          </li>
+        </ul>
+
+        <button v-if="!drafting" type="button" class="plus plus--below" aria-label="新增 persona" @click="startDraft">
+          +
+        </button>
+
+        <form v-else class="draft" @submit.prevent="completeDraft">
+          <section class="draft__section">
+            <h2 class="draft__title">出生年月日</h2>
+            <input v-model="birthDate" class="draft__date" type="date" />
+          </section>
+
+          <section v-if="identityGroup" class="draft__section">
+            <h2 class="draft__title">{{ identityGroup.title }}</h2>
+            <div class="draft__options">
+              <button
+                v-for="option in identityGroup.options"
+                :key="option.id"
+                type="button"
+                class="draft__option"
+                :class="{ 'draft__option--selected': identity === option.id }"
+                @click="selectIdentity(option.id)"
+              >
+                {{ option.label }}
+              </button>
+            </div>
+          </section>
+
+          <section v-if="categoryGroup" class="draft__section">
+            <h2 class="draft__title">{{ categoryGroup.title }}</h2>
+            <div class="draft__options">
+              <button
+                v-for="option in categoryGroup.options"
+                :key="option.id"
+                type="button"
+                class="draft__option"
+                :class="{ 'draft__option--selected': categoryIds.includes(option.id) }"
+                @click="categoryIds = toggle(categoryIds, option.id)"
+              >
+                {{ option.label }}
+              </button>
+            </div>
+          </section>
+
+          <section v-for="group in tagGroups" :key="group.id" class="draft__section">
+            <h2 class="draft__title">{{ group.title }}</h2>
+            <div class="draft__options">
+              <button
+                v-for="option in group.options"
+                :key="option.id"
+                type="button"
+                class="draft__option"
+                :class="{ 'draft__option--selected': tagIds.includes(option.id) }"
+                @click="tagIds = toggle(tagIds, option.id)"
+              >
+                {{ option.label }}
+              </button>
+            </div>
+          </section>
+        </form>
+      </template>
+    </div>
+
+    <footer v-if="drafting" class="subscribe-page__footer">
+      <button type="button" class="subscribe-page__cancel" @click="drafting = false">取消</button>
+      <button type="button" class="subscribe-page__done" @click="completeDraft">完成</button>
+    </footer>
   </div>
 </template>
 
 <style scoped>
-.sheet-root {
+.subscribe-page {
   position: fixed;
   inset: 0;
-  z-index: 20;
-}
-
-.sheet-backdrop {
-  position: absolute;
-  inset: 0;
-  border: none;
-  background: rgb(0 0 0 / 40%);
-}
-
-.sheet {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  max-height: 85dvh;
-  overflow-y: auto;
-  margin: 0;
-  padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
-  background: var(--color-surface);
-  border-radius: 1rem 1rem 0 0;
-}
-
-.sheet__title {
-  margin: 0 0 1rem;
-  font-size: 1.25rem;
-}
-
-.field {
+  z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin: 0 0 1rem;
-  padding: 0;
-  border: none;
-  font-size: 1rem;
+  background: var(--color-surface);
 }
 
-.field input[type='number'] {
-  font: inherit;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.6rem;
-}
-
-.check {
-  display: flex;
-  gap: 0.5rem;
+.subscribe-page__header {
+  display: grid;
+  grid-template-columns: 3rem 1fr 3rem;
   align-items: center;
+  padding: 0.65rem 0.75rem;
+  padding-top: calc(0.65rem + env(safe-area-inset-top, 0px));
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
-.sheet__actions {
+.subscribe-page__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.subscribe-page__header-btn {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  font: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.button {
+.subscribe-page__chevron {
+  display: block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-left: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(45deg);
+  margin-left: 0.2rem;
+}
+
+.subscribe-page__body {
   flex: 1;
-  padding: 0.8rem 1rem;
-  font: inherit;
-  font-weight: 500;
-  color: var(--color-primary-text);
-  background: var(--color-primary);
-  border: none;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.subscribe-page__body--draft {
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.subscribe-page__empty {
+  display: flex;
+  justify-content: center;
+}
+
+.personas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.persona {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+}
+
+.persona__row {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.persona__chip {
+  flex: none;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.95rem;
+  color: var(--color-chip-text);
+  background: var(--color-chip-bg);
   border-radius: 999px;
 }
 
-.button--secondary {
-  color: var(--color-text);
-  background: var(--color-chip-bg);
+.persona__delete {
+  flex: none;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  color: #c62828;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
-.button:disabled {
-  opacity: 0.5;
+.plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-filter-selected-text);
+  background: var(--color-accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.plus--below {
+  margin: 1.25rem auto 0;
+}
+
+.draft__section + .draft__section {
+  margin-top: 1.5rem;
+}
+
+.draft__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.draft__date {
+  width: 100%;
+  margin-top: 1rem;
+  min-height: 3.25rem;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-filter-chip-bg);
+  border: none;
+  border-radius: 0.5rem;
+}
+
+.draft__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.draft__option {
+  min-height: 3.25rem;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--color-text);
+  background: var(--color-filter-chip-bg);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.draft__option--selected {
+  color: var(--color-filter-selected-text);
+  background: var(--color-accent);
+}
+
+.subscribe-page__footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 101;
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--color-surface) 85%, rgb(255 255 255 / 0));
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 6%);
+}
+
+.subscribe-page__cancel {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--color-accent);
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.subscribe-page__done {
+  flex: 1;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--color-filter-selected-text);
+  background: var(--color-accent);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
 }
 </style>
