@@ -1,4 +1,4 @@
-import { indigenousRecords } from '@/data/indigenousDataset'
+import { governmentAidRecords } from '@/data/governmentAids'
 import { applyFilter, type FilterCriteria } from '@/services/filter'
 import type { GovernmentAidRecord } from '@/types/governmentAid'
 
@@ -6,12 +6,12 @@ import type { GovernmentAidRecord } from '@/types/governmentAid'
  * TODO: Connect to Cloudflare D1 or backend API when available.
  */
 export async function fetchAllGovernmentAids(): Promise<GovernmentAidRecord[]> {
-  return indigenousRecords
+  return governmentAidRecords
 }
 
-/** Filter and search over loaded indigenous records. */
+/** Filter and search over indigenous and youth aid plans. */
 export function queryGovernmentAids(criteria: FilterCriteria = {}): GovernmentAidRecord[] {
-  return applyFilter(indigenousRecords, criteria)
+  return applyFilter(governmentAidRecords, criteria)
 }
 
 export async function fetchGovernmentAidBySource(

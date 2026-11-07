@@ -1,46 +1,37 @@
 import categoryList from '@data/category.json'
-import { indigenousRecords } from '@/data/indigenousDataset'
 import type { FilterGroup, FilterOption } from '@/types/filter'
-import type { GovernmentAidRecord } from '@/types/governmentAid'
 
-function registrationMonthLabel(value: number | null): string {
-  if (value === null) return '不限'
-  return `${value} 個月`
-}
+const ageOptions: FilterOption[] = Array.from({ length: 100 }, (_, index) => {
+  const age = index + 1
+  return { id: `age:${age}`, label: String(age) }
+})
 
-export function buildSubsidyFilterGroups(records: GovernmentAidRecord[]): FilterGroup[] {
-  const categoryOptions: FilterOption[] = categoryList.map((category) => ({
-    id: `category:${category}`,
-    label: category,
-  }))
+const identityOptions: FilterOption[] = [
+  { id: 'label:indigenous', label: '原住民' },
+  { id: 'label:youth', label: '青年' },
+]
 
-  const orgInData = new Set(records.map((r) => r.is_organization))
-  const organizationOptions: FilterOption[] = []
-  if (orgInData.has(true)) {
-    organizationOptions.push({ id: 'is_organization:true', label: '團體' })
-  }
-  if (orgInData.has(false)) {
-    organizationOptions.push({ id: 'is_organization:false', label: '個人' })
-  }
+const registrationOptions: FilterOption[] = [
+  { id: 'registration_months:4', label: '4個月' },
+  { id: 'registration_months:6', label: '6個月' },
+]
 
-  const monthsInData = new Set(records.map((r) => r.registration_months))
-  const monthValues = [...monthsInData].sort((a, b) => {
-    if (a === null) return 1
-    if (b === null) return -1
-    return a - b
-  })
-  const registrationOptions: FilterOption[] = monthValues.map((value) => ({
-    id: `registration_months:${value === null ? 'null' : value}`,
-    label: registrationMonthLabel(value),
-  }))
+const audienceOptions: FilterOption[] = [
+  { id: 'is_organization:false', label: '個人' },
+  { id: 'is_organization:true', label: '團體' },
+]
 
-  return [
-    { id: 'category', title: '補貼類型', options: categoryOptions },
-    { id: 'is_organization', title: '團體/個人', options: organizationOptions },
-    { id: 'registration_months', title: '設籍時間', options: registrationOptions },
-  ]
-}
+const categoryOptions: FilterOption[] = categoryList.map((category) => ({
+  id: `category:${category}`,
+  label: category,
+}))
 
-export const SUBSIDY_FILTER_GROUPS = buildSubsidyFilterGroups(indigenousRecords)
+export const SUBSIDY_FILTER_GROUPS: FilterGroup[] = [
+  { id: 'age', title: '年齡', options: ageOptions, selection: 'single' },
+  { id: 'label', title: '身份別', options: identityOptions },
+  { id: 'registration_months', title: '設籍時間', options: registrationOptions, selection: 'single' },
+  { id: 'category', title: '補貼類型', options: categoryOptions },
+  { id: 'is_organization', title: '補貼對象', options: audienceOptions, selection: 'single' },
+]
 
 export const SUBSIDY_CATEGORIES: readonly string[] = categoryList
