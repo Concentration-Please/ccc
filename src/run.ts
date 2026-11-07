@@ -11,7 +11,7 @@ const cacheEntrySchema = z.object({
   subsidies: z.array(subsidySchema),
   error: z.string().optional(),
 });
-const cacheSchema = z.object({ version: z.literal(4), entries: z.record(z.string(), cacheEntrySchema) });
+const cacheSchema = z.object({ version: z.literal(5), entries: z.record(z.string(), cacheEntrySchema) });
 type Cache = z.infer<typeof cacheSchema>;
 
 export interface RunOptions {
@@ -38,12 +38,12 @@ function signature(article: Article, revision: string): string {
 async function loadCache(path: string): Promise<Cache> {
   try {
     const value: unknown = JSON.parse(await readFile(path, 'utf8'));
-    if (value && typeof value === 'object' && 'version' in value && (value.version === 1 || value.version === 2 || value.version === 3)) {
-      return { version: 4, entries: {} };
+    if (value && typeof value === 'object' && 'version' in value && (value.version === 1 || value.version === 2 || value.version === 3 || value.version === 4)) {
+      return { version: 5, entries: {} };
     }
     return cacheSchema.parse(value);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 4, entries: {} };
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 5, entries: {} };
     throw error;
   }
 }
@@ -59,6 +59,9 @@ function toRecords(article: Article, subsidies: Subsidy[]): SubsidyRecord[] {
     category: article.category,
     is_organization: subsidy.is_organization,
     registration_months: subsidy.registration_months,
+    age_lower: subsidy.age_lower,
+    age_upper: subsidy.age_upper,
+    isNative: subsidy.isNative,
     source_url: article.url,
     name: subsidy.name,
     summary: subsidy.summary,
@@ -73,7 +76,7 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const cachePath = join(options.stateDir, 'ipc-parser-state.json');
   const attachmentDir = join(options.stateDir, 'ipc-attachments');
   const attachmentManifestPath = join(options.stateDir, 'ipc-attachments.json');
-  const outputPath = join(options.dataDir, 'subsidies.json');
+  const outputPath = join(options.dataDir, 'indigenous.json');
   await mkdir(attachmentDir, { recursive: true });
   const fetchAttachment = options.fetchAttachment ?? createAttachmentFetcher();
   const cache = await loadCache(cachePath);

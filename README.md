@@ -66,15 +66,17 @@ npm run parse
 
 `.dev.vars` 是 Cloudflare Workers 本機開發使用的 secret 檔，已被 Git 忽略。現有 Node.js 批次程式也會讀取它；未來接入 Worker 時，金鑰需透過 Worker 的 secret binding 傳入。
 
-完整抓取會對每篇有正文的網頁呼叫付費模型，不做關鍵字初篩；只有附件而無正文的頁面會略過。程式依序處理網頁，每篇完成後將結果寫入 `data/subsidies.json`，並將續跑狀態寫入 Git 忽略的 `tmp/ipc-parser-state.json`。重新執行會重抓網頁內文，但內容與抽取版本未變時不再呼叫模型。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會重試。
+完整抓取會對每篇有正文的網頁呼叫付費模型，不做關鍵字初篩；只有附件而無正文的頁面會略過。程式依序處理網頁，每篇完成後將結果寫入 `data/indigenous.json`，並將續跑狀態寫入 Git 忽略的 `tmp/ipc-parser-state.json`。重新執行會重抓網頁內文，但內容與抽取版本未變時不再呼叫模型。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會重試。
 
 附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。目前模型只讀網頁正文；附件內容不送模型。
 
-`data/subsidies.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有八個欄位：
+`data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十一個欄位：
 
 - `category`：網站「為民服務」最上層分類名稱；子分類文章沿用最上層分類。
 - `is_organization`：團體或機構為實際受益／申請者時為 `true`；個人或家庭為 `false`。
 - `registration_months`：受益／申請者本人明確要求的最短設籍月數，否則為 `null`；其他設籍限制保留在 `conditions`。
+- `age_lower`、`age_upper`：受益／申請者本人明示的年齡下限與上限（歲），未明示時為 `null`；不從年級或就學階段推算。
+- `isNative`：正文明確要求受益／申請者具原住民身分時為 `true`，否則為 `false`。
 - `source_url`：原始公告或服務網頁連結。
 - `name`：取自原文的補助名稱，可截短但不改寫語意。
 - `summary`：一句話摘要。

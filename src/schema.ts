@@ -3,6 +3,9 @@ import { z } from 'zod';
 export const subsidySchema = z.object({
   is_organization: z.boolean(),
   registration_months: z.number().int().nonnegative().nullable(),
+  age_lower: z.number().int().nonnegative().nullable(),
+  age_upper: z.number().int().nonnegative().nullable(),
+  isNative: z.boolean(),
   name: z.string().trim().min(1),
   summary: z.string().trim().min(1),
   subsidy_target: z.string().trim().min(1),
