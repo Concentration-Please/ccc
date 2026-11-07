@@ -10,11 +10,18 @@ export interface GovernmentAidRecord {
   conditions: string[]
 }
 
-/** Top-level document loaded from JSON (e.g. ipc.gov.taipei list API). */
+/** Failed page recorded by the subsidy parser. */
+export interface GovernmentAidError {
+  url: string
+  error: string
+}
+
+/** Top-level document loaded from data/subsidies.json. */
 export interface GovernmentAidDataset {
   source: string
   generated_at: string
   updated_at: string
   complete: boolean
   records: GovernmentAidRecord[]
+  errors?: GovernmentAidError[]
 }

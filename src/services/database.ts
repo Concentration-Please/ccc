@@ -1,15 +1,13 @@
-import { mockGovernmentAids } from '@/data/mockGovernmentAids'
-import type { GovernmentAidRecord } from '@/types/governmentAid'
+import subsidies from '../../data/subsidies.json'
+import type { GovernmentAidDataset, GovernmentAidRecord } from '@/types/governmentAid'
 
-/** Simulated latency for async fetch (replace with Workers + D1 / HTTP API). */
-const MOCK_FETCH_MS = 200
+const dataset = subsidies as GovernmentAidDataset
 
 /**
  * TODO: Connect to Cloudflare D1 or backend API when available.
  */
 export async function fetchAllGovernmentAids(): Promise<GovernmentAidRecord[]> {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_FETCH_MS))
-  return [...mockGovernmentAids]
+  return dataset.records
 }
 
 export async function fetchGovernmentAidBySource(
