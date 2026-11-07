@@ -35,9 +35,11 @@ const subsidy: Subsidy = {
   conditions: ['申請家庭須具原住民身分'],
 };
 
-test('reads service links, skips venue rental, and extracts page bodies', () => {
+test('reads service links, skips excluded categories, and extracts page bodies', () => {
   const html = serviceHtml([
     ['本會場地租借', 'News_Link_pic.aspx?n=VENUE'],
+    ['空間借用', 'News.aspx?n=SPACE'],
+    ['為民服務', 'News.aspx?n=SERVICE'],
     ['托育服務', 'News.aspx?n=CHILD'],
     ['貸款利息補貼', 'cp.aspx?n=LOAN'],
   ]);
@@ -205,6 +207,8 @@ test('crawls nested service pages and starts each run from fresh data', async ()
     const section = url.searchParams.get('n');
     if (section === '082798040B8AF70C') return serviceHtml([
       ['本會場地租借', 'News_Link_pic.aspx?n=VENUE'],
+      ['空間借用', 'News.aspx?n=SPACE'],
+      ['為民服務', 'News.aspx?n=SERVICE'],
       ['托育服務', 'News.aspx?n=CHILD'],
       ['貸款利息補貼', 'cp.aspx?n=LOAN'],
       ['原住民團體', 'cp.aspx?n=GROUP'],

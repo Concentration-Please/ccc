@@ -54,7 +54,7 @@ Static assets: PingFangTC and Roboto under `public/fonts/`. Database and filter 
 
 ## 原民會為民服務 Parser
 
-從[臺北市政府原住民族事務委員會的「為民服務」](https://www.ipc.gov.taipei/Content_List.aspx?n=082798040B8AF70C)抓取所有分類與同站網頁，排除「本會場地租借」。逐篇正文交給 OpenRouter 的 `google/gemma-4-26b-a4b-it`，擷取個人、家庭或團體可申請的補助、津貼、費用減免及免費服務；跨站網頁連結不解析。
+從[臺北市政府原住民族事務委員會的「為民服務」](https://www.ipc.gov.taipei/Content_List.aspx?n=082798040B8AF70C)抓取分類與同站網頁，排除「為民服務」、場地租借及空間借用分類。逐篇正文交給 OpenRouter 的 `google/gemma-4-26b-a4b-it`，擷取個人、家庭或團體可申請的補助、津貼、費用減免及免費服務；跨站網頁連結不解析。
 
 需要 Node.js 22 以上與 OpenRouter API key：
 
