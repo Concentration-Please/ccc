@@ -70,7 +70,7 @@ npm run parse
 
 附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。目前模型只讀網頁正文；附件內容不送模型。
 
-`data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十二個欄位：
+`data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十三個欄位：
 
 - `id`：每份 JSON 的 `records` 依輸出順序從 1 開始編號，不交給模型生成；增刪或重新排序紀錄時，後續 ID 會改變。
 - `category`：網站「為民服務」最上層分類名稱；子分類文章沿用最上層分類。
@@ -83,6 +83,7 @@ npm run parse
 - `summary`：一句話摘要。
 - `subsidy_target`：詳細的補助標的、金額、頻率或上限。
 - `conditions`：各項明確資格與限制，每個獨立條件為一個字串。
+- `application_method_or_documents`：正文提到的申請方式、送件步驟或應備文件；未提及時為空陣列。
 
 驗證 parser：
 

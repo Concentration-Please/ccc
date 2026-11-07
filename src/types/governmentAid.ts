@@ -8,6 +8,7 @@ export interface GovernmentAidRecord {
   summary: string
   subsidy_target: string
   conditions: string[]
+  application_method_or_documents: string[]
   /** Optional attachment or related pages in addition to source_url. */
   ref_urls?: string[]
 }

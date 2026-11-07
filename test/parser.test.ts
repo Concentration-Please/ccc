@@ -33,6 +33,7 @@ const subsidy: Subsidy = {
   summary: '原住民家庭可申請托育補助。',
   subsidy_target: '托育費用補助',
   conditions: ['申請家庭須具原住民身分'],
+  application_method_or_documents: [],
 };
 
 test('reads service links, skips excluded categories, and extracts page bodies', () => {
@@ -62,6 +63,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     summary: '符合年齡條件的原住民長者可申請補助。',
     subsidy_target: '長者費用補助',
     conditions: ['申請人須具原住民身分', '申請人年滿55歲、未滿65歲'],
+    application_method_or_documents: ['向區公所提出申請', '檢附身分證明文件'],
     age_lower: 55,
     age_upper: 65,
   };
@@ -90,6 +92,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
   assert.deepEqual(result, [agedSubsidy]);
   assert.equal(request?.model, MODEL_ID);
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
+  assert.match(JSON.stringify(request?.messages), /application_method_or_documents/);
   assert.deepEqual(await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth'), [youthSubsidy]);
   assert.match(JSON.stringify(request?.messages), /政策性貸款/);
 });
@@ -177,6 +180,7 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     assert.equal(output.source, YOUTH_SOURCE_URL);
     assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '貸款利息補貼', '其他']);
     assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl, otherUrl]);
+    assert.deepEqual(output.records.map(({ application_method_or_documents }: { application_method_or_documents: string[] }) => application_method_or_documents), [[], [], []]);
     const ids = output.records.map(({ id }: { id: number }) => id);
     assert.deepEqual(ids, [1, 2, 3]);
     currentListingHtml = listingHtml.replace(/<li><a class="title" href="[^"]+\/other".*?<\/li>/, '').replace('2 筆', '1 筆');

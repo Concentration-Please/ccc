@@ -3,8 +3,8 @@ import { generateText, Output, type LanguageModel } from 'ai';
 import { extractionSchema, sharedCategories, youthExtractionSchema, type Article, type Subsidy } from './schema.js';
 
 export const MODEL_ID = 'google/gemma-4-26b-a4b-it';
-export const EXTRACTION_REVISION = `${MODEL_ID}:ipc-prompt-5:schema-5`;
-export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-3:schema-5`;
+export const EXTRACTION_REVISION = `${MODEL_ID}:ipc-prompt-6:schema-6`;
+export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-4:schema-6`;
 
 type ExtractSource = 'indigenous' | 'youth';
 const SOURCE_PROMPTS: Record<ExtractSource, string> = {
@@ -23,7 +23,8 @@ is_organization：實際受益或可申請者是團體／機構時為 true；個
 registration_months：實際受益或可申請者本人明確需要設籍滿幾個月時填整數。原文以年表示時換算為月；未明示設籍期間時填 null。團體代表人、家長等其他角色的設籍期間不要填在這裡，要完整列入 conditions。只要求設籍某地而未指定期間時也填 null。
 age_lower、age_upper：實際受益或可申請者本人明確的最低、最高年齡界線，以歲數整數填入；未明示該界線時填 null。「滿 55 歲」的 age_lower 為 55，「未滿 65 歲」的 age_upper 為 65，是否含界線仍依原文寫入 conditions。不要從學校年級、就學階段、出生日期、發布日期或其他間接資訊推算年齡；只寫月齡時不要換算或四捨五入為整數歲。不要把家長、代表人等其他角色的年齡填在這兩欄。不同資格路徑有不同年齡界線時分筆輸出。
 isNative：正文明確要求實際受益或可申請者具原住民身分才能申請時為 true；沒有明確要求時為 false。不要僅因網站、分類或方案名稱提及原住民就推定為 true；其他角色的原住民身分限制只保留在 conditions。
-conditions：所有明確的申請或受益資格與限制，逐項寫成字串；一個獨立條件一項。保留條件所屬對象、數值、單位及例外，例如原住民身分、設籍地與期間、年齡、性別、收入、就學、團體組成、服務提供者、申請期間、不得重複申請等。對象不同的條件不要混成一項。沒有明確條件時用空陣列。不要根據發布日推算年齡或有效性，也不要補上正文沒有的條件。`;
+conditions：所有明確的申請或受益資格與限制，逐項寫成字串；一個獨立條件一項。保留條件所屬對象、數值、單位及例外，例如原住民身分、設籍地與期間、年齡、性別、收入、就學、團體組成、服務提供者、申請期間、不得重複申請等。對象不同的條件不要混成一項。沒有明確條件時用空陣列。不要根據發布日推算年齡或有效性，也不要補上正文沒有的條件。
+application_method_or_documents：逐項記錄正文明示的申請方式、送件管道或步驟，以及應備文件。不要把申請資格、補助內容或僅供參考的連結填入此欄；原文未提及時用空陣列，不要推測附件或外部頁面的內容。`;
 const YOUTH_CATEGORY_PROMPT = `category：依每筆補助的實際用途選一個分類：${sharedCategories.join('、')}。只有明確符合分類名稱時才使用該分類；沒有適合分類時選「其他」。不得因服務來自青年局而自行新增分類。`;
 const YOUTH_ROLE_PROMPT = '若申請人是公司、商業、有限合夥、學校、機構或團體，即使其代表人是青年，is_organization 仍為 true，age_lower 和 age_upper 都為 null；代表人的年齡保留在 conditions。個人「已成年」不是明示的整數歲數，不可換算為 18 歲。';
 

@@ -95,6 +95,13 @@ const referenceUrls = computed(() => {
         </ul>
       </section>
 
+      <section v-if="aid.application_method_or_documents.length" class="detail__section">
+        <h2>申請方式或應備文件</h2>
+        <ul>
+          <li v-for="item in aid.application_method_or_documents" :key="item">{{ item }}</li>
+        </ul>
+      </section>
+
       <section v-if="referenceUrls.length" class="detail__refs" aria-label="外部連結">
         <ul class="detail__refs-list">
           <li v-for="url in referenceUrls" :key="url">

@@ -67,6 +67,7 @@ function toRecords(article: Article, subsidies: (Subsidy | YouthSubsidy)[], star
       summary: subsidy.summary,
       subsidy_target: subsidy.subsidy_target,
       conditions: subsidy.conditions,
+      application_method_or_documents: subsidy.application_method_or_documents,
     };
   });
 }
