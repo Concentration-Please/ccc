@@ -33,8 +33,11 @@ const subsidy: Subsidy = {
 };
 
 test('parses the actual listing fields and only the article body', () => {
-  const { entries, totalCount } = parseListing(listingHtml(['A'], 1), SOURCE_URL);
-  assert.equal(totalCount, 1);
+  const html = listingHtml(['A'], 2).replace('</table>', '<tr><td data-title="標題"><a href="https://www.gov.taipei/News_Content.aspx?n=other&s=X">外站新聞</a></td></tr></table>');
+  const { entries, totalCount, rowCount } = parseListing(html, SOURCE_URL);
+  assert.equal(totalCount, 2);
+  assert.equal(rowCount, 2);
+  assert.equal(entries.length, 1);
   assert.equal(entries[0]?.publishedAt, '2026-11-07');
   assert.match(entries[0]?.url ?? '', /News_Content\.aspx.*s=A/);
   assert.equal(parseArticle(articleHtml('一般健康資訊'), entries[0]!).body, '一般健康資訊');

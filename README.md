@@ -1,6 +1,6 @@
 # 臺北市衛生局補助新聞稿 Parser
 
-從[臺北市政府衛生局新聞稿](https://health.gov.taipei/News.aspx?n=BB5A41BA1E6CA260&sms=72544237BBE4C5F6&page=1&PageSize=200)抓取所有頁面與文章。標題或內文包含「疫苗」或「免費」時，逐篇交給 OpenRouter 的 `google/gemma-4-26b-a4b-it`，擷取民眾可使用的公費疫苗、免費健康服務與補助。純宣導、自費資訊不產生補助記錄。程式只包含後端批次處理，沒有前端。
+從[臺北市政府衛生局新聞稿](https://health.gov.taipei/News.aspx?n=BB5A41BA1E6CA260&sms=72544237BBE4C5F6&page=1&PageSize=200)抓取所有頁面與同站文章；列表中的跨站連結會略過。標題或內文包含「疫苗」或「免費」時，逐篇交給 OpenRouter 的 `google/gemma-4-26b-a4b-it`，擷取民眾可使用的公費疫苗、免費健康服務與補助。純宣導、自費資訊不產生補助記錄。程式只包含後端批次處理，沒有前端。
 
 ## 執行
 

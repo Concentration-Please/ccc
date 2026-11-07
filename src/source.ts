@@ -24,9 +24,10 @@ function parseRocDate(value: string): string {
   return `${year}-${match[2]}-${match[3]}`;
 }
 
-function articleUrl(href: string, pageUrl: string): string {
+function articleUrl(href: string, pageUrl: string): string | null {
   const url = new URL(href, pageUrl);
-  if (url.origin !== 'https://health.gov.taipei' || url.pathname.toLowerCase() !== '/news_content.aspx') {
+  if (url.origin !== 'https://health.gov.taipei') return null;
+  if (url.pathname.toLowerCase() !== '/news_content.aspx') {
     throw new Error(`Unexpected article URL: ${url}`);
   }
   const id = url.searchParams.get('s');
@@ -40,28 +41,32 @@ function articleUrl(href: string, pageUrl: string): string {
   return canonical.toString();
 }
 
-export function parseListing(html: string, pageUrl: string): { entries: ArticleListing[]; totalCount: number } {
+export function parseListing(html: string, pageUrl: string): { entries: ArticleListing[]; totalCount: number; rowCount: number } {
   const $ = load(html);
   const totalText = normalizeText($('.C_Pager .count').first().text());
   const totalMatch = /^\/\s*(\d+)$/.exec(totalText);
   if (!totalMatch) throw new Error(`Cannot find listing total at ${pageUrl}`);
 
   const entries: ArticleListing[] = [];
+  let rowCount = 0;
   $('table tr').each((_, row) => {
     const titleCell = $(row).find('td[data-title="標題"]');
-    const anchor = titleCell.find('a[href*="News_Content.aspx"]').first();
-    if (!anchor.length) return;
+    if (!titleCell.length) return;
+    rowCount += 1;
+    const anchor = titleCell.find('a[href]').first();
     const href = anchor.attr('href');
     const title = normalizeText(anchor.text());
-    const date = normalizeText($(row).find('td[data-title="發布日期"]').text());
     if (!href || !title) throw new Error(`Invalid listing row at ${pageUrl}`);
-    entries.push({ url: articleUrl(href, pageUrl), title, publishedAt: parseRocDate(date) });
+    const url = articleUrl(href, pageUrl);
+    if (!url) return;
+    const date = normalizeText($(row).find('td[data-title="發布日期"]').text());
+    entries.push({ url, title, publishedAt: parseRocDate(date) });
   });
 
-  if (Number(totalMatch[1]) > 0 && entries.length === 0) {
+  if (Number(totalMatch[1]) > 0 && rowCount === 0) {
     throw new Error(`No article rows found at ${pageUrl}`);
   }
-  return { entries, totalCount: Number(totalMatch[1]) };
+  return { entries, totalCount: Number(totalMatch[1]), rowCount };
 }
 
 export function parseArticle(html: string, listing: ArticleListing): Article {
@@ -79,6 +84,7 @@ export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleL
   const first = parseListing(await fetchHtml(SOURCE_URL), SOURCE_URL);
   const pageCount = Math.ceil(first.totalCount / PAGE_SIZE);
   const all = [...first.entries];
+  let rowCount = first.rowCount;
   for (let page = 2; page <= pageCount; page += 1) {
     const url = new URL(SOURCE_URL);
     url.searchParams.set('page', String(page));
@@ -87,10 +93,11 @@ export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleL
       throw new Error('Listing changed while crawling; rerun to get a consistent set of articles');
     }
     all.push(...result.entries);
+    rowCount += result.rowCount;
   }
   const unique = new Map(all.map((entry) => [entry.url, entry]));
-  if (all.length !== first.totalCount || unique.size !== first.totalCount) {
-    throw new Error(`Listing expected ${first.totalCount} unique articles, found ${unique.size}`);
+  if (rowCount !== first.totalCount || unique.size !== all.length) {
+    throw new Error(`Listing expected ${first.totalCount} rows, found ${rowCount}; ${unique.size} unique same-site articles`);
   }
   return [...unique.values()];
 }
