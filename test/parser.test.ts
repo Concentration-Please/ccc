@@ -21,10 +21,11 @@ function articleHtml(body: string): string {
   return `<nav>網站導覽</nav><div class="area-essay page-caption-p"><div class="essay"><p>${body}</p></div></div>`;
 }
 
+const testArticleUrl = 'https://www.ipc.gov.taipei/News_Content.aspx?n=TEST&s=A';
 const subsidy: Subsidy = {
   name: '原住民托育補助',
   beneficiary_type: 'individual',
-  application_by: 'service_provider',
+  application_process: '家長申請，收托機構彙整送件',
   age_min_months: null,
   age_min_inclusive: null,
   age_max_months: null,
@@ -39,8 +40,10 @@ const subsidy: Subsidy = {
   other_requirements: [],
   benefit_detail: null,
   application_period: null,
+  required_documents: [],
   source_kind: 'service_detail',
-  evidence_quotes: ['原住民家庭可申請托育補助'],
+  source_version: null,
+  evidence: [{ source_url: testArticleUrl, source_title: '托育補助', quote: '原住民家庭可申請托育補助' }],
 };
 
 test('reads service links, skips venue rental, and extracts page bodies', () => {
@@ -73,7 +76,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     },
   });
   const article: Article = {
-    url: 'https://www.ipc.gov.taipei/News_Content.aspx?n=TEST&s=A',
+    url: testArticleUrl,
     title: '托育補助',
     publishedAt: '2026-11-07',
     body: '原住民家庭可申請托育補助',
@@ -128,7 +131,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
     assert.equal(output.records[0].beneficiary_type, 'individual');
-    assert.equal(output.records[0].application_by, 'service_provider');
+    assert.equal(output.records[0].application_process, '家長申請，收托機構彙整送件');
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }

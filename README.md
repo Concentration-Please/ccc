@@ -24,15 +24,15 @@ npm run parse
 `data/subsidies.json` 包含 `source`、`generated_at`、`complete`、`records`、`errors`。每個 `records` 項目代表一個網頁中的一項服務及一組資格；同一方案有不同申請資格時分成多筆，跨網頁不合併。
 
 - `name`：補助或免費服務名稱。
-- `beneficiary_type`：實際受益者為 `individual`、`family`、`organization` 或 `unspecified`；`application_by` 則記錄誰遞交申請，避免把代辦機構當成受益者。
+- `beneficiary_type`：實際受益者為 `individual`、`family`、`organization` 或 `unspecified`；`application_process` 以文字記錄誰有申請權、誰遞件與誰請款。
 - `age_min_months`、`age_max_months`：整數月的年齡門檻；`age_min_inclusive`、`age_max_inclusive` 表示是否包含門檻。只有學籍或年級時，年齡欄位為 `null`，資格寫在 `school_stage`。
 - `indigenous_requirement`：個人的原住民身分限制，為 `required`、`excluded`、`not_required`（明確不限）或 `unspecified`（未說明或團體申請）。
 - `gender_restriction`：`male_only`、`female_only`、`none`（明確不限）或 `unspecified`（未說明）。
 - `registered_in`、`registration_min_months`、`actual_residence_required`：設籍地、設籍月數、是否要求實際居住；未提及時為 `null`。
-- `income_requirement`、`other_requirements`：原文的所得門檻及其餘條件，例如房產、家庭人數、失能或重複請領限制。
-- `benefit_detail`、`application_period`：補助內容／金額及申請期間；未提及時為 `null`。
-- `source_kind`：`service_detail`（服務說明）、`faq`（問答或摘要）、`amendment`（僅說明修正內容）；修正公告不視為完整資格規則。
-- `evidence_quotes`：從網頁正文逐字擷取的原文；年級或出生年度等無法可靠換算的資格也保留在此。
+- `income_requirement`、`other_requirements`：原文的所得門檻及其他資格。`other_requirements` 的每項條件包含 `subject` 和 `text`，可區分受益者、申請人、家庭、團體、代表人、活動參與者及服務機構。
+- `benefit_detail`、`application_period`、`required_documents`：補助內容／金額、申請期間及應備文件。
+- `source_kind`：`service_detail`（服務說明）、`faq`（問答或摘要）、`amendment`（修正公告）、`attachment_rule`（附件要點／計畫）、`attachment_form`（附件表單）；`source_version` 保留文件標註的版本或生效日期。
+- `evidence`：每項包含原文 `quote`、`source_url` 與 `source_title`，能對應到網頁或特定附件。年級或出生年度等無法可靠換算的資格也保留在原文引文。
 - `source_url`、`article_title`、`published_at`：來源網址、網頁標題與發布日期，供人工查證。未提供發布日期的頁面以 `null` 表示；程式不判定歷史公告是否仍有效。
 
 

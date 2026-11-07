@@ -11,7 +11,7 @@ const cacheEntrySchema = z.object({
   subsidies: z.array(subsidySchema),
   error: z.string().optional(),
 });
-const cacheSchema = z.object({ version: z.literal(2), entries: z.record(z.string(), cacheEntrySchema) });
+const cacheSchema = z.object({ version: z.literal(3), entries: z.record(z.string(), cacheEntrySchema) });
 type Cache = z.infer<typeof cacheSchema>;
 
 export interface RunOptions {
@@ -37,12 +37,12 @@ function signature(article: Article, revision: string): string {
 async function loadCache(path: string): Promise<Cache> {
   try {
     const value: unknown = JSON.parse(await readFile(path, 'utf8'));
-    if (value && typeof value === 'object' && 'version' in value && value.version === 1) {
-      return { version: 2, entries: {} };
+    if (value && typeof value === 'object' && 'version' in value && (value.version === 1 || value.version === 2)) {
+      return { version: 3, entries: {} };
     }
     return cacheSchema.parse(value);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 2, entries: {} };
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 3, entries: {} };
     throw error;
   }
 }
