@@ -7,6 +7,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
 import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
+import { discoverYouthArticles, parseYouthArticle, parseYouthListing, YOUTH_SOURCE_URL } from '../src/youth-source.js';
 import type { Article, Subsidy } from '../src/schema.js';
 
 function serviceHtml(links: [string, string][]): string {
@@ -62,14 +63,16 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     age_lower: 55,
     age_upper: 65,
   };
+  const youthSubsidy = { ...agedSubsidy, category: '其他' as const };
   const openrouter = createOpenRouter({
     apiKey: 'test-key',
     compatibility: 'strict',
     fetch: async (_input, init) => {
       request = JSON.parse(String(init?.body));
+      const isYouth = JSON.stringify(request?.messages).includes('政策性貸款');
       return new Response(JSON.stringify({
         id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
-        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: [agedSubsidy] }) } }],
+        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: [isYouth ? youthSubsidy : agedSubsidy] }) } }],
         usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
       }), { status: 200, headers: { 'content-type': 'application/json' } });
     },
@@ -85,6 +88,92 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
   assert.deepEqual(result, [agedSubsidy]);
   assert.equal(request?.model, MODEL_ID);
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
+  assert.deepEqual(await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth'), [youthSubsidy]);
+  assert.match(JSON.stringify(request?.messages), /政策性貸款/);
+});
+
+test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {
+  let calls = 0;
+  const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45, category: '其他' as const };
+  const openrouter = createOpenRouter({
+    apiKey: 'test-key',
+    compatibility: 'strict',
+    fetch: async () => {
+      calls += 1;
+      return new Response(JSON.stringify({
+        id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
+        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: calls === 1 ? [] : [organization] }) } }],
+        usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    },
+  });
+  const article: Article = {
+    url: `${YOUTH_SOURCE_URL}/organization`,
+    title: '活動補助',
+    category: '其他',
+    publishedAt: null,
+    body: '團體可申請活動補助，代表人須年滿18歲。',
+  };
+  const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth');
+  assert.equal(calls, 2);
+  assert.deepEqual(result, [{ ...organization, age_lower: null, age_upper: null }]);
+});
+
+test('reads youth subsidy pages and writes a separate output with shared categories', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-youth-parser-test-'));
+  const loanUrl = `${YOUTH_SOURCE_URL}/loan`;
+  const otherUrl = `${YOUTH_SOURCE_URL}/other`;
+  const listingHtml = `<div class="page-container"><ul class="normal-list">
+    <li><a class="title" href="${loanUrl}">青年留學貸款</a><div class="info"><span>2026-08-20</span></div></li>
+    <li><a class="title" href="${otherUrl}">青年AI工具補助計畫</a><div class="info"><span>2026-09-22</span></div></li>
+    </ul><div>共 1 頁 2 筆</div></div>`;
+  const loanHtml = '<article class="article"><div class="wysiwyg"><div class="content"><p>青年留學貸款</p><p>貸款利息補貼</p></div></div></article>';
+  const otherHtml = '<article class="article"><div class="wysiwyg"><div class="content"><p>完成AI課程者可申請工具訂閱補助。</p></div></div></article>';
+  const fetchHtml = async (url: string): Promise<string> => {
+    if (url === YOUTH_SOURCE_URL) return listingHtml;
+    if (url === loanUrl) return loanHtml;
+    if (url === otherUrl) return otherHtml;
+    throw new Error(`Unexpected URL: ${url}`);
+  };
+  const listings = parseYouthListing(listingHtml);
+  assert.deepEqual(listings.map(({ category }) => category), ['其他', '其他']);
+  assert.equal(parseYouthArticle(loanHtml, listings[0]!).body, '青年留學貸款\n貸款利息補貼');
+  assert.throws(() => parseYouthListing(listingHtml.replace('2 筆', '3 筆')), /incomplete/);
+
+  try {
+    const result = await runParser({
+      fetchHtml,
+      extract: async (article) => [{
+        ...subsidy,
+        isNative: false,
+        conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥'] : [],
+        category: article.title.includes('貸款') ? '貸款利息補貼' as const : '其他' as const,
+      }],
+      dataDir: join(rootDir, 'data'),
+      stateDir: join(rootDir, 'tmp'),
+      revision: 'test-youth',
+      source: {
+        url: YOUTH_SOURCE_URL,
+        name: 'youth',
+        outputFile: 'youth.json',
+        discover: discoverYouthArticles,
+        parseArticle: parseYouthArticle,
+        parseAttachments: () => [],
+      },
+    });
+    assert.equal(result.total, 2);
+    assert.equal(result.records, 2);
+    const output = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
+    assert.equal(output.source, YOUTH_SOURCE_URL);
+    assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '其他']);
+    assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, otherUrl]);
+    assert.equal(output.records[0].age_lower, null);
+    assert.equal(output.records[0].isNative, false);
+    assert.equal(output.records[0].is_organization, true);
+    assert.equal(output.records[1].is_organization, false);
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
 });
 
 test('crawls nested service pages, sends every body, and resumes', async () => {

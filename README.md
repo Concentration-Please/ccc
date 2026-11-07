@@ -89,3 +89,13 @@ npm run parse
 npm test
 npm run typecheck
 ```
+
+## 青年局補助貸款 Parser
+
+從[臺北市政府青年局的「補助貸款」](https://youth.gov.taipei/services/05eb79e5-46b5-41e5-b1fd-0519d782b04a)擷取列表及各篇正文，使用相同的 OpenRouter 模型和 `records` 欄位，輸出至 `data/youth.json`：
+
+```sh
+npm run parse:youth
+```
+
+青年局資料的 `category` 從原住民資料現有分類及新增的「其他」中選擇；每筆補助獨立分類。只有網頁正文會送模型，附件與外部連結內容不解析。續跑狀態與附件索引分別存於 Git 忽略的 `tmp/youth-parser-state.json`、`tmp/youth-attachments.json`，與原住民 parser 分開。

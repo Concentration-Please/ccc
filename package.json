@@ -16,6 +16,7 @@
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
     "parse": "node --env-file-if-exists=.dev.vars --import tsx src/cli.ts",
+    "parse:youth": "node --env-file-if-exists=.dev.vars --import tsx src/cli-youth.ts",
     "test": "node --import tsx --test test/*.test.ts",
     "typecheck": "tsc --noEmit --project tsconfig.parser.json"
   },
