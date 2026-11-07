@@ -23,7 +23,12 @@ watch(
   },
 )
 
-const hasSelection = computed(() => selectedIds.value.length > 0)
+const appliedKey = computed(() => [...props.initialSelectedIds].sort().join('\0'))
+
+const draftKey = computed(() => [...selectedIds.value].sort().join('\0'))
+
+/** Apply when there is a selection, or when reset clears a previously applied filter set. */
+const canApply = computed(() => draftKey.value !== appliedKey.value)
 
 function isSelected(optionId: string) {
   return selectedIds.value.includes(optionId)
@@ -46,7 +51,7 @@ function onReset() {
 }
 
 function onApply() {
-  if (!hasSelection.value) return
+  if (!canApply.value) return
   emit('apply', [...selectedIds.value])
 }
 
@@ -105,8 +110,8 @@ function onClose() {
       <button
         type="button"
         class="filter-page__submit"
-        :class="{ 'filter-page__submit--active': hasSelection }"
-        :disabled="!hasSelection"
+        :class="{ 'filter-page__submit--active': canApply }"
+        :disabled="!canApply"
         @click="onApply"
       >
         搜尋
