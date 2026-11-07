@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import JSZip from 'jszip';
+import { auditIndigenousRecords } from '../src/audit.js';
 import { extractAttachmentText } from '../src/attachments.js';
 import { classifyDatasets, createGemmaClassificationEngine } from '../src/classify.js';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
@@ -177,6 +178,29 @@ test('skips identical model records within an article and preserves other source
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }
+});
+
+test('flags indigenous extraction conflicts without discarding distinct source pages', () => {
+  const base = {
+    source_url: testArticleUrl,
+    name: '體育補助',
+    summary: '補助學校辦理體育活動。',
+    subsidy_target: '最高30萬元',
+    is_organization: false,
+  };
+  assert.deepEqual(auditIndigenousRecords([
+    { ...base, id: 1 },
+    { ...base, id: 2, name: '體育補助－棒球', summary: '補助棒球活動。' },
+    { ...base, id: 3, source_url: `${testArticleUrl}&other=1` },
+    { ...base, id: 4, name: '建購補助', summary: '補助房屋修繕。', subsidy_target: '最高1,000元（註：應為8,000元）' },
+  ]), [
+    { kind: 'organization', ids: [1] },
+    { kind: 'organization', ids: [3] },
+    { kind: 'amount_conflict', ids: [4] },
+    { kind: 'name_conflict', ids: [4] },
+    { kind: 'parent_and_child', ids: [1, 2] },
+    { kind: 'same_name', ids: [1, 3] },
+  ]);
 });
 
 test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {

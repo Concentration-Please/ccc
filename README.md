@@ -70,6 +70,8 @@ npm run parse
 
 同一篇文章中，模型輸出的欄位完全相同時只保留第一筆；同頁的不同補助仍各自輸出。不同文章的紀錄分別保留來源網址。
 
+Parser 完成時會提示可疑紀錄；也可執行 `npm run audit:indigenous`，針對現有資料列出同頁總項與子項、名稱與摘要衝突、金額註記、可能的團體對象錯誤，以及跨頁同名紀錄供人工核對。這些提示不會自動刪除資料；不同公告可能有不同年度或資格。
+
 附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。Parser 會擷取 PDF、ODT、ODS、DOCX 的文字，連同附件標題送給模型；每份附件最多取 8,000 字，每篇合計最多 24,000 字。掃描影像 PDF 與舊版 DOC 無法直接讀取文字，會記錄提示並保留原檔。
 
 `data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十四個欄位：
