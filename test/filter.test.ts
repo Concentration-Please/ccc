@@ -1,5 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import categoryList from '../data/category.json' with { type: 'json' }
+import labelMap from '../data/label.json' with { type: 'json' }
+import indigenousFile from '../data/indigenous.json' with { type: 'json' }
+import youthFile from '../data/youth.json' with { type: 'json' }
+import {
+  identityFilterId,
+  identityFilterOptions,
+  subsidyCategories,
+} from '../src/services/filterCatalog.js'
 import type { GovernmentAidRecord } from '../src/types/governmentAid.js'
 import {
   applyFilter,
@@ -10,7 +19,7 @@ import {
 const baseAid: GovernmentAidRecord = {
   id: 1,
   label: [],
-  category: '托育服務',
+  category: '托育教育',
   is_organization: false,
   registration_months: 6,
   source_url: 'https://example.com/a',
@@ -24,7 +33,7 @@ const baseAid: GovernmentAidRecord = {
 const categoryB: GovernmentAidRecord = {
   ...baseAid,
   source_url: 'https://example.com/b',
-  category: '教育扶助',
+  category: '學業助學',
   name: '獎學金',
   summary: '原住民學生就學補助',
 }
@@ -37,21 +46,21 @@ const orgGroup: GovernmentAidRecord = {
 
 test('filter group options OR within group, AND across groups', () => {
   assert.equal(
-    recordMatchesFilterGroups(baseAid, ['category:托育服務', 'category:教育扶助']),
+    recordMatchesFilterGroups(baseAid, ['category:托育教育', 'category:學業助學']),
     true,
   )
-  assert.equal(recordMatchesFilterGroups(categoryB, ['category:托育服務', 'category:教育扶助']), true)
+  assert.equal(recordMatchesFilterGroups(categoryB, ['category:托育教育', 'category:學業助學']), true)
   assert.equal(
-    recordMatchesFilterGroups(baseAid, ['category:教育扶助', 'category:長青服務']),
+    recordMatchesFilterGroups(baseAid, ['category:學業助學', 'category:文化體育']),
     false,
   )
 
   assert.equal(
-    recordMatchesFilterGroups(baseAid, ['category:托育服務', 'is_organization:false']),
+    recordMatchesFilterGroups(baseAid, ['category:托育教育', 'is_organization:false']),
     true,
   )
   assert.equal(
-    recordMatchesFilterGroups(orgGroup, ['category:托育服務', 'is_organization:false']),
+    recordMatchesFilterGroups(orgGroup, ['category:托育教育', 'is_organization:false']),
     false,
   )
 })
@@ -110,7 +119,34 @@ test('applyFilter combines search and filters', () => {
   const aids = [baseAid, categoryB, orgGroup]
   const filtered = applyFilter(aids, {
     searchQuery: '托育',
-    selectedOptionIds: ['category:托育服務', 'category:教育扶助', 'is_organization:false'],
+    selectedOptionIds: ['category:托育教育', 'category:學業助學', 'is_organization:false'],
   })
   assert.deepEqual(filtered.map((a) => a.source_url), [baseAid.source_url])
+})
+
+test('category filter follows category.json and includes categories only present on records', () => {
+  const used = [...indigenousFile.records, ...youthFile.records].map((record) => record.category)
+  const categories = subsidyCategories(categoryList, used)
+  assert.deepEqual(categories, categoryList)
+  for (const category of categories) {
+    assert.equal(
+      recordMatchesFilterGroups({ ...baseAid, category }, [`category:${category}`]),
+      true,
+    )
+  }
+
+  const withMissing = subsidyCategories(categoryList, [...used, '法律服務'])
+  assert.deepEqual(withMissing.at(-1), '法律服務')
+  assert.equal(withMissing.includes('托育教育'), true)
+})
+
+test('身份別 options follow the label map', () => {
+  assert.deepEqual(identityFilterOptions(labelMap), [
+    { id: 'label:indigenous', label: '原住民' },
+    { id: 'label:youth', label: '青年' },
+  ])
+  assert.equal(identityFilterId(labelMap, '原住民'), 'label:indigenous')
+  assert.equal(identityFilterId(labelMap, '青年'), 'label:youth')
+  assert.equal(identityFilterId({ elder: '長者' }, '長者'), 'label:elder')
+  assert.equal(identityFilterId(labelMap, '長者'), null)
 })
