@@ -63,6 +63,48 @@ test('search matches name, summary, and requires all terms', () => {
   assert.equal(recordMatchesSearch(baseAid, '托育 不存在'), false)
 })
 
+test('age filter is inclusive and unbounded when a bound is null', () => {
+  const bounded = { ...baseAid, age_lower: 18, age_upper: 35 }
+  assert.equal(recordMatchesFilterGroups(bounded, ['age:18']), true)
+  assert.equal(recordMatchesFilterGroups(bounded, ['age:35']), true)
+  assert.equal(recordMatchesFilterGroups(bounded, ['age:17']), false)
+  assert.equal(recordMatchesFilterGroups(bounded, ['age:36']), false)
+
+  const openLower = { ...baseAid, age_lower: null, age_upper: 5 }
+  assert.equal(recordMatchesFilterGroups(openLower, ['age:1']), true)
+  assert.equal(recordMatchesFilterGroups(openLower, ['age:5']), true)
+  assert.equal(recordMatchesFilterGroups(openLower, ['age:6']), false)
+
+  const openUpper = { ...baseAid, age_lower: 60, age_upper: null }
+  assert.equal(recordMatchesFilterGroups(openUpper, ['age:60']), true)
+  assert.equal(recordMatchesFilterGroups(openUpper, ['age:100']), true)
+  assert.equal(recordMatchesFilterGroups(openUpper, ['age:59']), false)
+
+  const openBoth = { ...baseAid, age_lower: null, age_upper: null }
+  assert.equal(recordMatchesFilterGroups(openBoth, ['age:1']), true)
+  assert.equal(recordMatchesFilterGroups(openBoth, ['age:100']), true)
+})
+
+test('identity labels combine with AND', () => {
+  const indigenous = { ...baseAid, label: ['indigenous'] }
+  const youth = { ...baseAid, label: ['youth'] }
+  const both = { ...baseAid, label: ['indigenous', 'youth'] }
+
+  assert.equal(recordMatchesFilterGroups(indigenous, ['label:indigenous']), true)
+  assert.equal(recordMatchesFilterGroups(indigenous, ['label:youth']), false)
+  assert.equal(recordMatchesFilterGroups(youth, ['label:youth']), true)
+  assert.equal(recordMatchesFilterGroups(both, ['label:indigenous', 'label:youth']), true)
+  assert.equal(recordMatchesFilterGroups(indigenous, ['label:indigenous', 'label:youth']), false)
+  assert.equal(recordMatchesFilterGroups(youth, ['label:indigenous', 'label:youth']), false)
+})
+
+test('registration months and audience keep exact matches', () => {
+  assert.equal(recordMatchesFilterGroups(baseAid, ['registration_months:6']), true)
+  assert.equal(recordMatchesFilterGroups(baseAid, ['registration_months:4']), false)
+  assert.equal(recordMatchesFilterGroups(orgGroup, ['is_organization:true']), true)
+  assert.equal(recordMatchesFilterGroups(baseAid, ['is_organization:false']), true)
+})
+
 test('applyFilter combines search and filters', () => {
   const aids = [baseAid, categoryB, orgGroup]
   const filtered = applyFilter(aids, {
