@@ -109,3 +109,9 @@ npm run parse:youth
 網頁正文與頁面直接連結的可讀附件文字會送模型，其他外部網頁內容不解析。每次執行同樣會清除青年局的舊輸出與暫存；當次進度與附件索引分別存於 Git 忽略的 `tmp/youth-parser-state.json`、`tmp/youth-attachments.json`，與原住民 parser 分開。
 
 兩個資料集都解析完成後，`npm run parse` 會執行分類：Gemma 根據所有 `summary` 建立共用 category，再逐筆選一個 category 並貼上可複選的 label，產生列出實際使用分類的 `data/category.json`。`data/label.json` 預先定義 `indigenous`（原住民）與 `youth`（青年），label 也由 Gemma 逐筆判斷。可用 `npm run classify` 只重做分類；此步驟只接受 `complete: true` 的資料集，並會將摘要傳送至 OpenRouter。
+
+## License
+
+本專案的程式以 [GNU General Public License v3.0 only](LICENSE)（SPDX: `GPL-3.0-only`）授權。再散布時須附上同一授權，並提供對應原始碼；原始碼即這個 GitHub 儲存庫。
+
+第三方套件、字型與資料來源的說明見 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。政府公告不受著作權保護；蘋方（PingFangTC）是 TownPass 要求的字型，本專案假設可以使用。
