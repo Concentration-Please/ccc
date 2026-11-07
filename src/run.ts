@@ -62,12 +62,13 @@ async function writeJson(path: string, value: unknown): Promise<void> {
   await rename(temporary, path);
 }
 
-function toRecords(article: Article, subsidies: (Subsidy | YouthSubsidy)[]): SubsidyRecord[] {
-  return subsidies.map((subsidy) => {
+function toRecords(article: Article, subsidies: (Subsidy | YouthSubsidy)[], startId: number): SubsidyRecord[] {
+  return subsidies.map((subsidy, index) => {
     const isYouth = 'category' in subsidy;
     const isOrganization = subsidy.is_organization || (isYouth && subsidy.conditions.some((condition) =>
       /^(?:申請人|對象|適用對象)(?:須)?為.*?(?:公司、商業|營利事業|人民團體|高級中等學校|大專院校|公私立學校|機構或團體)/.test(condition)));
     return {
+      id: startId + index,
       category: isYouth ? subsidy.category : article.category,
       is_organization: isOrganization,
       registration_months: isYouth && isOrganization ? null : subsidy.registration_months,
@@ -143,12 +144,12 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
       const cached = cache.entries[article.url];
       if (cached?.signature === hash && (cached.status === 'done' || cached.status === 'skipped')) {
         reused += 1;
-        if (cached.status === 'done') records.push(...toRecords(article, cached.subsidies));
+        if (cached.status === 'done') records.push(...toRecords(article, cached.subsidies, records.length + 1));
       } else if (!article.body) {
         cache.entries[article.url] = { signature: hash, status: 'skipped', subsidies: [] };
       } else {
         const subsidies = await options.extract(article);
-        records.push(...toRecords(article, subsidies));
+        records.push(...toRecords(article, subsidies, records.length + 1));
         cache.entries[article.url] = { signature: hash, status: 'done', subsidies };
       }
     } catch (error) {

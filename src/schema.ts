@@ -56,6 +56,7 @@ export interface ArticleListing {
 }
 
 export interface SubsidyRecord extends Subsidy {
+  id: number;
   category: string;
   source_url: string;
 }

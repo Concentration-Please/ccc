@@ -5,6 +5,7 @@
   "complete": true,
   "records": [
     {
+      "id": 1,
       "category": "托育服務",
       "is_organization": false,
       "registration_months": null,
@@ -25,6 +26,7 @@
       ]
     },
     {
+      "id": 2,
       "category": "托育服務",
       "is_organization": false,
       "registration_months": null,
@@ -44,6 +46,7 @@
       ]
     },
     {
+      "id": 3,
       "category": "托育服務",
       "is_organization": false,
       "registration_months": null,
@@ -61,6 +64,7 @@
       ]
     },
     {
+      "id": 4,
       "category": "托育服務",
       "is_organization": false,
       "registration_months": null,
@@ -78,6 +82,7 @@
       ]
     },
     {
+      "id": 5,
       "category": "托育服務",
       "is_organization": false,
       "registration_months": null,
@@ -101,6 +106,7 @@
       ]
     },
     {
+      "id": 6,
       "category": "長青服務",
       "is_organization": false,
       "registration_months": 4,
@@ -120,6 +126,7 @@
       ]
     },
     {
+      "id": 7,
       "category": "長青服務",
       "is_organization": false,
       "registration_months": 4,
@@ -139,6 +146,7 @@
       ]
     },
     {
+      "id": 8,
       "category": "長青服務",
       "is_organization": false,
       "registration_months": null,
@@ -163,6 +171,7 @@
       ]
     },
     {
+      "id": 9,
       "category": "長青服務",
       "is_organization": false,
       "registration_months": null,
@@ -180,6 +189,7 @@
       ]
     },
     {
+      "id": 10,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -197,6 +207,7 @@
       ]
     },
     {
+      "id": 11,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -214,6 +225,7 @@
       ]
     },
     {
+      "id": 12,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -231,6 +243,7 @@
       ]
     },
     {
+      "id": 13,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -248,6 +261,7 @@
       ]
     },
     {
+      "id": 14,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -265,6 +279,7 @@
       ]
     },
     {
+      "id": 15,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -284,6 +299,7 @@
       ]
     },
     {
+      "id": 16,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -304,6 +320,7 @@
       ]
     },
     {
+      "id": 17,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -325,6 +342,7 @@
       ]
     },
     {
+      "id": 18,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": null,
@@ -342,6 +360,7 @@
       ]
     },
     {
+      "id": 19,
       "category": "教育扶助",
       "is_organization": false,
       "registration_months": 4,
@@ -360,6 +379,7 @@
       ]
     },
     {
+      "id": 20,
       "category": "急難救助",
       "is_organization": false,
       "registration_months": 4,
@@ -379,6 +399,7 @@
       ]
     },
     {
+      "id": 21,
       "category": "急難救助",
       "is_organization": false,
       "registration_months": 4,
@@ -399,6 +420,7 @@
       ]
     },
     {
+      "id": 22,
       "category": "急難救助",
       "is_organization": false,
       "registration_months": 4,
@@ -417,6 +439,7 @@
       ]
     },
     {
+      "id": 23,
       "category": "急難救助",
       "is_organization": false,
       "registration_months": null,
@@ -435,6 +458,7 @@
       ]
     },
     {
+      "id": 24,
       "category": "衛生扶助",
       "is_organization": false,
       "registration_months": 4,
@@ -455,6 +479,7 @@
       ]
     },
     {
+      "id": 25,
       "category": "衛生扶助",
       "is_organization": false,
       "registration_months": null,
@@ -475,6 +500,7 @@
       ]
     },
     {
+      "id": 26,
       "category": "衛生扶助",
       "is_organization": false,
       "registration_months": null,
@@ -492,6 +518,7 @@
       ]
     },
     {
+      "id": 27,
       "category": "衛生扶助",
       "is_organization": false,
       "registration_months": null,
@@ -508,6 +535,7 @@
       ]
     },
     {
+      "id": 28,
       "category": "衛生扶助",
       "is_organization": false,
       "registration_months": 4,
@@ -526,6 +554,7 @@
       ]
     },
     {
+      "id": 29,
       "category": "衛生扶助",
       "is_organization": false,
       "registration_months": 4,
@@ -544,6 +573,7 @@
       ]
     },
     {
+      "id": 30,
       "category": "居住照顧",
       "is_organization": false,
       "registration_months": null,
@@ -565,6 +595,7 @@
       ]
     },
     {
+      "id": 31,
       "category": "居住照顧",
       "is_organization": false,
       "registration_months": null,
@@ -588,6 +619,7 @@
       ]
     },
     {
+      "id": 32,
       "category": "居住照顧",
       "is_organization": false,
       "registration_months": 6,
@@ -610,6 +642,7 @@
       ]
     },
     {
+      "id": 33,
       "category": "居住照顧",
       "is_organization": false,
       "registration_months": 6,
@@ -633,6 +666,7 @@
       ]
     },
     {
+      "id": 34,
       "category": "貸款利息補貼",
       "is_organization": false,
       "registration_months": 4,
@@ -653,6 +687,7 @@
       ]
     },
     {
+      "id": 35,
       "category": "貸款利息補貼",
       "is_organization": false,
       "registration_months": 4,
@@ -675,6 +710,7 @@
       ]
     },
     {
+      "id": 36,
       "category": "住宅建購、修繕補助",
       "is_organization": false,
       "registration_months": null,
@@ -696,6 +732,7 @@
       ]
     },
     {
+      "id": 37,
       "category": "住宅建購、修繕補助",
       "is_organization": false,
       "registration_months": null,
@@ -714,6 +751,7 @@
       ]
     },
     {
+      "id": 38,
       "category": "住宅建購、修繕補助",
       "is_organization": false,
       "registration_months": 4,
@@ -731,6 +769,7 @@
       ]
     },
     {
+      "id": 39,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": 4,
@@ -750,6 +789,7 @@
       ]
     },
     {
+      "id": 40,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -767,6 +807,7 @@
       ]
     },
     {
+      "id": 41,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -784,6 +825,7 @@
       ]
     },
     {
+      "id": 42,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -802,6 +844,7 @@
       ]
     },
     {
+      "id": 43,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -820,6 +863,7 @@
       ]
     },
     {
+      "id": 44,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -838,6 +882,7 @@
       ]
     },
     {
+      "id": 45,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -856,6 +901,7 @@
       ]
     },
     {
+      "id": 46,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -874,6 +920,7 @@
       ]
     },
     {
+      "id": 47,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -892,6 +939,7 @@
       ]
     },
     {
+      "id": 48,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -910,6 +958,7 @@
       ]
     },
     {
+      "id": 49,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -928,6 +977,7 @@
       ]
     },
     {
+      "id": 50,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -946,6 +996,7 @@
       ]
     },
     {
+      "id": 51,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -965,6 +1016,7 @@
       ]
     },
     {
+      "id": 52,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -983,6 +1035,7 @@
       ]
     },
     {
+      "id": 53,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1002,6 +1055,7 @@
       ]
     },
     {
+      "id": 54,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1022,6 +1076,7 @@
       ]
     },
     {
+      "id": 55,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1042,6 +1097,7 @@
       ]
     },
     {
+      "id": 56,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1062,6 +1118,7 @@
       ]
     },
     {
+      "id": 57,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1082,6 +1139,7 @@
       ]
     },
     {
+      "id": 58,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": 4,
@@ -1115,6 +1173,7 @@
       ]
     },
     {
+      "id": 59,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1131,6 +1190,7 @@
       ]
     },
     {
+      "id": 60,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1154,6 +1214,7 @@
       ]
     },
     {
+      "id": 61,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": 4,
@@ -1186,6 +1247,7 @@
       ]
     },
     {
+      "id": 62,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1207,6 +1269,7 @@
       ]
     },
     {
+      "id": 63,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": 4,
@@ -1231,6 +1294,7 @@
       ]
     },
     {
+      "id": 64,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1253,6 +1317,7 @@
       ]
     },
     {
+      "id": 65,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1271,6 +1336,7 @@
       ]
     },
     {
+      "id": 66,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1289,6 +1355,7 @@
       ]
     },
     {
+      "id": 67,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1304,6 +1371,7 @@
       ]
     },
     {
+      "id": 68,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1319,6 +1387,7 @@
       ]
     },
     {
+      "id": 69,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": 4,
@@ -1342,6 +1411,7 @@
       ]
     },
     {
+      "id": 70,
       "category": "原民問答",
       "is_organization": true,
       "registration_months": null,
@@ -1370,6 +1440,7 @@
       ]
     },
     {
+      "id": 71,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1389,6 +1460,7 @@
       ]
     },
     {
+      "id": 72,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": 4,
@@ -1410,6 +1482,7 @@
       ]
     },
     {
+      "id": 73,
       "category": "原民問答",
       "is_organization": false,
       "registration_months": null,
@@ -1430,6 +1503,7 @@
       ]
     },
     {
+      "id": 74,
       "category": "體育補助",
       "is_organization": false,
       "registration_months": null,
@@ -1454,6 +1528,7 @@
       ]
     },
     {
+      "id": 75,
       "category": "法律服務",
       "is_organization": false,
       "registration_months": 4,

@@ -141,14 +141,17 @@ test('reads youth subsidy pages and writes a separate output with shared categor
   assert.throws(() => parseYouthListing(listingHtml.replace('2 筆', '3 筆')), /incomplete/);
 
   try {
-    const result = await runParser({
+    const options = {
       fetchHtml,
-      extract: async (article) => [{
-        ...subsidy,
-        isNative: false,
-        conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥'] : [],
-        category: article.title.includes('貸款') ? '貸款利息補貼' as const : '其他' as const,
-      }],
+      extract: async (article: Article) => {
+        const record = {
+          ...subsidy,
+          isNative: false,
+          conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥'] : [],
+          category: article.title.includes('貸款') ? '貸款利息補貼' as const : '其他' as const,
+        };
+        return article.title.includes('貸款') ? [record, { ...record, subsidy_target: '另一貸款額度' }] : [record];
+      },
       dataDir: join(rootDir, 'data'),
       stateDir: join(rootDir, 'tmp'),
       revision: 'test-youth',
@@ -160,17 +163,24 @@ test('reads youth subsidy pages and writes a separate output with shared categor
         parseArticle: parseYouthArticle,
         parseAttachments: () => [],
       },
-    });
+    };
+    const result = await runParser(options);
     assert.equal(result.total, 2);
-    assert.equal(result.records, 2);
+    assert.equal(result.records, 3);
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
     assert.equal(output.source, YOUTH_SOURCE_URL);
-    assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '其他']);
-    assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, otherUrl]);
+    assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '貸款利息補貼', '其他']);
+    assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl, otherUrl]);
+    const ids = output.records.map(({ id }: { id: number }) => id);
+    assert.deepEqual(ids, [1, 2, 3]);
+    const second = await runParser(options);
+    assert.equal(second.reused, 2);
+    const updated = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
+    assert.deepEqual(updated.records.map(({ id }: { id: number }) => id), ids);
     assert.equal(output.records[0].age_lower, null);
     assert.equal(output.records[0].isNative, false);
     assert.equal(output.records[0].is_organization, true);
-    assert.equal(output.records[1].is_organization, false);
+    assert.equal(output.records[2].is_organization, false);
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }
@@ -241,6 +251,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
     assert.deepEqual(output.records[0], {
+      id: 1,
       ...subsidy,
       category: '托育服務',
       source_url: testArticleUrl,
