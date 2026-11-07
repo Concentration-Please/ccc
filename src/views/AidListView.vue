@@ -56,6 +56,10 @@ const submittedSearchQuery = ref('')
 const appliedFilterIds = ref<string[]>([])
 const filterPageOpen = ref(false)
 
+watch(searchQuery, (query) => {
+  if (!query.trim()) submittedSearchQuery.value = ''
+})
+
 const filterCriteria = computed<FilterCriteria>(() => ({
   searchQuery: submittedSearchQuery.value || undefined,
   selectedOptionIds: appliedFilterIds.value.length ? [...appliedFilterIds.value] : undefined,
