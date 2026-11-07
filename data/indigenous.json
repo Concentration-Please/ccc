@@ -806,7 +806,7 @@
       "isNative": true,
       "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
       "name": "臺北市原住民學生教育補助：私立教育代金",
-      "subsidy_target": "私立高中或高職：每學期最高補助1,000元（註：依附表內容應為8,000元，依正文為8,000元）；私立大專院校：每學期最高補助15,000元。",
+      "subsidy_target": "私立高中或高職：每學期最高補助8,000元；私立大專院校：每學期最高補助15,000元。",
       "conditions": [
         "設籍並實際居住本市",
         "具原住民身分",
@@ -1382,36 +1382,6 @@
     },
     {
       "id": 49,
-      "summary": "針對設籍台北市四個月以上、年滿十六歲之原住民婦女提供多項生活、醫療、生育及職訓等扶助。",
-      "category": "生活救助",
-      "is_organization": false,
-      "registration_months": 4,
-      "age_lower": 16,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=2DBBE88032DC396F&sms=7B2F217BCEC4F055&s=B0DBAE08DEC9EBB9",
-      "name": "原住民婦女扶助",
-      "subsidy_target": "依各項補助內容而定（包含緊急生活補助、訴訟及法律服務費用補助、一般醫療費用補助、心理治療費用補助、一般生產之生育補助、流產之生育補助、職業訓練學費材料費補助、職業訓練生活津貼、房租補助等）",
-      "conditions": [
-        "設籍臺北市四個月以上",
-        "年滿十六歲",
-        "原住民婦女",
-        "已依其他法令規定扶助者不予辦理"
-      ],
-      "application_method_or_documents": [
-        "備齊文件後送至各區公所原住民服務櫃檯，或掛號郵寄至110臺北市信義區市府路1號(臺北探索館5樓)，臺北市政府原住民族事務委員會社會福利組收",
-        "申請表",
-        "申請人身分證正反面影本",
-        "戶籍資料(須註記原住民身分)",
-        "若申請婦女扶助須附所得證明（國稅局所得清單或低收入戶卡影本）",
-        "依項目需備附：診斷證明書、醫療費收據正本、死亡證明書、訴訟證明、律師委任狀、出生證明、房屋租賃契約、職訓申請書等"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 50,
       "summary": "補助設籍台北市連續四個月以上之原住民，於指定醫療或心理機構接受心理諮商之費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1442,7 +1412,7 @@
       ]
     },
     {
-      "id": 51,
+      "id": 50,
       "summary": "補助設籍並實際居住臺北市且年滿55歲以上之原住民，經醫師評估需製作假牙或植入人工牙根者。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1479,7 +1449,7 @@
       ]
     },
     {
-      "id": 52,
+      "id": 51,
       "summary": "補助臺北市原住民進行健康檢查，每人每年最高補助新臺幣1萬元。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1506,7 +1476,7 @@
       ]
     },
     {
-      "id": 53,
+      "id": 52,
       "summary": "為提升與增強本市原住民健康權益，辦理包含環境健康、傳統醫療等相關課程之保健推廣教育。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1527,7 +1497,7 @@
       ]
     },
     {
-      "id": 54,
+      "id": 53,
       "summary": "補助因非自願性失業、家庭經濟突陷困境或類似特殊情況致中斷參加全民健康保險之原住民。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1556,7 +1526,7 @@
       ]
     },
     {
-      "id": 55,
+      "id": 54,
       "summary": "因申請人無法申請或有申請困難，由其配偶或子女代為申請之補助。",
       "category": "其他",
       "is_organization": false,
@@ -1579,7 +1549,7 @@
       "label": []
     },
     {
-      "id": 56,
+      "id": 55,
       "summary": "補助設籍並實際居住臺北市連續4個月以上之原住民，就醫所需自行負擔之醫療費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1606,7 +1576,7 @@
       ]
     },
     {
-      "id": 57,
+      "id": 56,
       "summary": "提供本市原住民因族群、文化特殊性所衍生之身心健康異常者，協助其就醫之醫療保健服務。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1627,7 +1597,7 @@
       ]
     },
     {
-      "id": 58,
+      "id": 57,
       "summary": "補助設籍並實際居住臺北市之原住民長者進行假牙裝置或植體治療。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1663,7 +1633,7 @@
       ]
     },
     {
-      "id": 59,
+      "id": 58,
       "summary": "補助已接受裝置假牙補助之原住民進行假牙維修。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1689,7 +1659,7 @@
       ]
     },
     {
-      "id": 60,
+      "id": 59,
       "summary": "補助設籍臺北市連續四個月以上之原住民，於符合資格之醫療機構或私立心理機構接受心理諮商之費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1718,7 +1688,7 @@
       ]
     },
     {
-      "id": 61,
+      "id": 60,
       "summary": "提供本市原住民因意外災害、重大生活變故或強制搬遷等原因，短時間內無法尋覓住所者住宿費用補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1744,7 +1714,7 @@
       ]
     },
     {
-      "id": 62,
+      "id": 61,
       "summary": "提供設籍外縣市（不含新北市及基隆市）原住民因就學、就業、就醫或喪葬等事由來臺北短期住宿之費用補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1773,7 +1743,7 @@
       ]
     },
     {
-      "id": 63,
+      "id": 62,
       "summary": "提供臺北市收入較低且無自有宅之原住民承租東湖原住民文化公寓。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1804,7 +1774,7 @@
       ]
     },
     {
-      "id": 64,
+      "id": 63,
       "summary": "提供臺北市收入較低且無自有宅之原住民承租東湖原住民文化公寓。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1834,7 +1804,7 @@
       ]
     },
     {
-      "id": 65,
+      "id": 64,
       "summary": "針對設籍台北市滿四個月之原住民，提供各類貸款利息補貼。",
       "category": "就業創業",
       "is_organization": false,
@@ -1862,7 +1832,7 @@
       ]
     },
     {
-      "id": 66,
+      "id": 65,
       "summary": "針對設籍台北市滿四個月之原住民且依法辦理營業登記之創業人士，提供貸款利息補貼。",
       "category": "就業創業",
       "is_organization": false,
@@ -1892,7 +1862,7 @@
       ]
     },
     {
-      "id": 67,
+      "id": 66,
       "summary": "補助臺北市經濟弱勢原住民家庭建購住宅，每戶補助三十萬元。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1937,7 +1907,7 @@
       ]
     },
     {
-      "id": 68,
+      "id": 67,
       "summary": "補助臺北市經濟弱勢原住民家庭修繕住宅，每戶以十五萬元為限。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1979,7 +1949,7 @@
       ]
     },
     {
-      "id": 69,
+      "id": 68,
       "summary": "補助臺北市經濟弱勢原住民家庭建購未逾二年的自用住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2026,7 +1996,7 @@
       ]
     },
     {
-      "id": 70,
+      "id": 69,
       "summary": "補助臺北市經濟弱勢原住民家庭修繕屋齡超過七年的自用住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2069,7 +2039,7 @@
       ]
     },
     {
-      "id": 71,
+      "id": 70,
       "summary": "補助臺北市經濟弱勢原住民家庭建購新住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2111,7 +2081,7 @@
       ]
     },
     {
-      "id": 72,
+      "id": 71,
       "summary": "補助臺北市經濟弱勢原住民家庭修繕自有住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2153,7 +2123,7 @@
       ]
     },
     {
-      "id": 73,
+      "id": 72,
       "summary": "補助經濟弱勢原住民家庭建購新臺幣三十萬元之自用住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2197,7 +2167,7 @@
       ]
     },
     {
-      "id": 74,
+      "id": 73,
       "summary": "補助經濟弱勢原住民家庭修繕自有住宅，金額以新臺幣十五萬元為限。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2242,7 +2212,7 @@
       ]
     },
     {
-      "id": 75,
+      "id": 74,
       "summary": "補助符合特定條件之原住民於職業訓練期間的生活津貼差額。",
       "category": "生活救助",
       "is_organization": false,
@@ -2273,7 +2243,7 @@
       ]
     },
     {
-      "id": 76,
+      "id": 75,
       "summary": "補助原住民參加特定機構舉辦之職業訓練、技術訓練或就業考試補習課程之學費及材料費。",
       "category": "就業創業",
       "is_organization": false,
@@ -2303,7 +2273,7 @@
       ]
     },
     {
-      "id": 77,
+      "id": 76,
       "summary": "提供設籍臺北市且家庭收入符合標準之高中職及大專院校學生每月生活津貼。",
       "category": "學業助學",
       "is_organization": false,
@@ -2326,7 +2296,7 @@
       "label": []
     },
     {
-      "id": 78,
+      "id": 77,
       "summary": "提供設籍臺北市之原住民國中或國小學生午餐補助。",
       "category": "學業助學",
       "is_organization": false,
@@ -2350,7 +2320,7 @@
       ]
     },
     {
-      "id": 79,
+      "id": 78,
       "summary": "提供設籍臺北市之原住民國中或國小學生就讀學校代收代辦費補助。",
       "category": "學業助學",
       "is_organization": false,
@@ -2374,7 +2344,7 @@
       ]
     },
     {
-      "id": 80,
+      "id": 79,
       "summary": "提供設籍臺北市之原住民國中或國小學生學業助學金。",
       "category": "學業助學",
       "is_organization": false,
@@ -2399,7 +2369,7 @@
       ]
     },
     {
-      "id": 81,
+      "id": 80,
       "summary": "提供設籍臺北市之原住民高中（職）學生學業助學金。",
       "category": "學業助學",
       "is_organization": false,
@@ -2424,7 +2394,7 @@
       ]
     },
     {
-      "id": 82,
+      "id": 81,
       "summary": "提供設籍臺北市之原住民國中、國小、高中（職）及大專院校學生特殊才能助學金。",
       "category": "學業助學",
       "is_organization": false,
@@ -2452,7 +2422,7 @@
       ]
     },
     {
-      "id": 83,
+      "id": 82,
       "summary": "提供設籍臺北市之原住民私立高中（職）及大專院校學生教育代金。",
       "category": "學業助學",
       "is_organization": false,
@@ -2480,7 +2450,7 @@
       ]
     },
     {
-      "id": 84,
+      "id": 83,
       "summary": "提供設籍臺北市之原住民高中(職)及大專院校學生生活津貼。",
       "category": "學業助學",
       "is_organization": false,
@@ -2506,7 +2476,7 @@
       ]
     },
     {
-      "id": 85,
+      "id": 84,
       "summary": "提供設籍臺北市之原住民國中至高中（職）及大專院校學生交通補助費。",
       "category": "學業助學",
       "is_organization": false,
@@ -2533,7 +2503,7 @@
       ]
     },
     {
-      "id": 86,
+      "id": 85,
       "summary": "針對學齡前原住民兒童就托臺北市立案托育機構提供每學期不等金額之補助。",
       "category": "托育教育",
       "is_organization": false,
@@ -2557,7 +2527,7 @@
       ]
     },
     {
-      "id": 87,
+      "id": 86,
       "summary": "針對學齡原住民兒童就托私立立案兒童課後照顧服務中心提供每月不等金額之補助。",
       "category": "托育教育",
       "is_organization": false,
@@ -2581,7 +2551,7 @@
       ]
     },
     {
-      "id": 88,
+      "id": 87,
       "summary": "針對本市原住民幼童就讀公立幼兒園，補助平日課後留園費用。",
       "category": "托育教育",
       "is_organization": false,
@@ -2605,7 +2575,7 @@
       ]
     },
     {
-      "id": 89,
+      "id": 88,
       "summary": "針對本市原住民幼童就讀私立、非營利、準公共、托嬰中心及公共社區托育家園，補助平日課後留園費用。",
       "category": "托育教育",
       "is_organization": false,
@@ -2629,7 +2599,7 @@
       ]
     },
     {
-      "id": 90,
+      "id": 89,
       "summary": "提供族語學習課程，對象為對族語有興趣的在學學生及社會人士。",
       "category": "文化體育",
       "is_organization": false,
@@ -2652,7 +2622,7 @@
       "label": []
     },
     {
-      "id": 91,
+      "id": 90,
       "summary": "針對設籍台北市且符合經濟弱勢條件的原住民家庭，提供建購住宅之補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2692,7 +2662,7 @@
       ]
     },
     {
-      "id": 92,
+      "id": 91,
       "summary": "提供經濟弱勢原住民家庭進行住宅建購或修繕的補助方案。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2712,7 +2682,7 @@
       ]
     },
     {
-      "id": 93,
+      "id": 92,
       "summary": "針對經濟弱勢的原住民家庭提供房屋修繕補助，最高金額為新臺幣15萬元。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2721,7 +2691,7 @@
       "age_upper": null,
       "isNative": true,
       "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=8968DFD0C802E3AB",
-      "name": "經濟弱勢原住民家庭建購補助",
+      "name": "經濟弱勢原住民家庭修繕住宅補助",
       "subsidy_target": "最高新臺幣15萬元整。",
       "conditions": [
         "經濟弱勢原住民家庭"
@@ -2743,7 +2713,7 @@
       ]
     },
     {
-      "id": 94,
+      "id": 93,
       "summary": "提供經濟弱勢原住民家庭修繕老舊或衛生設備欠缺之自用住宅補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2778,7 +2748,7 @@
       ]
     },
     {
-      "id": 95,
+      "id": 94,
       "summary": "針對經濟弱勢的原住民家庭購置房屋提供新臺幣30萬元之補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2809,7 +2779,7 @@
       ]
     },
     {
-      "id": 96,
+      "id": 95,
       "summary": "針對設籍臺北市四個月以上、年滿十六歲且生活困難之原住民婦女提供各項扶助項目。",
       "category": "生活救助",
       "is_organization": false,
@@ -2841,34 +2811,7 @@
       ]
     },
     {
-      "id": 97,
-      "summary": "提供遭遇急難事故且生活陷入困境之臺北市原住民相關救助。",
-      "category": "生活救助",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=3EF68362CCCF35AE",
-      "name": "原住民急難關懷慰助金",
-      "subsidy_target": "包含生活救助、醫療補助、死亡救助、災害救助之內容。",
-      "conditions": [
-        "須設籍並實際居住本市之原住民",
-        "申請災害救助者不以此為限",
-        "遭遇急難事故，未獲本市社會救助者",
-        "或雖獲政府資源救助或照顧，但因族群或生活文化之特殊性，而影響其生活陷入困境者",
-        "生活救助：負擔家計者罹患長期疾病、失業、無一定雇主致收入不穩定或家庭成員發生重大變故，致生活陷入困境者",
-        "醫療補助：罹患嚴重傷病、住院三天以上，所需醫療費用非其本人或扶養義務人所能負擔者",
-        "死亡救助：戶內人口死亡，無力殮葬者；或協助本市原住民完成殮葬程序之人",
-        "災害救助：在本市內遭遇天然災害或其他由中央主管機關公告認定之重大災害者"
-      ],
-      "application_method_or_documents": [],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 98,
+      "id": 96,
       "summary": "針對負擔家計者因疾病、失業或家庭變故致生活困境之原住民提供救助。",
       "category": "生活救助",
       "is_organization": false,
@@ -2892,7 +2835,7 @@
       ]
     },
     {
-      "id": 99,
+      "id": 97,
       "summary": "針對罹患嚴重傷病且醫療費用無法負擔之原住民提供醫療補助。",
       "category": "醫療保健",
       "is_organization": false,
@@ -2917,7 +2860,7 @@
       ]
     },
     {
-      "id": 100,
+      "id": 98,
       "summary": "針對戶內人口死亡無力殮葬或協助原住民完成殮葬程序者提供救助。",
       "category": "生活救助",
       "is_organization": false,
@@ -2942,7 +2885,7 @@
       ]
     },
     {
-      "id": 101,
+      "id": 99,
       "summary": "針對在本市內遭遇天然災害或其他重大災害之原住民提供救助。",
       "category": "生活救助",
       "is_organization": false,
@@ -2966,7 +2909,7 @@
       ]
     },
     {
-      "id": 102,
+      "id": 100,
       "summary": "針對設籍並實際居住於臺北市之原住民兒童及其父母或監護人提供托育及協力照顧補助。",
       "category": "托育教育",
       "is_organization": false,
@@ -2989,7 +2932,7 @@
       ]
     },
     {
-      "id": 103,
+      "id": 101,
       "summary": "為減輕原住民租用住宅之壓力所提供之租屋補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -3024,7 +2967,7 @@
       ]
     },
     {
-      "id": 104,
+      "id": 102,
       "summary": "提供都市原住民家庭相關的租屋補助措施。",
       "category": "居住住宅",
       "is_organization": false,
@@ -3044,7 +2987,7 @@
       ]
     },
     {
-      "id": 105,
+      "id": 103,
       "summary": "提供原住民婦女相關的房租補助措施。",
       "category": "居住住宅",
       "is_organization": false,
@@ -3064,7 +3007,7 @@
       ]
     },
     {
-      "id": 106,
+      "id": 104,
       "summary": "補助設籍台北市滿四個月且非在學學生之原住民參加職業訓練或技術訓練相關課程之學費及材料費。",
       "category": "就業創業",
       "is_organization": false,
@@ -3097,7 +3040,7 @@
       ]
     },
     {
-      "id": 107,
+      "id": 105,
       "summary": "補助於臺北市內經營的原住民族合作社或原住民族事業體，提供營運設備、房租、研習或交流活動等經費。",
       "category": "就業創業",
       "is_organization": true,
@@ -3127,7 +3070,7 @@
       ]
     },
     {
-      "id": 108,
+      "id": 106,
       "summary": "針對符合條件之貸款提供利息補貼，最長以六年為限。",
       "category": "其他",
       "is_organization": false,
@@ -3150,7 +3093,7 @@
       "label": []
     },
     {
-      "id": 109,
+      "id": 107,
       "summary": "補助符合就業促進津貼實施辦法規定，且已申領勞動部職業訓練生活津貼之原住民。",
       "category": "就業創業",
       "is_organization": false,
@@ -3181,7 +3124,7 @@
       ]
     },
     {
-      "id": 110,
+      "id": 108,
       "summary": "提供原住民法人機構或團體申請證明書之服務。",
       "category": "其他",
       "is_organization": true,
@@ -3208,7 +3151,7 @@
       ]
     },
     {
-      "id": 111,
+      "id": 109,
       "summary": "提供本市原住民族人就（轉）業服務需求之媒合與諮詢服務。",
       "category": "就業創業",
       "is_organization": false,
@@ -3232,7 +3175,7 @@
       ]
     },
     {
-      "id": 112,
+      "id": 110,
       "summary": "補助設籍臺北市且就讀國中以上至大專院校之原住民在學學生交通費用。",
       "category": "學業助學",
       "is_organization": false,
@@ -3263,7 +3206,7 @@
       ]
     },
     {
-      "id": 113,
+      "id": 111,
       "summary": "提供國小一年級以上對原住民族傳統曲謠、舞蹈有興趣者參加的合唱團訓練服務。",
       "category": "文化體育",
       "is_organization": false,
@@ -3291,147 +3234,28 @@
       ]
     },
     {
-      "id": 114,
-      "summary": "補助臺北市轄內學校、非營利團體或原住民組織辦理棒球、壘球、籃球或其他單項原住民體育競賽活動。",
+      "id": 112,
+      "summary": "補助臺北市轄內學校、非營利團體、單項體育團體或登錄原住民組織辦理單項體育活動。",
       "category": "文化體育",
-      "is_organization": false,
+      "is_organization": true,
       "registration_months": null,
       "age_lower": null,
       "age_upper": null,
-      "isNative": true,
+      "isNative": false,
       "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=186BE5B0EB688916&sms=765338A09995BD07&s=2827078C4A2D191D",
       "name": "臺北市原住民單項體育活動推廣補助計畫",
-      "subsidy_target": "全國性及國際性體育活動最高補助 30 萬元；縣市性體育活動最高補助 18 萬元。",
+      "subsidy_target": "補助辦理棒球、壘球、籃球及其他原住民單項體育活動；全國性及國際性活動最高30萬元，縣市性活動最高18萬元，金額依參與人數及辦理規模調整。",
       "conditions": [
         "臺北市轄內之公（私）立各級學校",
         "經政府核准立案之非營利團體",
         "各單項體育運動團體",
         "經本會輔導且登錄有案之本市原住民組織",
         "同一年度同一單位以補助一次為原則",
-        "已申請過本計畫之單位不得重複申請"
-      ],
-      "application_method_or_documents": [
-        "請至本市「台北服務通」線上申請",
-        "上傳計畫書 (附件 1)",
-        "上傳相關資料",
-        "檢具訓練成員名冊",
-        "檢具相關立案證明及以往辦理績效之相關證明文件",
-        "原住民組織應檢具團體成立宗旨、成員名冊及會址",
-        "前次辦理同類型活動之競賽規程（第 1 次辦理則免附）"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 115,
-      "summary": "補助辦理國中、小棒球競賽，優先補助就讀本市國中、小原住民學生。",
-      "category": "文化體育",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=186BE5B0EB688916&sms=765338A09995BD07&s=2827078C4A2D191D",
-      "name": "臺北市原住民單項體育活動推廣補助計畫（棒球賽事活動）",
-      "subsidy_target": "依據近年參與人數及辦理規模酌予調整補助款",
-      "conditions": [
-        "實施對象為就讀本市國中、小原住民學生為優先",
-        "參與人數需 40 人以上",
-        "辦理方式為國中、小棒球競賽"
-      ],
-      "application_method_or_documents": [
-        "請至本市「台北服務通」線上申請",
-        "上傳計畫書 (附件 1)",
-        "上傳相關資料",
-        "檢具訓練成員名冊",
-        "檢具相關立案證明及以往辦理績效之相關證明文件",
-        "原住民組織應檢具團體成立宗旨、成員名冊及會址",
-        "前次辦理同類型活動之競賽規程（第 1 次辦理則免附）"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 116,
-      "summary": "補助辦理慢速壘球錦標賽，優先補助本市原住民社會青年。",
-      "category": "文化體育",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=186BE5B0EB688916&sms=765338A09995BD07&s=2827078C4A2D191D",
-      "name": "臺北市原住民單項體育活動推廣補助計畫（壘球賽事活動）",
-      "subsidy_target": "依據近年參與人數及辦理規模酌予調整補助款",
-      "conditions": [
-        "實施對象以本市原住民社會青年為優先",
-        "參與比賽之原住民人數需達 60%",
-        "參與人數 1 隊以 20~23 人計算，至少 8 隊",
-        "辦理方式為慢速壘球錦標賽"
-      ],
-      "application_method_or_documents": [
-        "請至本市「台北服務通」線上申請",
-        "上傳計畫書 (附件 1)",
-        "上傳相關資料",
-        "檢具訓練成員名冊",
-        "檢具相關立案證明及以往辦理績效之相關證明文件",
-        "原住民組織應檢具團體成立宗旨、成員名冊及會址",
-        "前次辦理同類型活動之競賽規程（第 1 次辦理則免附）"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 117,
-      "summary": "補助辦理國中、小男女青少年籃球錦標賽，優先補助就讀本市國小 5、6 年級及國中原住民學生。",
-      "category": "文化體育",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=186BE5B0EB688916&sms=765338A09995BD07&s=2827078C4A2D191D",
-      "name": "臺北市原住民單項體育活動推廣補助計畫（籃球賽事活動）",
-      "subsidy_target": "依據近年參與人數及辦理規模酌予調整補助款",
-      "conditions": [
-        "實施對象為就讀本市國小 5、6 年級、國中原住民學生為優先",
-        "每一隊 3~5 人",
-        "10 隊以上",
-        "辦理方式為國中、小男女青少年籃球錦標賽"
-      ],
-      "application_method_or_documents": [
-        "請至本市「台北服務通」線上申請",
-        "上傳計畫書 (附件 1)",
-        "上傳相關資料",
-        "檢具訓練成員名冊",
-        "檢具相關立案證明及以往辦理績效之相關證明文件",
-        "原住民組織應檢具團體成立宗旨、成員名冊及會址",
-        "前次辦理同類型活動之競賽規程（第 1 次辦理則免附）"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 118,
-      "summary": "補助辦理如傳統射箭、傳統競技、槌球錦標賽等其他單項體育競賽活動。",
-      "category": "文化體育",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=186BE5B0EB688916&sms=765338A09995BD07&s=2827078C4A2D191D",
-      "name": "臺北市原住民單項體育活動推廣補助計畫（其他單項體育活動）",
-      "subsidy_target": "依據近年參與人數及辦理規模酌予調整補助款",
-      "conditions": [
-        "參與人數須 30 名以上",
-        "以本市原住民為優先"
+        "已申請過本計畫之單位不得重複申請",
+        "棒球賽事活動：以本市國中、小原住民學生為優先，參與人數40人以上",
+        "壘球賽事活動：以本市原住民社會青年為優先，原住民參賽人數須達60%，至少8隊",
+        "籃球賽事活動：以本市國小五、六年級及國中原住民學生為優先，每隊3至5人、至少10隊",
+        "其他單項體育活動：參與人數30人以上，以本市原住民為優先"
       ],
       "application_method_or_documents": [
         "請至本市「台北服務通」線上申請",
@@ -3445,7 +3269,7 @@
       "label": []
     },
     {
-      "id": 119,
+      "id": 113,
       "summary": "獎勵代表臺北市參加全國原住民族運動會並獲得指定名次之績優選手。",
       "category": "文化體育",
       "is_organization": false,
@@ -3476,7 +3300,7 @@
       ]
     },
     {
-      "id": 120,
+      "id": 114,
       "summary": "獎勵代表臺北市參加全國原住民族運動會並符合資格之有功教練。",
       "category": "文化體育",
       "is_organization": false,
@@ -3505,7 +3329,7 @@
       ]
     },
     {
-      "id": 121,
+      "id": 115,
       "summary": "補助原住民團體辦理文化及社會教育相關活動計畫。",
       "category": "文化體育",
       "is_organization": true,
@@ -3530,7 +3354,7 @@
       ]
     },
     {
-      "id": 122,
+      "id": 116,
       "summary": "補助原住民族類之藝文創作或相關活動，以提昇原住民族文化領域。",
       "category": "文化體育",
       "is_organization": true,
@@ -3563,7 +3387,7 @@
       ]
     },
     {
-      "id": 123,
+      "id": 117,
       "summary": "補助原住民族合作社及事業體之營運設備、房租、業務研習及參與經貿交流費用。",
       "category": "就業創業",
       "is_organization": true,
@@ -3590,7 +3414,7 @@
       ]
     },
     {
-      "id": 124,
+      "id": 118,
       "summary": "補助設籍並實際居住臺北市滿四個月以上之原住民，提供法院裁判費及相關律師費補助。",
       "category": "其他",
       "is_organization": false,
@@ -3622,6 +3446,6 @@
   ],
   "source": "https://www.ipc.gov.taipei/Content_List.aspx?n=082798040B8AF70C",
   "generated_at": "2026-11-07T12:53:40.467Z",
-  "updated_at": "2026-11-08T00:11:51.051+08:00",
+  "updated_at": "2026-11-08T02:16:02.464+08:00",
   "errors": []
 }
