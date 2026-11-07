@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
-import { createRecordId, runParser } from '../src/run.js';
+import { runParser } from '../src/run.js';
 import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
 import { discoverYouthArticles, parseYouthArticle, parseYouthListing, YOUTH_SOURCE_URL } from '../src/youth-source.js';
 import type { Article, Subsidy } from '../src/schema.js';
@@ -171,14 +171,12 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     assert.equal(output.source, YOUTH_SOURCE_URL);
     assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '貸款利息補貼', '其他']);
     assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl, otherUrl]);
-    const ids = output.records.map(({ id }: { id: string }) => id);
-    assert.deepEqual(ids, [createRecordId(loanUrl, subsidy.name, 0), createRecordId(loanUrl, subsidy.name, 1), createRecordId(otherUrl, subsidy.name, 0)]);
-    assert.equal(new Set(ids).size, ids.length);
-    assert.equal(createRecordId(loanUrl, subsidy.name, 0), createRecordId(loanUrl, ` ${subsidy.name} `, 0));
+    const ids = output.records.map(({ id }: { id: number }) => id);
+    assert.deepEqual(ids, [1, 2, 3]);
     const second = await runParser(options);
     assert.equal(second.reused, 2);
     const updated = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
-    assert.deepEqual(updated.records.map(({ id }: { id: string }) => id), ids);
+    assert.deepEqual(updated.records.map(({ id }: { id: number }) => id), ids);
     assert.equal(output.records[0].age_lower, null);
     assert.equal(output.records[0].isNative, false);
     assert.equal(output.records[0].is_organization, true);
@@ -253,7 +251,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
     assert.deepEqual(output.records[0], {
-      id: createRecordId(testArticleUrl, subsidy.name, 0),
+      id: 1,
       ...subsidy,
       category: '托育服務',
       source_url: testArticleUrl,
