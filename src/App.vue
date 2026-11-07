@@ -1,13 +1,32 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AidList from '@/components/AidList.vue'
-import FilterFab from '@/components/FilterFab.vue'
+import FilterPage from '@/components/FilterPage.vue'
+import SearchFilterBar from '@/components/SearchFilterBar.vue'
 import { fetchAllGovernmentAids } from '@/services/database'
+import {
+  applyFilter,
+  tagsFromSelectedIds,
+  type FilterCriteria,
+} from '@/services/filter'
 import type { GovernmentAid } from '@/types/governmentAid'
 
 const aids = ref<GovernmentAid[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
+
+const searchQuery = ref('')
+const appliedFilterIds = ref<string[]>([])
+const filterPageOpen = ref(false)
+
+const filterCriteria = computed<FilterCriteria>(() => ({
+  searchQuery: searchQuery.value.trim() || undefined,
+  selectedOptionIds: appliedFilterIds.value.length ? [...appliedFilterIds.value] : undefined,
+}))
+
+const displayedAids = computed(() => applyFilter(aids.value, filterCriteria.value))
+
+const appliedFilterTags = computed(() => tagsFromSelectedIds(appliedFilterIds.value))
 
 onMounted(async () => {
   try {
@@ -18,16 +37,49 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+function onSubmitSearch() {
+  // Search UI wired; text/query filtering will follow with filter rules.
+}
+
+function onOpenFilter() {
+  filterPageOpen.value = true
+}
+
+function onCloseFilterPage() {
+  filterPageOpen.value = false
+}
+
+function onApplyFilters(selectedIds: string[]) {
+  appliedFilterIds.value = [...selectedIds]
+  filterPageOpen.value = false
+}
+
+function onRemoveFilter(id: string) {
+  appliedFilterIds.value = appliedFilterIds.value.filter((item) => item !== id)
+}
 </script>
 
 <template>
   <div class="app-shell">
+    <SearchFilterBar
+      v-model:search-query="searchQuery"
+      :applied-filters="appliedFilterTags"
+      @submit-search="onSubmitSearch"
+      @open-filter="onOpenFilter"
+      @remove-filter="onRemoveFilter"
+    />
     <main class="app-main">
       <p v-if="loading" class="app-status" role="status">載入中…</p>
       <p v-else-if="error" class="app-status app-status--error" role="alert">{{ error }}</p>
-      <AidList v-else :aids="aids" />
+      <AidList v-else :aids="displayedAids" />
     </main>
-    <FilterFab />
+    <FilterPage
+      v-if="filterPageOpen"
+      :initial-selected-ids="appliedFilterIds"
+      @close="onCloseFilterPage"
+      @apply="onApplyFilters"
+    />
   </div>
 </template>
 
@@ -44,7 +96,7 @@ onMounted(async () => {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(var(--fab-reserve) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .app-status {

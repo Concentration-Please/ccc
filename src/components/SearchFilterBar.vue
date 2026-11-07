@@ -1,0 +1,177 @@
+<script setup lang="ts">
+import searchIcon from '@/assets/searchIcon.svg'
+import filterIcon from '@/assets/filterIcon.svg'
+import type { AppliedFilterTag } from '@/services/filter'
+
+const searchQuery = defineModel<string>('searchQuery', { default: '' })
+
+defineProps<{
+  appliedFilters: AppliedFilterTag[]
+}>()
+
+const emit = defineEmits<{
+  submitSearch: []
+  openFilter: []
+  removeFilter: [id: string]
+}>()
+
+function onSubmit() {
+  emit('submitSearch')
+}
+
+function onOpenFilter() {
+  emit('openFilter')
+}
+
+function onRemoveFilter(id: string) {
+  emit('removeFilter', id)
+}
+</script>
+
+<template>
+  <div class="search-filter-bar">
+    <div class="search-filter-bar__row">
+      <input
+        v-model="searchQuery"
+        type="search"
+        class="search-filter-bar__input"
+        placeholder="搜尋..."
+        enterkeyhint="search"
+        autocomplete="off"
+        @keydown.enter.prevent="onSubmit"
+      />
+      <button
+        type="button"
+        class="search-filter-bar__action"
+        aria-label="搜尋"
+        @click="onSubmit"
+      >
+        <img class="search-filter-bar__icon" :src="searchIcon" alt="" width="24" height="24" />
+      </button>
+      <button
+        type="button"
+        class="search-filter-bar__action"
+        aria-label="篩選"
+        @click="onOpenFilter"
+      >
+        <img class="search-filter-bar__icon" :src="filterIcon" alt="" width="24" height="24" />
+      </button>
+    </div>
+
+    <ul v-if="appliedFilters.length" class="search-filter-bar__tags" aria-label="已選篩選">
+      <li v-for="tag in appliedFilters" :key="tag.id" class="search-filter-bar__tag">
+        <span class="search-filter-bar__tag-label">{{ tag.label }}</span>
+        <button
+          type="button"
+          class="search-filter-bar__tag-remove"
+          :aria-label="`移除 ${tag.label}`"
+          @click="onRemoveFilter(tag.id)"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<style scoped>
+.search-filter-bar {
+  padding: 0.75rem 1rem 0.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.search-filter-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-filter-bar__input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.search-filter-bar__input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.search-filter-bar__input:focus {
+  border-color: var(--color-accent);
+}
+
+.search-filter-bar__action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.search-filter-bar__action:active {
+  opacity: 0.92;
+}
+
+.search-filter-bar__icon {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  pointer-events: none;
+}
+
+.search-filter-bar__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  list-style: none;
+  margin: 0.75rem 0 0.25rem;
+  padding: 0;
+}
+
+.search-filter-bar__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+.search-filter-bar__tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: var(--color-filter-chip-bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.search-filter-bar__tag-remove:active {
+  opacity: 0.85;
+}
+</style>
