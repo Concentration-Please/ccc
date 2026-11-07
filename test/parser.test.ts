@@ -4,10 +4,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import JSZip from 'jszip';
+import { extractAttachmentText } from '../src/attachments.js';
+import { classifyDatasets, createGemmaClassificationEngine } from '../src/classify.js';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
 import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
-import { discoverYouthArticles, parseYouthArticle, parseYouthListing, YOUTH_SOURCE_URL } from '../src/youth-source.js';
+import { discoverYouthArticles, parseYouthArticle, parseYouthAttachments, parseYouthListing, YOUTH_SOURCE_URL } from '../src/youth-source.js';
 import type { Article, Subsidy } from '../src/schema.js';
 
 function serviceHtml(links: [string, string][]): string {
@@ -33,11 +36,14 @@ const subsidy: Subsidy = {
   summary: '原住民家庭可申請托育補助。',
   subsidy_target: '托育費用補助',
   conditions: ['申請家庭須具原住民身分'],
+  application_method_or_documents: [],
 };
 
-test('reads service links, skips venue rental, and extracts page bodies', () => {
+test('reads service links, skips excluded categories, and extracts page bodies', () => {
   const html = serviceHtml([
     ['本會場地租借', 'News_Link_pic.aspx?n=VENUE'],
+    ['空間借用', 'News.aspx?n=SPACE'],
+    ['為民服務', 'News.aspx?n=SERVICE'],
     ['托育服務', 'News.aspx?n=CHILD'],
     ['貸款利息補貼', 'cp.aspx?n=LOAN'],
   ]);
@@ -60,10 +66,11 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     summary: '符合年齡條件的原住民長者可申請補助。',
     subsidy_target: '長者費用補助',
     conditions: ['申請人須具原住民身分', '申請人年滿55歲、未滿65歲'],
+    application_method_or_documents: ['向區公所提出申請', '檢附身分證明文件'],
     age_lower: 55,
     age_upper: 65,
   };
-  const youthSubsidy = { ...agedSubsidy, category: '其他' as const };
+  const youthSubsidy = { ...agedSubsidy };
   const openrouter = createOpenRouter({
     apiKey: 'test-key',
     compatibility: 'strict',
@@ -83,18 +90,98 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     category: '長青服務',
     publishedAt: '2026-11-07',
     body: '具原住民身分且年滿55歲、未滿65歲者可申請。',
+    attachments: [{ title: '補助要點', text: '應備文件：戶籍謄本' }],
   };
   const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
   assert.deepEqual(result, [agedSubsidy]);
   assert.equal(request?.model, MODEL_ID);
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
+  assert.match(JSON.stringify(request?.messages), /application_method_or_documents/);
+  assert.match(JSON.stringify(request?.messages), /應備文件：戶籍謄本/);
   assert.deepEqual(await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth'), [youthSubsidy]);
   assert.match(JSON.stringify(request?.messages), /政策性貸款/);
+  assert.match(JSON.stringify(request?.messages), /利息補貼須另輸出一筆/);
+});
+
+test('reads OpenDocument attachment text and parses an attachment-only article', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-attachment-parser-test-'));
+  const zip = new JSZip();
+  zip.file('content.xml', '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><text:p>申請方式：向區公所送件</text:p><text:p>應備文件：戶籍謄本</text:p></office:body></office:document-content>');
+  const bytes = await zip.generateAsync({ type: 'uint8array' });
+  assert.equal(await extractAttachmentText(bytes, 'odt'), '申請方式：向區公所送件\n應備文件：戶籍謄本');
+  try {
+    const result = await runParser({
+      fetchHtml: async () => '<div class="list-text file-download-multiple"></div>',
+      fetchAttachment: async () => bytes,
+      extract: async (article) => {
+        assert.equal(article.body, '');
+        assert.deepEqual(article.attachments, [{ title: '申請須知', text: '申請方式：向區公所送件\n應備文件：戶籍謄本' }]);
+        return [subsidy];
+      },
+      dataDir: join(rootDir, 'data'),
+      stateDir: join(rootDir, 'tmp'),
+      revision: 'test-attachment',
+      source: {
+        url: SOURCE_URL,
+        name: 'attachment-test',
+        outputFile: 'attachment-test.json',
+        discover: async () => [{ url: testArticleUrl, title: '申請須知', category: '托育服務', publishedAt: null }],
+        parseArticle: (_html, listing) => ({ ...listing, body: '' }),
+        parseAttachments: () => [{ url: 'https://www-ws.gov.taipei/Download.ashx?icon=..odt', title: '申請須知', extension: 'odt' }],
+      },
+    });
+    assert.equal(result.records, 1);
+    const output = JSON.parse(await readFile(join(rootDir, 'data', 'attachment-test.json'), 'utf8'));
+    assert.equal(output.complete, true);
+    assert.equal(output.records.length, 1);
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('skips identical model records within an article and preserves other source URLs', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-dedup-parser-test-'));
+  const secondUrl = `${SOURCE_URL}&article=second`;
+  const { conditions, ...otherFields } = subsidy;
+  const sameFieldsInDifferentOrder = { conditions: [...conditions], ...otherFields };
+  const distinctConditions = { ...subsidy, conditions: ['申請家庭須設籍臺北市'] };
+  const distinctTarget = { ...subsidy, subsidy_target: '另一項托育費用補助' };
+  try {
+    const result = await runParser({
+      fetchHtml: async () => '',
+      extract: async (article) => article.url === testArticleUrl
+        ? [subsidy, sameFieldsInDifferentOrder, distinctConditions]
+        : [{ ...subsidy }, distinctTarget],
+      dataDir: join(rootDir, 'data'),
+      stateDir: join(rootDir, 'tmp'),
+      revision: 'test-dedup',
+      source: {
+        url: SOURCE_URL,
+        name: 'dedup-test',
+        outputFile: 'dedup-test.json',
+        discover: async () => [
+          { url: testArticleUrl, title: '托育補助', category: '托育服務', publishedAt: null },
+          { url: secondUrl, title: '另一篇托育補助', category: '托育服務', publishedAt: null },
+        ],
+        parseArticle: (_html, listing) => ({ ...listing, body: '原住民家庭可申請托育補助。' }),
+        parseAttachments: () => [],
+      },
+    });
+    assert.equal(result.total, 2);
+    assert.equal(result.records, 4);
+    const output = JSON.parse(await readFile(join(rootDir, 'data', 'dedup-test.json'), 'utf8'));
+    assert.deepEqual(output.records.map(({ id }: { id: number }) => id), [1, 2, 3, 4]);
+    assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [testArticleUrl, testArticleUrl, secondUrl, secondUrl]);
+    assert.deepEqual(output.records.map(({ subsidy_target }: { subsidy_target: string }) => subsidy_target), [subsidy.subsidy_target, subsidy.subsidy_target, subsidy.subsidy_target, distinctTarget.subsidy_target]);
+    assert.deepEqual(output.records[1].conditions, distinctConditions.conditions);
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
 });
 
 test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {
   let calls = 0;
-  const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45, category: '其他' as const };
+  const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45 };
   const openrouter = createOpenRouter({
     apiKey: 'test-key',
     compatibility: 'strict',
@@ -119,6 +206,32 @@ test('rechecks an empty youth extraction and excludes organization representativ
   assert.deepEqual(result, [{ ...organization, age_lower: null, age_upper: null }]);
 });
 
+test('rechecks an empty indigenous extraction when the page describes an application', async () => {
+  let calls = 0;
+  const openrouter = createOpenRouter({
+    apiKey: 'test-key',
+    compatibility: 'strict',
+    fetch: async () => {
+      calls += 1;
+      return new Response(JSON.stringify({
+        id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
+        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: calls === 1 ? [] : [subsidy] }) } }],
+        usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    },
+  });
+  const article: Article = {
+    url: testArticleUrl,
+    title: '托育補助',
+    category: '托育服務',
+    publishedAt: null,
+    body: '原住民家庭可申請托育補助。',
+  };
+  const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
+  assert.equal(calls, 2);
+  assert.deepEqual(result, [subsidy]);
+});
+
 test('reads youth subsidy pages and writes a separate output with shared categories', async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'ccc-youth-parser-test-'));
   const loanUrl = `${YOUTH_SOURCE_URL}/loan`;
@@ -129,8 +242,10 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     </ul><div>共 1 頁 2 筆</div></div>`;
   const loanHtml = '<article class="article"><div class="wysiwyg"><div class="content"><p>青年留學貸款</p><p>貸款利息補貼</p></div></div></article>';
   const otherHtml = '<article class="article"><div class="wysiwyg"><div class="content"><p>完成AI課程者可申請工具訂閱補助。</p></div></div></article>';
+  let currentListingHtml = listingHtml;
+  let extractCalls = 0;
   const fetchHtml = async (url: string): Promise<string> => {
-    if (url === YOUTH_SOURCE_URL) return listingHtml;
+    if (url === YOUTH_SOURCE_URL) return currentListingHtml;
     if (url === loanUrl) return loanHtml;
     if (url === otherUrl) return otherHtml;
     throw new Error(`Unexpected URL: ${url}`);
@@ -138,17 +253,20 @@ test('reads youth subsidy pages and writes a separate output with shared categor
   const listings = parseYouthListing(listingHtml);
   assert.deepEqual(listings.map(({ category }) => category), ['其他', '其他']);
   assert.equal(parseYouthArticle(loanHtml, listings[0]!).body, '青年留學貸款\n貸款利息補貼');
+  assert.deepEqual(parseYouthAttachments('<article class="article"><div class="wysiwyg"><div class="content"><a href="https://www.fubon.com/forms/application.pdf">申請書</a><a href="https://example.com/details">詳情</a></div></div></article>', loanUrl), [
+    { url: 'https://www.fubon.com/forms/application.pdf', title: '申請書', extension: 'pdf' },
+  ]);
   assert.throws(() => parseYouthListing(listingHtml.replace('2 筆', '3 筆')), /incomplete/);
 
   try {
     const options = {
       fetchHtml,
       extract: async (article: Article) => {
+        extractCalls += 1;
         const record = {
           ...subsidy,
           isNative: false,
           conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥'] : [],
-          category: article.title.includes('貸款') ? '貸款利息補貼' as const : '其他' as const,
         };
         return article.title.includes('貸款') ? [record, { ...record, subsidy_target: '另一貸款額度' }] : [record];
       },
@@ -167,16 +285,24 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     const result = await runParser(options);
     assert.equal(result.total, 2);
     assert.equal(result.records, 3);
+    assert.equal(extractCalls, 2);
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
     assert.equal(output.source, YOUTH_SOURCE_URL);
-    assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '貸款利息補貼', '其他']);
+    assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['其他', '其他', '其他']);
+    assert.deepEqual(output.records.map(({ label }: { label: string[] }) => label), [[], [], []]);
     assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl, otherUrl]);
+    assert.deepEqual(output.records.map(({ application_method_or_documents }: { application_method_or_documents: string[] }) => application_method_or_documents), [[], [], []]);
     const ids = output.records.map(({ id }: { id: number }) => id);
     assert.deepEqual(ids, [1, 2, 3]);
+    currentListingHtml = listingHtml.replace(/<li><a class="title" href="[^"]+\/other".*?<\/li>/, '').replace('2 筆', '1 筆');
     const second = await runParser(options);
-    assert.equal(second.reused, 2);
+    assert.equal(second.reused, 0);
+    assert.equal(extractCalls, 3);
     const updated = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
-    assert.deepEqual(updated.records.map(({ id }: { id: number }) => id), ids);
+    assert.deepEqual(updated.records.map(({ id }: { id: number }) => id), [1, 2]);
+    assert.deepEqual(updated.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl]);
+    await assert.rejects(runParser({ ...options, source: { ...options.source, discover: async () => { throw new Error('discovery failed'); } } }), /discovery failed/);
+    await assert.rejects(readFile(join(rootDir, 'data', 'youth.json')), { code: 'ENOENT' });
     assert.equal(output.records[0].age_lower, null);
     assert.equal(output.records[0].isNative, false);
     assert.equal(output.records[0].is_organization, true);
@@ -186,7 +312,7 @@ test('reads youth subsidy pages and writes a separate output with shared categor
   }
 });
 
-test('crawls nested service pages, sends every body, and resumes', async () => {
+test('crawls nested service pages and starts each run from fresh data', async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'ccc-parser-test-'));
   let modelCalls = 0;
   let attachmentCalls = 0;
@@ -196,6 +322,8 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     const section = url.searchParams.get('n');
     if (section === '082798040B8AF70C') return serviceHtml([
       ['本會場地租借', 'News_Link_pic.aspx?n=VENUE'],
+      ['空間借用', 'News.aspx?n=SPACE'],
+      ['為民服務', 'News.aspx?n=SERVICE'],
       ['托育服務', 'News.aspx?n=CHILD'],
       ['貸款利息補貼', 'cp.aspx?n=LOAN'],
       ['原住民團體', 'cp.aspx?n=GROUP'],
@@ -221,7 +349,7 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
       attachmentCalls += 1;
       return new TextEncoder().encode('%PDF-test');
     };
-    const options = { fetchHtml, fetchAttachment, extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-ipc' };
+    const options = { fetchHtml, fetchAttachment, extractAttachmentText: async () => '補助要點文字', extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-ipc' };
     const first = await runParser(options);
     assert.equal(first.total, 4);
     assert.equal(first.records, 1);
@@ -230,19 +358,16 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(attachmentCalls, 1);
     assert.equal(articleCategories.get('其他服務'), '其他補助');
 
+    const staleAttachment = join(rootDir, 'tmp', 'ipc-attachments', 'stale.pdf');
+    await writeFile(staleAttachment, 'stale');
+    const staleCategories = join(rootDir, 'data', 'category.json');
+    await writeFile(staleCategories, '["舊分類"]');
     const second = await runParser(options);
-    assert.equal(second.reused, 4);
-    assert.equal(modelCalls, 3);
-    assert.equal(attachmentCalls, 1);
-
-    const cachePath = join(rootDir, 'tmp', 'ipc-parser-state.json');
-    const oldCache = JSON.parse(await readFile(cachePath, 'utf8'));
-    oldCache.version = 4;
-    await writeFile(cachePath, JSON.stringify(oldCache));
-    const third = await runParser(options);
-    assert.equal(third.reused, 0);
+    assert.equal(second.reused, 0);
     assert.equal(modelCalls, 6);
-    assert.equal(attachmentCalls, 1);
+    assert.equal(attachmentCalls, 2);
+    await assert.rejects(readFile(staleAttachment), { code: 'ENOENT' });
+    await assert.rejects(readFile(staleCategories), { code: 'ENOENT' });
 
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'indigenous.json'), 'utf8'));
     assert.equal(output.source, SOURCE_URL);
@@ -254,11 +379,99 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
       id: 1,
       ...subsidy,
       category: '托育服務',
+      label: [],
       source_url: testArticleUrl,
     });
     const attachments = JSON.parse(await readFile(join(rootDir, 'tmp', 'ipc-attachments.json'), 'utf8'));
     assert.equal(attachments.length, 1);
     assert.equal((await readFile(join(rootDir, 'tmp', attachments[0].file))).toString(), '%PDF-test');
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('classifies every completed dataset from summaries and writes category and label outputs', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-classify-test-'));
+  const labels = { indigenous: '原住民', youth: '青年' };
+  const firstPath = join(rootDir, 'indigenous.json');
+  const secondPath = join(rootDir, 'youth.json');
+  const first = { source: 'ipc', generated_at: '2026-11-07T00:00:00.000Z', complete: true, records: [{ id: 1, summary: '原住民青年可申請托育補助。', category: '其他' }] };
+  const second = { source: 'youth', generated_at: '2026-11-07T00:00:00.000Z', complete: true, records: [{ id: 1, summary: '青年可申請貸款利息補貼。', category: '其他' }] };
+  try {
+    await writeFile(firstPath, JSON.stringify(first));
+    await writeFile(secondPath, JSON.stringify(second));
+    const seen: string[] = [];
+    const count = await classifyDatasets(rootDir, {
+      createCategories: async (summaries) => {
+        assert.deepEqual(summaries, [first.records[0]!.summary, second.records[0]!.summary]);
+        return ['托育服務', '貸款利息補貼', '其他'];
+      },
+      classify: async (summary, categories) => {
+        seen.push(summary);
+        assert.deepEqual(categories, ['托育服務', '貸款利息補貼', '其他']);
+        return summary.includes('托育')
+          ? { category: '托育服務', label: ['indigenous', 'youth'] }
+          : { category: '貸款利息補貼', label: ['youth'] };
+      },
+    }, labels);
+    assert.equal(count, 2);
+    assert.deepEqual(seen, [first.records[0]!.summary, second.records[0]!.summary]);
+    const classifiedFirst = JSON.parse(await readFile(firstPath, 'utf8'));
+    const classifiedSecond = JSON.parse(await readFile(secondPath, 'utf8'));
+    assert.equal(classifiedFirst.records[0].category, '托育服務');
+    assert.deepEqual(classifiedFirst.records[0].label, ['indigenous', 'youth']);
+    assert.equal(classifiedSecond.records[0].category, '貸款利息補貼');
+    assert.deepEqual(classifiedSecond.records[0].label, ['youth']);
+    assert.equal(classifiedFirst.generated_at, first.generated_at);
+    assert.deepEqual(JSON.parse(await readFile(join(rootDir, 'category.json'), 'utf8')), ['托育服務', '貸款利息補貼']);
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('Gemma creates categories and assigns category and multiple labels from summaries', async () => {
+  const requests: Record<string, unknown>[] = [];
+  const openrouter = createOpenRouter({
+    apiKey: 'test-key',
+    compatibility: 'strict',
+    fetch: async (_input, init) => {
+      const request = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      requests.push(request);
+      const output = requests.length === 1
+        ? { categories: ['托育服務', '教育扶助', '其他'] }
+        : { category: '托育服務', label: ['indigenous', 'youth'] };
+      return new Response(JSON.stringify({
+        id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
+        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify(output) } }],
+        usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    },
+  });
+  const engine = createGemmaClassificationEngine('test-key', { indigenous: '原住民', youth: '青年' }, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
+  const summaries = ['原住民青年可申請托育補助。', '學生可申請教育補助。'];
+  const categories = await engine.createCategories(summaries);
+  assert.deepEqual(categories, ['托育服務', '教育扶助', '其他']);
+  assert.deepEqual(await engine.classify(summaries[0]!, categories), { category: '托育服務', label: ['indigenous', 'youth'] });
+  assert.equal(requests.length, 2);
+  assert.match(JSON.stringify(requests[0]?.messages), /學生可申請教育補助/);
+  assert.match(JSON.stringify(requests[1]?.messages), /indigenous（原住民）/);
+  assert.match(JSON.stringify(requests[1]?.messages), /原住民青年可申請托育補助/);
+});
+
+test('does not change datasets when one is incomplete', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-classify-incomplete-test-'));
+  const firstPath = join(rootDir, 'indigenous.json');
+  const secondPath = join(rootDir, 'youth.json');
+  const first = JSON.stringify({ complete: true, records: [{ id: 1, summary: '托育補助' }] });
+  try {
+    await writeFile(firstPath, first);
+    await writeFile(secondPath, JSON.stringify({ complete: false, records: [] }));
+    await assert.rejects(classifyDatasets(rootDir, {
+      createCategories: async () => { throw new Error('should not classify incomplete datasets'); },
+      classify: async () => { throw new Error('should not classify incomplete datasets'); },
+    }, {}));
+    assert.equal(await readFile(firstPath, 'utf8'), first);
+    await assert.rejects(readFile(join(rootDir, 'category.json')), { code: 'ENOENT' });
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }

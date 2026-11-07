@@ -23,7 +23,12 @@ watch(
   },
 )
 
-const hasSelection = computed(() => selectedIds.value.length > 0)
+const appliedKey = computed(() => [...props.initialSelectedIds].sort().join('\0'))
+
+const draftKey = computed(() => [...selectedIds.value].sort().join('\0'))
+
+/** Apply when there is a selection, or when reset clears a previously applied filter set. */
+const canApply = computed(() => draftKey.value !== appliedKey.value)
 
 function isSelected(optionId: string) {
   return selectedIds.value.includes(optionId)
@@ -46,7 +51,7 @@ function onReset() {
 }
 
 function onApply() {
-  if (!hasSelection.value) return
+  if (!canApply.value) return
   emit('apply', [...selectedIds.value])
 }
 
@@ -62,9 +67,7 @@ function onClose() {
         <span class="filter-page__chevron" aria-hidden="true" />
       </button>
       <h1 id="filter-page-title" class="filter-page__title">篩選</h1>
-      <button type="button" class="filter-page__header-btn" aria-label="關閉" @click="onClose">
-        <span class="filter-page__close" aria-hidden="true">×</span>
-      </button>
+      <span aria-hidden="true" />
     </header>
 
     <div class="filter-page__body">
@@ -107,8 +110,8 @@ function onClose() {
       <button
         type="button"
         class="filter-page__submit"
-        :class="{ 'filter-page__submit--active': hasSelection }"
-        :disabled="!hasSelection"
+        :class="{ 'filter-page__submit--active': canApply }"
+        :disabled="!canApply"
         @click="onApply"
       >
         搜尋
@@ -169,12 +172,6 @@ function onClose() {
   margin-left: 0.2rem;
 }
 
-.filter-page__close {
-  font-size: 1.75rem;
-  font-weight: 300;
-  line-height: 1;
-}
-
 .filter-page__body {
   flex: 1;
   min-height: 0;
@@ -225,7 +222,7 @@ function onClose() {
 
 .filter-page__options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   margin-top: 1rem;
 }

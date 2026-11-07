@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { createExtractor, YOUTH_EXTRACTION_REVISION } from './extract.js';
 import { runParser } from './run.js';
 import { createHtmlFetcher } from './source.js';
-import { discoverYouthArticles, parseYouthArticle, YOUTH_SOURCE_URL } from './youth-source.js';
+import { discoverYouthArticles, parseYouthArticle, parseYouthAttachments, YOUTH_SOURCE_URL } from './youth-source.js';
 
 const apiKey = process.env.OPENROUTER_API_KEY;
 if (!apiKey) {
@@ -22,7 +22,7 @@ if (!apiKey) {
         outputFile: 'youth.json',
         discover: discoverYouthArticles,
         parseArticle: parseYouthArticle,
-        parseAttachments: () => [],
+        parseAttachments: parseYouthAttachments,
       },
       log: console.log,
     });

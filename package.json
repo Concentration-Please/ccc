@@ -15,8 +15,10 @@
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
-    "parse": "node --env-file-if-exists=.dev.vars --import tsx src/cli.ts",
+    "parse": "run-s parse:indigenous parse:youth classify",
+    "parse:indigenous": "node --env-file-if-exists=.dev.vars --import tsx src/cli.ts",
     "parse:youth": "node --env-file-if-exists=.dev.vars --import tsx src/cli-youth.ts",
+    "classify": "node --env-file-if-exists=.dev.vars --import tsx src/cli-classify.ts",
     "test": "node --import tsx --test test/*.test.ts",
     "typecheck": "tsc --noEmit --project tsconfig.parser.json"
   },
@@ -24,6 +26,8 @@
     "@openrouter/ai-sdk-provider": "^3.1.0",
     "ai": "^7.0.164",
     "cheerio": "^1.2.0",
+    "jszip": "^3.10.2",
+    "pdfjs-dist": "^4.10.38",
     "vue": "^3.5.42",
     "vue-router": "^5.4.0",
     "zod": "^4.6.7"

@@ -1,5 +1,6 @@
 export interface SubsidyRecord {
   category: string
+  label: string[]
   is_organization: boolean
   registration_months: number | null
   source_url: string
@@ -7,6 +8,7 @@ export interface SubsidyRecord {
   summary: string
   subsidy_target: string
   conditions: string[]
+  application_method_or_documents: string[]
 }
 
 export interface SubsidiesFile {

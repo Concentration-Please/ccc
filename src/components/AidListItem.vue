@@ -53,24 +53,24 @@ defineProps<{
 
 .aid-item__title {
   margin: 0;
-  font-size: 16px;
+  font-size: 0.889rem;
   font-weight: 600;
-  line-height: 22px;
+  line-height: 1.375;
 }
 
 .aid-item__icon {
   display: inline-block;
-  width: 24px;
-  height: 24px;
-  margin-left: 4px;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: 0.25rem;
   vertical-align: middle;
 }
 
 .aid-item__summary {
   margin: 0;
-  font-size: 16px;
+  font-size: 0.889rem;
   font-weight: 400;
-  line-height: 22px;
+  line-height: 1.375;
   color: var(--color-text-secondary);
 }
 </style>

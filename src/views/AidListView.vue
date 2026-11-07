@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, onActivated, onMounted, ref, type Ref } from 'vue'
+import { computed, inject, nextTick, onActivated, onMounted, ref, watch, type Ref } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import AidList from '@/components/AidList.vue'
 import FilterPage from '@/components/FilterPage.vue'
 import SearchFilterBar from '@/components/SearchFilterBar.vue'
 import SubscriptionSheet from '@/components/SubscriptionSheet.vue'
-import { indigenousRecords } from '@/data/indigenousDataset'
 import { fetchAllGovernmentAids, queryGovernmentAids } from '@/services/database'
 import { tagsFromSelectedIds, type FilterCriteria } from '@/services/filter'
-import type { SubscriptionCriteria } from '@/services/matchSubscription'
+import type { Persona } from '@/services/matchSubscription'
 
 defineOptions({ name: 'AidListView' })
 
@@ -17,25 +16,40 @@ function requiredInject<T>(value: T | undefined): T {
   return value
 }
 
-const subscription = requiredInject(inject<Ref<SubscriptionCriteria | null>>('ccc-subscription'))
-const persistSubscription = requiredInject(
-  inject<(criteria: SubscriptionCriteria) => void>('ccc-save-subscription'),
-)
+const subscription = requiredInject(inject<Ref<Persona[]>>('ccc-subscription'))
+const persistSubscription = requiredInject(inject<(personas: Persona[]) => void>('ccc-save-subscription'))
 
 const loading = ref(true)
 const error = ref<string | null>(null)
 const listPage = ref<HTMLElement | null>(null)
 const subscriptionOpen = ref(false)
 let savedScrollTop = 0
+let restoringListScroll = false
 
 onBeforeRouteLeave(() => {
   savedScrollTop = listPage.value?.scrollTop ?? 0
 })
 
 onActivated(async () => {
+  restoringListScroll = true
   await nextTick()
-  if (listPage.value) listPage.value.scrollTop = savedScrollTop
+  const el = listPage.value
+  if (el) el.scrollTop = savedScrollTop
+  await nextTick()
+  restoringListScroll = false
 })
+
+async function scrollListToTop() {
+  savedScrollTop = 0
+  await nextTick()
+  await nextTick()
+  requestAnimationFrame(() => {
+    const el = listPage.value
+    if (!el) return
+    el.scrollTop = 0
+    el.scrollTo(0, 0)
+  })
+}
 
 const searchQuery = ref('')
 const appliedFilterIds = ref<string[]>([])
@@ -46,9 +60,24 @@ const filterCriteria = computed<FilterCriteria>(() => ({
   selectedOptionIds: appliedFilterIds.value.length ? [...appliedFilterIds.value] : undefined,
 }))
 
-const categories = computed(() => [...new Set(indigenousRecords.map((record) => record.category))])
-
 const displayedAids = computed(() => queryGovernmentAids(filterCriteria.value))
+
+/** Stable snapshot so filter/search changes reset scroll without firing on detail return. */
+const filterCriteriaKey = computed(() =>
+  JSON.stringify({
+    search: filterCriteria.value.searchQuery ?? '',
+    ids: [...(filterCriteria.value.selectedOptionIds ?? [])].sort(),
+  }),
+)
+
+watch(
+  filterCriteriaKey,
+  (_next, prev) => {
+    if (restoringListScroll || prev === undefined) return
+    void scrollListToTop()
+  },
+  { flush: 'post' },
+)
 
 const hasActiveFilter = computed(
   () => Boolean(filterCriteria.value.searchQuery) || (filterCriteria.value.selectedOptionIds?.length ?? 0) > 0,
@@ -87,9 +116,8 @@ function onRemoveFilter(id: string) {
   appliedFilterIds.value = appliedFilterIds.value.filter((item) => item !== id)
 }
 
-function onSaveSubscription(criteria: SubscriptionCriteria) {
-  persistSubscription(criteria)
-  subscriptionOpen.value = false
+function onSaveSubscription(personas: Persona[]) {
+  persistSubscription(personas)
 }
 </script>
 
@@ -115,9 +143,8 @@ function onSaveSubscription(criteria: SubscriptionCriteria) {
       @apply="onApplyFilters"
     />
     <SubscriptionSheet
-      :open="subscriptionOpen"
-      :categories="categories"
-      :initial="subscription"
+      v-if="subscriptionOpen"
+      :personas="subscription"
       @close="subscriptionOpen = false"
       @save="onSaveSubscription"
     />

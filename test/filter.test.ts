@@ -8,6 +8,7 @@ import {
 } from '../src/services/filterQuery.js'
 
 const baseAid: GovernmentAidRecord = {
+  label: [],
   category: '托育服務',
   is_organization: false,
   registration_months: 6,
@@ -16,6 +17,7 @@ const baseAid: GovernmentAidRecord = {
   summary: '原住民家庭托育',
   subsidy_target: '學齡前兒童',
   conditions: ['須設籍臺北市'],
+  application_method_or_documents: ['向區公所提出申請'],
 }
 
 const categoryB: GovernmentAidRecord = {
@@ -56,6 +58,7 @@ test('filter group options OR within group, AND across groups', () => {
 test('search matches name, summary, and requires all terms', () => {
   assert.equal(recordMatchesSearch(baseAid, '托育'), true)
   assert.equal(recordMatchesSearch(baseAid, '臺北'), true)
+  assert.equal(recordMatchesSearch(baseAid, '區公所'), true)
   assert.equal(recordMatchesSearch(baseAid, '托育 原住民'), true)
   assert.equal(recordMatchesSearch(baseAid, '托育 不存在'), false)
 })

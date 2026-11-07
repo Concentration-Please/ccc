@@ -3,43 +3,56 @@ import { onMounted, onUnmounted, provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { indigenousRecords } from '@/data/indigenousDataset'
 import { fetchAnnouncementBatch, hasSeenBatch, markBatchSeen } from '@/services/announcements'
-import { matchesSubscription, toMatchableAid, type SubscriptionCriteria } from '@/services/matchSubscription'
-import { loadNotifiedIds, loadSubscription, markNotified, saveSubscription } from '@/services/subscription'
+import { matchesSubscription, toMatchableAid, type Persona } from '@/services/matchSubscription'
+import {
+  loadNotifiedIds,
+  loadSubscription,
+  markNotified,
+  saveSubscription,
+  uniqueNotifications,
+} from '@/services/subscription'
 import { notifyMatchingAid } from '@/services/townpass'
 
 const POLL_MS = 60_000
 
 const route = useRoute()
-const subscription = ref<SubscriptionCriteria | null>(loadSubscription())
+const subscription = ref<Persona[]>(loadSubscription())
 let pollTimer = 0
 
-function matchingRecords(criteria: SubscriptionCriteria) {
-  return indigenousRecords.filter((record) => matchesSubscription(toMatchableAid(record), criteria))
+function matchingRecords(personas: Persona[]) {
+  return indigenousRecords.filter((record) => matchesSubscription(toMatchableAid(record), personas))
 }
 
-function pushNewMatches(criteria: SubscriptionCriteria) {
+function pushNewMatches(personas: Persona[]) {
+  if (personas.length === 0) return
   const seen = new Set(loadNotifiedIds())
-  const fresh = matchingRecords(criteria).filter((record) => !seen.has(record.source_url))
-  for (const record of fresh) notifyMatchingAid(record.name)
-  if (fresh.length > 0) markNotified(fresh.map((record) => record.source_url))
+  const pending = matchingRecords(personas)
+    .filter((record) => !seen.has(record.source_url))
+    .map((record) => ({ url: record.source_url, title: record.name }))
+  const fresh = uniqueNotifications(pending)
+  for (const item of fresh) notifyMatchingAid(item.title)
+  if (pending.length > 0) markNotified(pending.map((item) => item.url))
 }
 
 async function notifySubscribedAnnouncements() {
-  const criteria = subscription.value
-  if (!criteria) return
+  const personas = subscription.value
+  if (personas.length === 0) return
   const batch = await fetchAnnouncementBatch()
   if (!batch.batchId || hasSeenBatch(batch.batchId)) return
   const seen = new Set(loadNotifiedIds())
-  const fresh = batch.items.filter((item) => matchesSubscription(item, criteria) && !seen.has(item.id))
+  const pending = batch.items
+    .filter((item) => matchesSubscription(item, personas) && !seen.has(item.id))
+    .map((item) => ({ url: item.id, title: item.title }))
+  const fresh = uniqueNotifications(pending)
   for (const item of fresh) notifyMatchingAid(item.title)
-  if (fresh.length > 0) markNotified(fresh.map((item) => item.id))
+  if (pending.length > 0) markNotified(pending.map((item) => item.url))
   markBatchSeen(batch.batchId)
 }
 
-function saveSubscriptionCriteria(criteria: SubscriptionCriteria) {
-  saveSubscription(criteria)
-  subscription.value = criteria
-  pushNewMatches(criteria)
+function saveSubscriptionCriteria(personas: Persona[]) {
+  saveSubscription(personas)
+  subscription.value = personas
+  pushNewMatches(personas)
   void notifySubscribedAnnouncements()
 }
 
@@ -47,7 +60,7 @@ provide('ccc-subscription', subscription)
 provide('ccc-save-subscription', saveSubscriptionCriteria)
 
 onMounted(() => {
-  if (subscription.value) pushNewMatches(subscription.value)
+  if (subscription.value.length > 0) pushNewMatches(subscription.value)
   void notifySubscribedAnnouncements()
   pollTimer = window.setInterval(() => void notifySubscribedAnnouncements(), POLL_MS)
 })

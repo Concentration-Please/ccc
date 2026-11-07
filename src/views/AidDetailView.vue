@@ -95,6 +95,13 @@ const referenceUrls = computed(() => {
         </ul>
       </section>
 
+      <section v-if="aid.application_method_or_documents.length" class="detail__section">
+        <h2>申請方式或應備文件</h2>
+        <ul>
+          <li v-for="item in aid.application_method_or_documents" :key="item">{{ item }}</li>
+        </ul>
+      </section>
+
       <section v-if="referenceUrls.length" class="detail__refs" aria-label="外部連結">
         <ul class="detail__refs-list">
           <li v-for="url in referenceUrls" :key="url">
@@ -148,23 +155,23 @@ const referenceUrls = computed(() => {
 
 .detail__title {
   margin: 0;
-  font-size: 24px;
+  font-size: 1.333rem;
   font-weight: 600;
-  line-height: 32px;
+  line-height: 1.333;
 }
 
 .detail__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .detail__chip {
-  padding: 0 8px;
-  font-size: 14px;
+  padding: 0.25em 0.5em;
+  font-size: 0.778rem;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 1.43;
   color: #ffffff;
   background: #5ab4c5;
   border-radius: 999px;
@@ -172,21 +179,21 @@ const referenceUrls = computed(() => {
 
 .detail__section h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 0.889rem;
   font-weight: 600;
-  line-height: 22px;
+  line-height: 1.375;
 }
 
 .detail__section p,
 .detail__section ul {
-  margin: 4px 0 0;
+  margin: 0.25rem 0 0;
 }
 
 .detail__section p,
 .detail__section li {
-  font-size: 14px;
+  font-size: 0.778rem;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 1.43;
 }
 
 .detail__section ul {
@@ -194,7 +201,7 @@ const referenceUrls = computed(() => {
 }
 
 .detail__section li + li {
-  margin-top: 4px;
+  margin-top: 0.25rem;
 }
 
 .detail__refs {
@@ -206,9 +213,9 @@ const referenceUrls = computed(() => {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 14px;
+  font-size: 0.778rem;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 1.43;
 }
 
 .detail__refs-list li + li {
