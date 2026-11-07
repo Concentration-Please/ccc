@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { matchesSubscription, type MatchableAid, type SubscriptionCriteria } from '../src/services/matchSubscription.ts'
+import { matchesSubscription, type MatchableAid, type SubscriptionCriteria } from '../src/services/matchSubscription.js'
 
 const baseAid: MatchableAid = {
   classification: '托育服務',

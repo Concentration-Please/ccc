@@ -43,7 +43,7 @@ interface ServiceLink {
   title: string;
 }
 
-export function parseServiceLinks(html: string, pageUrl: string, excludeVenue = false): ServiceLink[] {
+export function parseServiceLinks(html: string, pageUrl: string, excludeRootCategories = false): ServiceLink[] {
   const $ = load(html);
   const blocks = $('.list-text.content-list');
   if (!blocks.length) throw new Error(`Cannot find service links at ${pageUrl}`);
@@ -53,7 +53,7 @@ export function parseServiceLinks(html: string, pageUrl: string, excludeVenue = 
     const href = anchor.attr('href');
     const title = normalizeText(anchor.text());
     if (!href || !title) throw new Error(`Invalid service link at ${pageUrl}`);
-    if (excludeVenue && title.includes('場地租借')) return;
+    if (excludeRootCategories && (title === '為民服務' || title.includes('場地租借') || title.includes('空間借用'))) return;
     const url = sameSiteUrl(href, pageUrl);
     if (url) links.push({ url: url.toString(), title });
   });

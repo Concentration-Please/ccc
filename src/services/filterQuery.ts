@@ -66,7 +66,7 @@ export function recordMatchesFilterGroups(
 }
 
 function searchableText(aid: GovernmentAidRecord): string {
-  return [aid.name, aid.summary, aid.subsidy_target, aid.category, ...aid.conditions]
+  return [aid.name, aid.summary, aid.subsidy_target, aid.category, ...aid.conditions, ...aid.application_method_or_documents]
     .join('\n')
     .toLowerCase()
 }

@@ -7,6 +7,7 @@ export interface SubsidyRecord {
   summary: string
   subsidy_target: string
   conditions: string[]
+  application_method_or_documents: string[]
 }
 
 export interface SubsidiesFile {

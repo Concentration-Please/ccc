@@ -10,6 +10,7 @@ export const subsidySchema = z.object({
   summary: z.string().trim().min(1),
   subsidy_target: z.string().trim().min(1),
   conditions: z.array(z.string().trim().min(1)),
+  application_method_or_documents: z.array(z.string().trim().min(1)),
 }).strict();
 
 export const sharedCategories = [
@@ -46,6 +47,7 @@ export interface Article {
   category: string;
   publishedAt: string | null;
   body: string;
+  attachments?: { title: string; text: string }[];
 }
 
 export interface ArticleListing {
