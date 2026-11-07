@@ -1,4 +1,4 @@
-import { recordMatchesFilterOption } from './filterQuery.ts'
+import { recordMatchesFilterOption } from './filterQuery.js'
 import type { GovernmentAidRecord } from '@/types/governmentAid'
 
 export interface Persona {
