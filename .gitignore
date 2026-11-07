@@ -3,4 +3,4 @@
 node_modules/
 .env*
 .dev.vars*
-/.devvars
+!.dev.vars.example

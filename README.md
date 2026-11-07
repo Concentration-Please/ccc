@@ -8,7 +8,7 @@
 
 ```sh
 npm install
-cp .devvars.example .dev.vars
+cp .dev.vars.example .dev.vars
 # 將 .dev.vars 內的 OPENROUTER_API_KEY 換成你的金鑰
 npm run parse
 ```
