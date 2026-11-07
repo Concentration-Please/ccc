@@ -1,15 +1,27 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-
-defineOptions({ name: 'AidListView' })
+import { computed, nextTick, onActivated, onMounted, ref } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import AidList from '@/components/AidList.vue'
 import FilterPage from '@/components/FilterPage.vue'
 import SearchFilterBar from '@/components/SearchFilterBar.vue'
 import { fetchAllGovernmentAids, queryGovernmentAids } from '@/services/database'
 import { tagsFromSelectedIds, type FilterCriteria } from '@/services/filter'
 
+defineOptions({ name: 'AidListView' })
+
 const loading = ref(true)
 const error = ref<string | null>(null)
+const listPage = ref<HTMLElement | null>(null)
+let savedScrollTop = 0
+
+onBeforeRouteLeave(() => {
+  savedScrollTop = listPage.value?.scrollTop ?? 0
+})
+
+onActivated(async () => {
+  await nextTick()
+  if (listPage.value) listPage.value.scrollTop = savedScrollTop
+})
 
 const searchQuery = ref('')
 const appliedFilterIds = ref<string[]>([])
@@ -60,7 +72,7 @@ function onRemoveFilter(id: string) {
       @open-filter="onOpenFilter"
       @remove-filter="onRemoveFilter"
     />
-    <div class="aid-list-view__scroll">
+    <div ref="listPage" class="list-page">
       <p v-if="loading" class="status" role="status">載入中…</p>
       <p v-else-if="error" class="status status--error" role="alert">{{ error }}</p>
       <AidList v-else :aids="displayedAids" />
@@ -80,6 +92,14 @@ function onRemoveFilter(id: string) {
   flex-direction: column;
   height: 100%;
   min-height: 0;
+}
+
+.list-page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .status {

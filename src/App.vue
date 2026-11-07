@@ -25,26 +25,20 @@ const route = useRoute()
   flex-direction: column;
   height: 100%;
   min-height: 100dvh;
+  overflow: hidden;
 }
 
 .app-main {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 .app-main--list {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.app-main--list :deep(.aid-list-view__scroll) {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 </style>

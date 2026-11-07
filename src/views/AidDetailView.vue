@@ -98,9 +98,12 @@ watch([sourceUrl, aidName], ([source, name]) => {
 <style scoped>
 .detail {
   --aid-inset: 1.1rem;
-  min-height: 100%;
+  flex: 1;
+  min-height: 0;
   padding-bottom: 2rem;
+  overflow-y: auto;
   background: #ffffff;
+  -webkit-overflow-scrolling: touch;
 }
 
 .detail__status {
