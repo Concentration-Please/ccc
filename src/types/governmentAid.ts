@@ -8,6 +8,9 @@ export interface GovernmentAidRecord {
   summary: string
   subsidy_target: string
   conditions: string[]
+  age_lower?: number | null
+  age_upper?: number | null
+  isNative?: boolean | null
   /** Optional attachment or related pages in addition to source_url. */
   ref_urls?: string[]
 }
@@ -26,4 +29,17 @@ export interface GovernmentAidDataset {
   complete: boolean
   records: GovernmentAidRecord[]
   errors?: GovernmentAidError[]
+}
+
+/** One row from data/indigenous.json. */
+export interface SubsidyAid {
+  id: string
+  title: string
+  classification: string
+  summary: string
+  isOrganization: boolean
+  registrationMonths: number | null
+  ageLower: number | null
+  ageUpper: number | null
+  isNative: boolean | null
 }
