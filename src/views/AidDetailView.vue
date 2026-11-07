@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { fetchGovernmentAidBySource } from '@/services/database'
-import type { GovernmentAidRecord } from '@/types/governmentAid'
+import { fetchGovernmentAidById, fetchGovernmentAidBySource } from '@/services/database'
+import type { AidDataset, GovernmentAidRecord } from '@/types/governmentAid'
 import ExternalLink from '@/components/ExternalLink.vue'
 import { organizationLabel, registrationLabel } from '@/utils/aidLabels'
 
@@ -10,6 +10,18 @@ const route = useRoute()
 const aid = ref<GovernmentAidRecord | null>(null)
 const loading = ref(true)
 const missing = ref(false)
+
+const dataset = computed<AidDataset | null>(() => {
+  const value = route.query.dataset
+  return value === 'indigenous' || value === 'youth' ? value : null
+})
+
+const recordId = computed(() => {
+  const value = route.query.id
+  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) return null
+  const id = Number(value)
+  return Number.isSafeInteger(id) ? id : null
+})
 
 const sourceUrl = computed(() => {
   const value = route.query.source
@@ -21,19 +33,27 @@ const aidName = computed(() => {
   return typeof value === 'string' ? value : ''
 })
 
-async function loadAid(source: string, name: string) {
+async function loadAid(
+  dataset: AidDataset | null,
+  id: number | null,
+  source: string,
+  name: string,
+) {
   loading.value = true
   missing.value = false
   aid.value = null
 
-  if (!source) {
+  if ((!dataset || id === null) && !source) {
     missing.value = true
     loading.value = false
     return
   }
 
   try {
-    const record = await fetchGovernmentAidBySource(source, name || undefined)
+    const record =
+      dataset && id !== null
+        ? await fetchGovernmentAidById(dataset, id)
+        : await fetchGovernmentAidBySource(source, name || undefined)
     if (!record) {
       missing.value = true
       return
@@ -46,9 +66,13 @@ async function loadAid(source: string, name: string) {
   }
 }
 
-watch([sourceUrl, aidName], ([source, name]) => {
-  void loadAid(source, name)
-}, { immediate: true })
+watch(
+  [dataset, recordId, sourceUrl, aidName],
+  ([dataset, id, source, name]) => {
+    void loadAid(dataset, id, source, name)
+  },
+  { immediate: true },
+)
 
 const referenceUrls = computed(() => {
   if (!aid.value) return []

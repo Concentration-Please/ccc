@@ -1,5 +1,7 @@
 import type { GovernmentAidRecord } from '@/types/governmentAid'
 
+export type FilterableAid = Omit<GovernmentAidRecord, 'id'>
+
 export interface FilterCriteria {
   searchQuery?: string
   selectedOptionIds?: string[]
@@ -27,7 +29,7 @@ function parseRegistrationMonthsOptionValue(raw: string): number | null {
 /** Selected 身份別 labels combine with AND. Every other field combines with OR. */
 const AND_FIELDS = new Set(['label'])
 
-function matchesAge(aid: GovernmentAidRecord, raw: string): boolean {
+function matchesAge(aid: FilterableAid, raw: string): boolean {
   const age = Number(raw)
   if (!Number.isInteger(age)) return false
   const lower = typeof aid.age_lower === 'number' ? aid.age_lower : null
@@ -39,7 +41,7 @@ function matchesAge(aid: GovernmentAidRecord, raw: string): boolean {
 
 /** Whether a single aid matches one filter option id (`field:value`). */
 export function recordMatchesFilterOption(
-  aid: GovernmentAidRecord,
+  aid: FilterableAid,
   optionId: string,
 ): boolean {
   const colon = optionId.indexOf(':')
@@ -70,7 +72,7 @@ export function recordMatchesFilterOption(
  * which uses AND. Distinct fields combine with AND.
  */
 export function recordMatchesFilterGroups(
-  aid: GovernmentAidRecord,
+  aid: FilterableAid,
   selectedOptionIds: string[] | undefined,
 ): boolean {
   if (!selectedOptionIds?.length) return true
@@ -85,7 +87,7 @@ export function recordMatchesFilterGroups(
   return true
 }
 
-function searchableText(aid: GovernmentAidRecord): string {
+function searchableText(aid: FilterableAid): string {
   return [aid.name, aid.summary, aid.subsidy_target, aid.category, ...aid.conditions, ...aid.application_method_or_documents]
     .join('\n')
     .toLowerCase()
@@ -93,7 +95,7 @@ function searchableText(aid: GovernmentAidRecord): string {
 
 /** Case-insensitive match; whitespace-separated terms must all appear (AND). */
 export function recordMatchesSearch(
-  aid: GovernmentAidRecord,
+  aid: FilterableAid,
   searchQuery: string | undefined,
 ): boolean {
   const trimmed = searchQuery?.trim()
@@ -104,10 +106,10 @@ export function recordMatchesSearch(
   return terms.every((term) => haystack.includes(term))
 }
 
-export function applyFilter(
-  aids: GovernmentAidRecord[],
+export function applyFilter<T extends FilterableAid>(
+  aids: T[],
   criteria: FilterCriteria = {},
-): GovernmentAidRecord[] {
+): T[] {
   return aids.filter(
     (aid) =>
       recordMatchesSearch(aid, criteria.searchQuery) &&

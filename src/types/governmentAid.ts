@@ -1,5 +1,6 @@
-/** Single aid row from the Taipei indigenous subsidy JSON feed. */
+/** Single aid row from either subsidy JSON feed. */
 export interface GovernmentAidRecord {
+  id: number
   category: string
   label: string[]
   is_organization: boolean
@@ -16,6 +17,10 @@ export interface GovernmentAidRecord {
   /** Optional attachment or related pages in addition to source_url. */
   ref_urls?: string[]
 }
+
+export type AidDataset = 'indigenous' | 'youth'
+
+export type GovernmentAidItem = GovernmentAidRecord & { dataset: AidDataset }
 
 /** Failed page recorded by the subsidy parser. */
 export interface GovernmentAidError {

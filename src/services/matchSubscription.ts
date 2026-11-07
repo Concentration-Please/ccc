@@ -1,5 +1,4 @@
-import { recordMatchesFilterOption } from './filterQuery.js'
-import type { GovernmentAidRecord } from '@/types/governmentAid'
+import { recordMatchesFilterOption, type FilterableAid } from './filterQuery.js'
 
 export interface Persona {
   id: string
@@ -53,7 +52,7 @@ export function ageInYears(birthDate: string, today = new Date()): number | null
   return age
 }
 
-function asFilterRecord(aid: MatchableAid): GovernmentAidRecord {
+function asFilterRecord(aid: MatchableAid): FilterableAid {
   return {
     category: aid.classification,
     label: [],
