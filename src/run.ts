@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { access, mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { subsidySchema, youthSubsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord, type YouthSubsidy } from './schema.js';
@@ -41,19 +41,6 @@ export interface RunSummary {
 
 function signature(article: Article, revision: string): string {
   return createHash('sha256').update(JSON.stringify([article.category, article.title, article.publishedAt, article.body, revision])).digest('hex');
-}
-
-async function loadCache(path: string): Promise<Cache> {
-  try {
-    const value: unknown = JSON.parse(await readFile(path, 'utf8'));
-    if (value && typeof value === 'object' && 'version' in value && (value.version === 1 || value.version === 2 || value.version === 3 || value.version === 4)) {
-      return { version: 5, entries: {} };
-    }
-    return cacheSchema.parse(value);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 5, entries: {} };
-    throw error;
-  }
 }
 
 async function writeJson(path: string, value: unknown): Promise<void> {
@@ -99,9 +86,15 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const attachmentDir = join(options.stateDir, `${source.name}-attachments`);
   const attachmentManifestPath = join(options.stateDir, `${source.name}-attachments.json`);
   const outputPath = join(options.dataDir, source.outputFile);
+  await Promise.all([
+    rm(outputPath, { force: true }),
+    rm(cachePath, { force: true }),
+    rm(attachmentManifestPath, { force: true }),
+    rm(attachmentDir, { recursive: true, force: true }),
+  ]);
   await mkdir(attachmentDir, { recursive: true });
   const fetchAttachment = options.fetchAttachment ?? createAttachmentFetcher();
-  const cache = await loadCache(cachePath);
+  const cache: Cache = { version: 5, entries: {} };
   const listings = await source.discover(options.fetchHtml);
   const records: SubsidyRecord[] = [];
   const attachments: { article_url: string; url: string; title: string; file: string }[] = [];

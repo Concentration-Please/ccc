@@ -66,7 +66,7 @@ npm run parse
 
 `.dev.vars` 是 Cloudflare Workers 本機開發使用的 secret 檔，已被 Git 忽略。現有 Node.js 批次程式也會讀取它；未來接入 Worker 時，金鑰需透過 Worker 的 secret binding 傳入。
 
-完整抓取會對每篇有正文的網頁呼叫付費模型，不做關鍵字初篩；只有附件而無正文的頁面會略過。程式依序處理網頁，每篇完成後將結果寫入 `data/indigenous.json`，並將續跑狀態寫入 Git 忽略的 `tmp/ipc-parser-state.json`。重新執行會重抓網頁內文，但內容與抽取版本未變時不再呼叫模型。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會重試。
+完整抓取會對每篇有正文的網頁呼叫付費模型，不做關鍵字初篩；只有附件而無正文的頁面會略過。每次執行會先刪除該 parser 的舊輸出、狀態及附件，再重新抓取與抽取；程式依序處理網頁，每篇完成後將結果寫入 `data/indigenous.json`，並將當次進度寫入 Git 忽略的 `tmp/ipc-parser-state.json`。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會從頭重跑。
 
 附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。目前模型只讀網頁正文；附件內容不送模型。
 
@@ -99,4 +99,4 @@ npm run typecheck
 npm run parse:youth
 ```
 
-青年局資料的 `category` 從原住民資料現有分類及新增的「其他」中選擇；每筆補助獨立分類。只有網頁正文會送模型，附件與外部連結內容不解析。續跑狀態與附件索引分別存於 Git 忽略的 `tmp/youth-parser-state.json`、`tmp/youth-attachments.json`，與原住民 parser 分開。
+青年局資料的 `category` 從原住民資料現有分類及新增的「其他」中選擇；每筆補助獨立分類。只有網頁正文會送模型，附件與外部連結內容不解析。每次執行同樣會清除青年局的舊輸出與暫存；當次進度與附件索引分別存於 Git 忽略的 `tmp/youth-parser-state.json`、`tmp/youth-attachments.json`，與原住民 parser 分開。

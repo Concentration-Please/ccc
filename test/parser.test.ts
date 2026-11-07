@@ -129,8 +129,10 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     </ul><div>共 1 頁 2 筆</div></div>`;
   const loanHtml = '<article class="article"><div class="wysiwyg"><div class="content"><p>青年留學貸款</p><p>貸款利息補貼</p></div></div></article>';
   const otherHtml = '<article class="article"><div class="wysiwyg"><div class="content"><p>完成AI課程者可申請工具訂閱補助。</p></div></div></article>';
+  let currentListingHtml = listingHtml;
+  let extractCalls = 0;
   const fetchHtml = async (url: string): Promise<string> => {
-    if (url === YOUTH_SOURCE_URL) return listingHtml;
+    if (url === YOUTH_SOURCE_URL) return currentListingHtml;
     if (url === loanUrl) return loanHtml;
     if (url === otherUrl) return otherHtml;
     throw new Error(`Unexpected URL: ${url}`);
@@ -144,6 +146,7 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     const options = {
       fetchHtml,
       extract: async (article: Article) => {
+        extractCalls += 1;
         const record = {
           ...subsidy,
           isNative: false,
@@ -167,16 +170,22 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     const result = await runParser(options);
     assert.equal(result.total, 2);
     assert.equal(result.records, 3);
+    assert.equal(extractCalls, 2);
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
     assert.equal(output.source, YOUTH_SOURCE_URL);
     assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '貸款利息補貼', '其他']);
     assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl, otherUrl]);
     const ids = output.records.map(({ id }: { id: number }) => id);
     assert.deepEqual(ids, [1, 2, 3]);
+    currentListingHtml = listingHtml.replace(/<li><a class="title" href="[^"]+\/other".*?<\/li>/, '').replace('2 筆', '1 筆');
     const second = await runParser(options);
-    assert.equal(second.reused, 2);
+    assert.equal(second.reused, 0);
+    assert.equal(extractCalls, 3);
     const updated = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
-    assert.deepEqual(updated.records.map(({ id }: { id: number }) => id), ids);
+    assert.deepEqual(updated.records.map(({ id }: { id: number }) => id), [1, 2]);
+    assert.deepEqual(updated.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl]);
+    await assert.rejects(runParser({ ...options, source: { ...options.source, discover: async () => { throw new Error('discovery failed'); } } }), /discovery failed/);
+    await assert.rejects(readFile(join(rootDir, 'data', 'youth.json')), { code: 'ENOENT' });
     assert.equal(output.records[0].age_lower, null);
     assert.equal(output.records[0].isNative, false);
     assert.equal(output.records[0].is_organization, true);
@@ -186,7 +195,7 @@ test('reads youth subsidy pages and writes a separate output with shared categor
   }
 });
 
-test('crawls nested service pages, sends every body, and resumes', async () => {
+test('crawls nested service pages and starts each run from fresh data', async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'ccc-parser-test-'));
   let modelCalls = 0;
   let attachmentCalls = 0;
@@ -230,19 +239,13 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(attachmentCalls, 1);
     assert.equal(articleCategories.get('其他服務'), '其他補助');
 
+    const staleAttachment = join(rootDir, 'tmp', 'ipc-attachments', 'stale.pdf');
+    await writeFile(staleAttachment, 'stale');
     const second = await runParser(options);
-    assert.equal(second.reused, 4);
-    assert.equal(modelCalls, 3);
-    assert.equal(attachmentCalls, 1);
-
-    const cachePath = join(rootDir, 'tmp', 'ipc-parser-state.json');
-    const oldCache = JSON.parse(await readFile(cachePath, 'utf8'));
-    oldCache.version = 4;
-    await writeFile(cachePath, JSON.stringify(oldCache));
-    const third = await runParser(options);
-    assert.equal(third.reused, 0);
+    assert.equal(second.reused, 0);
     assert.equal(modelCalls, 6);
-    assert.equal(attachmentCalls, 1);
+    assert.equal(attachmentCalls, 2);
+    await assert.rejects(readFile(staleAttachment), { code: 'ENOENT' });
 
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'indigenous.json'), 'utf8'));
     assert.equal(output.source, SOURCE_URL);
