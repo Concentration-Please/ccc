@@ -13,7 +13,7 @@ export function notifyMatchingAid(title: string): void {
   bridge.postMessage(
     JSON.stringify({
       name: 'notify',
-      data: { title: '新的符合補助', content: title },
+      data: { title: '符合您訂閱條件的政府補助', content: title },
     }),
   )
 }

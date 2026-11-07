@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import AnnouncementMarquee from '@/components/AnnouncementMarquee.vue'
 import { indigenousRecords } from '@/data/indigenousDataset'
 import { fetchAnnouncementBatch, hasSeenBatch, markBatchSeen } from '@/services/announcements'
 import { matchesSubscription, toMatchableAid, type SubscriptionCriteria } from '@/services/matchSubscription'
@@ -12,7 +11,6 @@ const POLL_MS = 60_000
 
 const route = useRoute()
 const subscription = ref<SubscriptionCriteria | null>(loadSubscription())
-const marqueeTitles = ref<string[]>([])
 let pollTimer = 0
 
 function matchingRecords(criteria: SubscriptionCriteria) {
@@ -26,25 +24,23 @@ function pushNewMatches(criteria: SubscriptionCriteria) {
   if (fresh.length > 0) markNotified(fresh.map((record) => record.source_url))
 }
 
-async function refreshMarquee() {
+async function notifySubscribedAnnouncements() {
   const criteria = subscription.value
-  if (!criteria) {
-    marqueeTitles.value = []
-    return
-  }
+  if (!criteria) return
   const batch = await fetchAnnouncementBatch()
   if (!batch.batchId || hasSeenBatch(batch.batchId)) return
+  const seen = new Set(loadNotifiedIds())
+  const fresh = batch.items.filter((item) => matchesSubscription(item, criteria) && !seen.has(item.id))
+  for (const item of fresh) notifyMatchingAid(item.title)
+  if (fresh.length > 0) markNotified(fresh.map((item) => item.id))
   markBatchSeen(batch.batchId)
-  marqueeTitles.value = batch.items
-    .filter((item) => matchesSubscription(item, criteria))
-    .map((item) => item.title)
 }
 
 function saveSubscriptionCriteria(criteria: SubscriptionCriteria) {
   saveSubscription(criteria)
   subscription.value = criteria
   pushNewMatches(criteria)
-  void refreshMarquee()
+  void notifySubscribedAnnouncements()
 }
 
 provide('ccc-subscription', subscription)
@@ -52,8 +48,8 @@ provide('ccc-save-subscription', saveSubscriptionCriteria)
 
 onMounted(() => {
   if (subscription.value) pushNewMatches(subscription.value)
-  void refreshMarquee()
-  pollTimer = window.setInterval(() => void refreshMarquee(), POLL_MS)
+  void notifySubscribedAnnouncements()
+  pollTimer = window.setInterval(() => void notifySubscribedAnnouncements(), POLL_MS)
 })
 
 onUnmounted(() => {
@@ -63,7 +59,6 @@ onUnmounted(() => {
 
 <template>
   <div class="app-shell">
-    <AnnouncementMarquee :titles="marqueeTitles" />
     <main
       class="app-main"
       :class="{ 'app-main--list': route.name === 'aid-list' }"
