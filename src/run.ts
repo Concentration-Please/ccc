@@ -1,7 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { access, mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
+import { extractAttachmentText } from './attachments.js';
 import { subsidySchema, youthSubsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord, type YouthSubsidy } from './schema.js';
 import { createAttachmentFetcher, discoverArticles, normalizeText, parseArticle, parseAttachments, SOURCE_URL, type AttachmentFetcher, type HtmlFetcher } from './source.js';
 
@@ -17,6 +18,7 @@ type Cache = z.infer<typeof cacheSchema>;
 export interface RunOptions {
   fetchHtml: HtmlFetcher;
   fetchAttachment?: AttachmentFetcher;
+  extractAttachmentText?: typeof extractAttachmentText;
   extract: (article: Article) => Promise<Subsidy[]>;
   dataDir: string;
   stateDir: string;
@@ -40,7 +42,7 @@ export interface RunSummary {
 }
 
 function signature(article: Article, revision: string): string {
-  return createHash('sha256').update(JSON.stringify([article.category, article.title, article.publishedAt, article.body, revision])).digest('hex');
+  return createHash('sha256').update(JSON.stringify([article.category, article.title, article.publishedAt, article.body, article.attachments, revision])).digest('hex');
 }
 
 async function writeJson(path: string, value: unknown): Promise<void> {
@@ -95,6 +97,7 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   ]);
   await mkdir(attachmentDir, { recursive: true });
   const fetchAttachment = options.fetchAttachment ?? createAttachmentFetcher();
+  const readAttachmentText = options.extractAttachmentText ?? extractAttachmentText;
   const cache: Cache = { version: 5, entries: {} };
   const listings = await source.discover(options.fetchHtml);
   const records: SubsidyRecord[] = [];
@@ -120,29 +123,35 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
     try {
       const html = await options.fetchHtml(listing.url);
       const article = source.parseArticle(html, listing);
+      const articleAttachments: NonNullable<Article['attachments']> = [];
       for (const attachment of source.parseAttachments(html, listing.url)) {
         const file = `${createHash('sha256').update(attachment.url).digest('hex')}.${attachment.extension}`;
         const path = join(attachmentDir, file);
+        let bytes: Uint8Array;
         try {
-          await access(path);
+          bytes = new Uint8Array(await readFile(path));
         } catch (error) {
           if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-          const bytes = await fetchAttachment(attachment.url);
+          bytes = await fetchAttachment(attachment.url);
           const temporary = `${path}.${randomUUID()}.tmp`;
           await writeFile(temporary, bytes);
           await rename(temporary, path);
         }
         attachments.push({ article_url: article.url, url: attachment.url, title: attachment.title, file: join(`${source.name}-attachments`, file) });
+        const text = await readAttachmentText(bytes, attachment.extension);
+        if (text) articleAttachments.push({ title: attachment.title, text });
+        else options.log?.(`No extractable text in attachment: ${attachment.title} (${attachment.url})`);
       }
-      const hash = signature(article, options.revision);
+      const articleWithAttachments = { ...article, attachments: articleAttachments };
+      const hash = signature(articleWithAttachments, options.revision);
       const cached = cache.entries[article.url];
       if (cached?.signature === hash && (cached.status === 'done' || cached.status === 'skipped')) {
         reused += 1;
         if (cached.status === 'done') records.push(...toRecords(article, cached.subsidies, records.length + 1));
-      } else if (!article.body) {
+      } else if (!article.body && articleAttachments.length === 0) {
         cache.entries[article.url] = { signature: hash, status: 'skipped', subsidies: [] };
       } else {
-        const subsidies = await options.extract(article);
+        const subsidies = await options.extract(articleWithAttachments);
         records.push(...toRecords(article, subsidies, records.length + 1));
         cache.entries[article.url] = { signature: hash, status: 'done', subsidies };
       }

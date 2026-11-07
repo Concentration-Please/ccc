@@ -66,9 +66,9 @@ npm run parse
 
 `.dev.vars` 是 Cloudflare Workers 本機開發使用的 secret 檔，已被 Git 忽略。現有 Node.js 批次程式也會讀取它；未來接入 Worker 時，金鑰需透過 Worker 的 secret binding 傳入。
 
-完整抓取會對每篇有正文的網頁呼叫付費模型，不做關鍵字初篩；只有附件而無正文的頁面會略過。每次執行會先刪除該 parser 的舊輸出、狀態及附件，再重新抓取與抽取；程式依序處理網頁，每篇完成後將結果寫入 `data/indigenous.json`，並將當次進度寫入 Git 忽略的 `tmp/ipc-parser-state.json`。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會從頭重跑。
+完整抓取會對有正文或可讀附件文字的網頁呼叫付費模型，不做關鍵字初篩。每次執行會先刪除該 parser 的舊輸出、狀態及附件，再重新抓取與抽取；程式依序處理網頁，每篇完成後將結果寫入 `data/indigenous.json`，並將當次進度寫入 Git 忽略的 `tmp/ipc-parser-state.json`。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會從頭重跑。
 
-附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。目前模型只讀網頁正文；附件內容不送模型。
+附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。Parser 會擷取 PDF、ODT、ODS、DOCX 的文字，連同附件標題送給模型；每份附件最多取 8,000 字，每篇合計最多 24,000 字。掃描影像 PDF 與舊版 DOC 無法直接讀取文字，會記錄提示並保留原檔。
 
 `data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十三個欄位：
 
@@ -83,7 +83,7 @@ npm run parse
 - `summary`：一句話摘要。
 - `subsidy_target`：詳細的補助標的、金額、頻率或上限。
 - `conditions`：各項明確資格與限制，每個獨立條件為一個字串。
-- `application_method_or_documents`：正文提到的申請方式、送件步驟或應備文件；未提及時為空陣列。
+- `application_method_or_documents`：正文或可讀附件提到的申請方式、送件步驟或應備文件；未提及時為空陣列。
 
 驗證 parser：
 

@@ -47,6 +47,7 @@ export interface Article {
   category: string;
   publishedAt: string | null;
   body: string;
+  attachments?: { title: string; text: string }[];
 }
 
 export interface ArticleListing {

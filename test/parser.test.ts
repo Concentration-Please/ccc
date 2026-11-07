@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import JSZip from 'jszip';
+import { extractAttachmentText } from '../src/attachments.js';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
 import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
@@ -87,14 +89,53 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     category: '長青服務',
     publishedAt: '2026-11-07',
     body: '具原住民身分且年滿55歲、未滿65歲者可申請。',
+    attachments: [{ title: '補助要點', text: '應備文件：戶籍謄本' }],
   };
   const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
   assert.deepEqual(result, [agedSubsidy]);
   assert.equal(request?.model, MODEL_ID);
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
   assert.match(JSON.stringify(request?.messages), /application_method_or_documents/);
+  assert.match(JSON.stringify(request?.messages), /應備文件：戶籍謄本/);
   assert.deepEqual(await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth'), [youthSubsidy]);
   assert.match(JSON.stringify(request?.messages), /政策性貸款/);
+  assert.match(JSON.stringify(request?.messages), /利息補貼須另輸出一筆/);
+});
+
+test('reads OpenDocument attachment text and parses an attachment-only article', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-attachment-parser-test-'));
+  const zip = new JSZip();
+  zip.file('content.xml', '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><text:p>申請方式：向區公所送件</text:p><text:p>應備文件：戶籍謄本</text:p></office:body></office:document-content>');
+  const bytes = await zip.generateAsync({ type: 'uint8array' });
+  assert.equal(await extractAttachmentText(bytes, 'odt'), '申請方式：向區公所送件\n應備文件：戶籍謄本');
+  try {
+    const result = await runParser({
+      fetchHtml: async () => '<div class="list-text file-download-multiple"></div>',
+      fetchAttachment: async () => bytes,
+      extract: async (article) => {
+        assert.equal(article.body, '');
+        assert.deepEqual(article.attachments, [{ title: '申請須知', text: '申請方式：向區公所送件\n應備文件：戶籍謄本' }]);
+        return [subsidy];
+      },
+      dataDir: join(rootDir, 'data'),
+      stateDir: join(rootDir, 'tmp'),
+      revision: 'test-attachment',
+      source: {
+        url: SOURCE_URL,
+        name: 'attachment-test',
+        outputFile: 'attachment-test.json',
+        discover: async () => [{ url: testArticleUrl, title: '申請須知', category: '托育服務', publishedAt: null }],
+        parseArticle: (_html, listing) => ({ ...listing, body: '' }),
+        parseAttachments: () => [{ url: 'https://www-ws.gov.taipei/Download.ashx?icon=..odt', title: '申請須知', extension: 'odt' }],
+      },
+    });
+    assert.equal(result.records, 1);
+    const output = JSON.parse(await readFile(join(rootDir, 'data', 'attachment-test.json'), 'utf8'));
+    assert.equal(output.complete, true);
+    assert.equal(output.records.length, 1);
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
 });
 
 test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {
@@ -122,6 +163,32 @@ test('rechecks an empty youth extraction and excludes organization representativ
   const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth');
   assert.equal(calls, 2);
   assert.deepEqual(result, [{ ...organization, age_lower: null, age_upper: null }]);
+});
+
+test('rechecks an empty indigenous extraction when the page describes an application', async () => {
+  let calls = 0;
+  const openrouter = createOpenRouter({
+    apiKey: 'test-key',
+    compatibility: 'strict',
+    fetch: async () => {
+      calls += 1;
+      return new Response(JSON.stringify({
+        id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
+        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: calls === 1 ? [] : [subsidy] }) } }],
+        usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    },
+  });
+  const article: Article = {
+    url: testArticleUrl,
+    title: '托育補助',
+    category: '托育服務',
+    publishedAt: null,
+    body: '原住民家庭可申請托育補助。',
+  };
+  const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
+  assert.equal(calls, 2);
+  assert.deepEqual(result, [subsidy]);
 });
 
 test('reads youth subsidy pages and writes a separate output with shared categories', async () => {
@@ -238,7 +305,7 @@ test('crawls nested service pages and starts each run from fresh data', async ()
       attachmentCalls += 1;
       return new TextEncoder().encode('%PDF-test');
     };
-    const options = { fetchHtml, fetchAttachment, extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-ipc' };
+    const options = { fetchHtml, fetchAttachment, extractAttachmentText: async () => '補助要點文字', extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-ipc' };
     const first = await runParser(options);
     assert.equal(first.total, 4);
     assert.equal(first.records, 1);
