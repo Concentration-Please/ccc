@@ -13,8 +13,8 @@ test('TownPass birthday uses full years and yyyy/MM/dd', () => {
 
 test('userinfo selects indigenous only when nativePeople is true and sets age', () => {
   assert.deepEqual(
-    applyUserInfoFilters(['category:托育教育', 'age:20'], { birthday: '1988/12/12', nativePeople: true }, today),
-    ['category:托育教育', 'label:indigenous', 'age:37'],
+    applyUserInfoFilters(['category:托育服務', 'age:20'], { birthday: '1988/12/12', nativePeople: true }, today),
+    ['category:托育服務', 'label:indigenous', 'age:37'],
   )
   assert.deepEqual(
     applyUserInfoFilters(['label:indigenous'], { birthday: '1988/12/12', nativePeople: false }, today),

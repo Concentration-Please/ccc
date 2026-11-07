@@ -1,7 +1,4 @@
 import categoryList from '@data/category.json'
-import labelMap from '@data/label.json'
-import { governmentAidRecords } from '@/data/governmentAids'
-import { identityFilterOptions, subsidyCategories } from '@/services/filterCatalog'
 import type { FilterGroup, FilterOption } from '@/types/filter'
 
 const ageOptions: FilterOption[] = Array.from({ length: 100 }, (_, index) => {
@@ -9,7 +6,10 @@ const ageOptions: FilterOption[] = Array.from({ length: 100 }, (_, index) => {
   return { id: `age:${age}`, label: String(age) }
 })
 
-const identityOptions: FilterOption[] = identityFilterOptions(labelMap)
+const identityOptions: FilterOption[] = [
+  { id: 'label:indigenous', label: '原住民' },
+  { id: 'label:youth', label: '青年' },
+]
 
 const registrationOptions: FilterOption[] = [
   { id: 'registration_months:4', label: '4個月' },
@@ -21,12 +21,7 @@ const audienceOptions: FilterOption[] = [
   { id: 'is_organization:true', label: '團體' },
 ]
 
-const categories = subsidyCategories(
-  categoryList,
-  governmentAidRecords.map((record) => record.category),
-)
-
-const categoryOptions: FilterOption[] = categories.map((category) => ({
+const categoryOptions: FilterOption[] = categoryList.map((category) => ({
   id: `category:${category}`,
   label: category,
 }))
@@ -39,4 +34,4 @@ export const SUBSIDY_FILTER_GROUPS: FilterGroup[] = [
   { id: 'is_organization', title: '補貼對象', options: audienceOptions, selection: 'single' },
 ]
 
-export const SUBSIDY_CATEGORIES: readonly string[] = categories
+export const SUBSIDY_CATEGORIES: readonly string[] = categoryList
