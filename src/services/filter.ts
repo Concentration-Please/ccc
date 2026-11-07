@@ -1,24 +1,32 @@
-import type { GovernmentAid } from '@/types/governmentAid'
+import { SUBSIDY_FILTER_GROUPS } from '@/data/subsidiesCatalog'
+import type { FilterGroup, FilterOption } from '@/types/filter'
 
-/** Placeholder filter criteria (expand when filter UI is implemented). */
-export interface FilterCriteria {
-  classification?: string
-  demographic?: string
+export type { FilterCriteria } from '@/services/filterQuery'
+export {
+  applyFilter,
+  recordMatchesFilterGroups,
+  recordMatchesFilterOption,
+  recordMatchesSearch,
+} from '@/services/filterQuery'
+
+export type { FilterGroup, FilterOption }
+
+export const FILTER_GROUPS: FilterGroup[] = SUBSIDY_FILTER_GROUPS
+
+export interface AppliedFilterTag {
+  id: string
+  label: string
 }
 
-/**
- * TODO: Open filter sheet / modal when filter UI is implemented.
- */
-export function openFilter(): void {
-  console.info('[filter] openFilter stub — filter UI not implemented yet')
-}
+const optionLabelById = new Map(
+  FILTER_GROUPS.flatMap((g) => g.options).map((o) => [o.id, o.label] as const),
+)
 
-/**
- * TODO: Apply real criteria from database / user selection.
- */
-export function applyFilter(
-  aids: GovernmentAid[],
-  _criteria: FilterCriteria = {},
-): GovernmentAid[] {
-  return aids
+export function tagsFromSelectedIds(ids: string[]): AppliedFilterTag[] {
+  return ids
+    .map((id) => {
+      const label = optionLabelById.get(id)
+      return label ? { id, label } : null
+    })
+    .filter((tag): tag is AppliedFilterTag => tag !== null)
 }

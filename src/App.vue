@@ -1,33 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import AidList from '@/components/AidList.vue'
-import FilterFab from '@/components/FilterFab.vue'
-import { fetchAllGovernmentAids } from '@/services/database'
-import type { GovernmentAid } from '@/types/governmentAid'
+import { useRoute } from 'vue-router'
 
-const aids = ref<GovernmentAid[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
-
-onMounted(async () => {
-  try {
-    aids.value = await fetchAllGovernmentAids()
-  } catch {
-    error.value = '無法載入資料'
-  } finally {
-    loading.value = false
-  }
-})
+const route = useRoute()
 </script>
 
 <template>
   <div class="app-shell">
-    <main class="app-main">
-      <p v-if="loading" class="app-status" role="status">載入中…</p>
-      <p v-else-if="error" class="app-status app-status--error" role="alert">{{ error }}</p>
-      <AidList v-else :aids="aids" />
+    <main
+      class="app-main"
+      :class="{ 'app-main--list': route.name === 'aid-list' }"
+    >
+      <RouterView v-slot="{ Component }">
+        <KeepAlive include="AidListView">
+          <component :is="Component" />
+        </KeepAlive>
+      </RouterView>
     </main>
-    <FilterFab />
   </div>
 </template>
 
@@ -37,24 +25,20 @@ onMounted(async () => {
   flex-direction: column;
   height: 100%;
   min-height: 100dvh;
+  overflow: hidden;
 }
 
 .app-main {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(var(--fab-reserve) + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
 }
 
-.app-status {
-  margin: 2rem 1.25rem;
-  font-size: 1.125rem;
-  text-align: center;
-  color: var(--color-text-secondary);
-}
-
-.app-status--error {
-  color: #c62828;
+.app-main--list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 </style>
