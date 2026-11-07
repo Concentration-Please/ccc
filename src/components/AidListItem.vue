@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import groupIcon from '@/assets/groupIcon.svg'
+import personIcon from '@/assets/personIcon.svg'
 import type { GovernmentAidRecord } from '@/types/governmentAid'
 import { organizationLabel } from '@/utils/aidLabels'
 
@@ -12,10 +14,17 @@ defineProps<{
     class="aid-item"
     :to="{ name: 'aid-detail', query: { source: aid.source_url } }"
   >
-    <div class="aid-item__row">
-      <h2 class="aid-item__title">{{ aid.name }}</h2>
-      <span class="aid-item__chip">{{ organizationLabel(aid.is_organization) }}</span>
-    </div>
+    <h2 class="aid-item__title">
+      {{ aid.name }}
+      <img
+        v-if="aid.is_organization"
+        class="aid-item__icon"
+        :src="groupIcon"
+        :alt="organizationLabel(aid.is_organization)"
+        width="24"
+        height="24"
+      />
+    </h2>
     <p class="aid-item__summary">{{ aid.summary }}</p>
   </RouterLink>
 </template>
@@ -25,11 +34,10 @@ defineProps<{
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  padding: 1rem 1.1rem;
+  padding: 1rem var(--aid-inset, 1.1rem);
   color: inherit;
   text-decoration: none;
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -43,36 +51,26 @@ defineProps<{
   outline-offset: -2px;
 }
 
-.aid-item__row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.75rem;
-  align-items: start;
-}
-
 .aid-item__title {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 16px;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 22px;
 }
 
-.aid-item__chip {
-  flex-shrink: 0;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.3;
-  color: var(--color-chip-text);
-  background: var(--color-chip-bg);
-  border-radius: 999px;
-  white-space: nowrap;
+.aid-item__icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  vertical-align: middle;
 }
 
 .aid-item__summary {
   margin: 0;
-  font-size: 1rem;
-  line-height: 1.45;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
   color: var(--color-text-secondary);
 }
 </style>

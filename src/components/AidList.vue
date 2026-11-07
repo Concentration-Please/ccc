@@ -17,13 +17,25 @@ defineProps<{
 
 <style scoped>
 .aid-list {
+  --aid-inset: 1.1rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .aid-list__item {
+  position: relative;
   margin: 0;
   padding: 0;
+}
+
+.aid-list__item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: var(--aid-inset);
+  right: var(--aid-inset);
+  bottom: 0;
+  height: 1px;
+  background: var(--color-border);
 }
 </style>
