@@ -4,7 +4,7 @@
     {
       "id": 1,
       "summary": "鼓勵青年運用AI工具提升學習及職涯發展能力，補助AI工具訂閱費用。",
-      "category": "職業訓練補助",
+      "category": "就業創業",
       "is_organization": false,
       "registration_months": 6,
       "age_lower": 18,
@@ -48,7 +48,7 @@
     {
       "id": 2,
       "summary": "提供依法完成登記之公司、商業或有限合夥，用於購置廠房、設備或營運週轉金之創業貸款。",
-      "category": "創業及就業扶助",
+      "category": "就業創業",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -93,7 +93,7 @@
     {
       "id": 3,
       "summary": "提供依法完成登記之公司、商業或有限合夥，用於購置廠房、設備或營運週轉金之創業貸款。",
-      "category": "創業及就業扶助",
+      "category": "就業創業",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -138,7 +138,7 @@
     {
       "id": 4,
       "summary": "提供給設籍台北市一年以上、二十歲以上未滿四十六歲之青年，赴海外修讀博士學位之貸款。",
-      "category": "貸款利息補貼",
+      "category": "學業助學",
       "is_organization": false,
       "registration_months": 12,
       "age_lower": 20,
@@ -182,7 +182,7 @@
     {
       "id": 5,
       "summary": "提供給設籍台北市一年以上、二十歲以上未滿四十六歲之青年，赴海外修讀碩士學位之貸款。",
-      "category": "貸款利息補貼",
+      "category": "學業助學",
       "is_organization": false,
       "registration_months": 12,
       "age_lower": 20,
@@ -226,7 +226,7 @@
     {
       "id": 6,
       "summary": "提供給設籍台北市一年以上、二十歲以上未滿四十六歲之青年，赴海外修讀專技證照之貸款。",
-      "category": "貸款利息補貼",
+      "category": "學業助學",
       "is_organization": false,
       "registration_months": 12,
       "age_lower": 20,
@@ -269,7 +269,7 @@
     {
       "id": 7,
       "summary": "補助青年留學貸款前十年（含寬限期）之利息。",
-      "category": "貸款利息補貼",
+      "category": "學業助學",
       "is_organization": false,
       "registration_months": 12,
       "age_lower": 20,
@@ -295,7 +295,7 @@
     {
       "id": 8,
       "summary": "補助本市設籍、求學或就業之十五至四十五歲青年參與國際性公共展演、公開競技或大型會議等國際活動。",
-      "category": "文化、體育及藝文活動",
+      "category": "文化體育",
       "is_organization": false,
       "registration_months": null,
       "age_lower": 15,
@@ -329,7 +329,7 @@
     {
       "id": 9,
       "summary": "補助學校或符合特定條件之團體參與國際性公共展演、公開競技或大型會議等國際活動。",
-      "category": "文化、體育及藝文活動",
+      "category": "文化體育",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -364,7 +364,7 @@
     {
       "id": 10,
       "summary": "提供設籍臺北市且具在學身分之青年，於實習期間提供實習補助金。",
-      "category": "青年發展及實習補助",
+      "category": "就業創業",
       "is_organization": false,
       "registration_months": 6,
       "age_lower": 15,
@@ -402,7 +402,7 @@
     {
       "id": 11,
       "summary": "提供設籍臺北市且具在學身分之青年，於實習期間提供交通補助金。",
-      "category": "青年發展及實習補助",
+      "category": "就業創業",
       "is_organization": false,
       "registration_months": 6,
       "age_lower": 15,
@@ -439,7 +439,7 @@
     {
       "id": 12,
       "summary": "提供設籍臺北市且具在學身分之青年，於實習期間參加健康檢查者提供補助。",
-      "category": "青年發展及實習補助",
+      "category": "醫療保健",
       "is_organization": false,
       "registration_months": 6,
       "age_lower": 15,
@@ -478,7 +478,7 @@
     {
       "id": 13,
       "summary": "補助於本市設立之學校、學生社團、學生自治組織或人民團體辦理青年團體活動。",
-      "category": "文化、體育及藝文活動",
+      "category": "文化體育",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -508,7 +508,7 @@
     {
       "id": 14,
       "summary": "補助於臺北市創業初期之營利事業或人民團體租賃共享空間之費用。",
-      "category": "創業及就業扶助",
+      "category": "就業創業",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -539,7 +539,7 @@
     {
       "id": 15,
       "summary": "補助公私立學校、依法設立之機構或團體、以及本市青年創業團隊辦理職涯培力或創業主題活動。",
-      "category": "創業及就業扶助",
+      "category": "就業創業",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -568,7 +568,7 @@
     {
       "id": 16,
       "summary": "補助本市青年創業團隊參與國內策展、產業媒合、市集等實質展示產品、技術、服務或創意之活動。",
-      "category": "創業及就業扶助",
+      "category": "就業創業",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -599,7 +599,7 @@
     {
       "id": 17,
       "summary": "補助實習單位進用符合資格之青年進行職場實習，提供每人每月一萬元之實習指導費。",
-      "category": "青年發展及實習補助",
+      "category": "就業創業",
       "is_organization": true,
       "registration_months": null,
       "age_lower": null,
@@ -639,6 +639,6 @@
   ],
   "source": "https://youth.gov.taipei/services/05eb79e5-46b5-41e5-b1fd-0519d782b04a",
   "generated_at": "2026-11-07T12:58:47.084Z",
-  "updated_at": "2026-11-08T00:07:27.123+08:00",
+  "updated_at": "2026-11-08T00:11:51.051+08:00",
   "errors": []
 }

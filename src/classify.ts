@@ -33,7 +33,7 @@ export function createGemmaClassificationEngine(apiKey: string, labels: Record<s
     async createCategories(summaries) {
       const result = await generateText({
         model: classifierModel,
-        system: '你是臺灣公共補助資料分類員。根據所有補助摘要，自行建立 8 到 16 個互斥、簡短、以補助用途命名的繁體中文類別。跨資料來源共用類別；不要以網站、機關、問答頁或受益族群作分類。加入「其他」供無法歸入明確用途的摘要使用。只輸出類別名稱。',
+        system: '你是臺灣公共補助資料分類員。根據所有補助摘要，自行建立 4 到 8 個互斥、簡短、以補助用途命名的繁體中文類別，類別名稱大約四個字左右。跨資料來源共用類別；不要以網站、機關、問答頁或受益族群作分類。加入「其他」供無法歸入明確用途的摘要使用。只輸出類別名稱。',
         prompt: summaries.map((summary, index) => `${index + 1}. ${summary}`).join('\n'),
         output: Output.object({ schema: categoriesSchema }),
         temperature: 0,
