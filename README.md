@@ -20,16 +20,15 @@ npm run preview
 
 ## Cloudflare (Git / Workers Builds)
 
-Dashboard settings (or [`wrangler.toml`](wrangler.toml) when linked):
+Set these commands in the Cloudflare dashboard under **Settings > Builds**. Production and Previews Base have separate build settings; [`wrangler.toml`](wrangler.toml) does not set the Workers Builds commands.
 
-| Setting | Value |
-|---------|--------|
-| Root directory | *(leave blank)* |
-| Build command | `npm ci && npm run build` |
-| Deploy command | `npx wrangler preview` |
-| Node.js version | `22` (`.node-version`; or env `NODE_VERSION`) |
+| Setting | Production | Previews Base |
+|---------|------------|---------------|
+| Root directory | `/` (repository root) | `/` (repository root) |
+| Build command | `npm run build` | `npm run build` |
+| Deploy / Preview command | `npx wrangler deploy` | `npx wrangler preview` |
 
-Build output is `dist/` via `pages_build_output_dir` and `[assets].directory` in `wrangler.toml`. Project name in Cloudflare: `name = "ccc"` in `wrangler.toml`.
+Workers Builds installs dependencies before running the build command. Use Node.js 22 (`.node-version`; or env `NODE_VERSION`). Both build commands must create `dist/` before Wrangler runs. The output directory is configured by `pages_build_output_dir` and `[assets].directory` in `wrangler.toml`. Project name in Cloudflare: `name = "ccc"` in `wrangler.toml`.
 
 SPA fallback: `[assets].not_found_handling = "single-page-application"` for Workers preview; Pages has no `404.html` so unknown routes fall back to `index.html`. Cache hints: `public/_headers`.
 

@@ -1,5 +1,5 @@
-# Cloudflare — build at repository root (`npm ci && npm run build`).
-# Git / Workers Builds: leave dashboard root directory blank; deploy `npx wrangler preview`.
+# Cloudflare Workers Builds: use the repository root and run `npm run build`
+# before `wrangler deploy` or `wrangler preview` in the dashboard settings.
 # CLI: npm run cf:pages:deploy
 
 name = "ccc"
