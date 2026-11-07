@@ -1,9 +1,12 @@
-export interface SubscriptionCriteria {
-  age: number
-  categories: string[]
-  isNative: boolean
-  isOrganization: boolean
-  registrationMonths: number
+import { recordMatchesFilterOption } from './filterQuery.js'
+import type { GovernmentAidRecord } from '@/types/governmentAid'
+
+export interface Persona {
+  id: string
+  birthDate: string
+  identity: string
+  categoryIds: string[]
+  tagIds: string[]
 }
 
 export interface MatchableAid {
@@ -33,16 +36,63 @@ export function toMatchableAid(record: {
   }
 }
 
-export function matchesSubscription(aid: MatchableAid, criteria: SubscriptionCriteria): boolean {
-  if (criteria.categories.length > 0 && !criteria.categories.includes(aid.classification)) {
+/** Full years from a YYYY-MM-DD birth date. Invalid dates return null. */
+export function ageInYears(birthDate: string, today = new Date()): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate)
+  if (!match) return null
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const birth = new Date(year, month - 1, day)
+  if (birth.getFullYear() !== year || birth.getMonth() !== month - 1 || birth.getDate() !== day) {
+    return null
+  }
+  let age = today.getFullYear() - year
+  const monthDelta = today.getMonth() - (month - 1)
+  if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < day)) age -= 1
+  return age
+}
+
+function asFilterRecord(aid: MatchableAid): GovernmentAidRecord {
+  return {
+    category: aid.classification,
+    label: [],
+    is_organization: aid.isOrganization,
+    registration_months: aid.registrationMonths,
+    age_lower: aid.ageLower,
+    age_upper: aid.ageUpper,
+    isNative: aid.isNative,
+    source_url: '',
+    name: '',
+    summary: '',
+    subsidy_target: '',
+    conditions: [],
+    application_method_or_documents: [],
+  }
+}
+
+function matchesPersona(aid: MatchableAid, persona: Persona, today: Date): boolean {
+  if (persona.birthDate !== '') {
+    const age = ageInYears(persona.birthDate, today)
+    if (age == null || age < 0) return false
+    if (aid.ageLower != null && age < aid.ageLower) return false
+    if (aid.ageUpper != null && age > aid.ageUpper) return false
+  }
+  const record = asFilterRecord(aid)
+  if (
+    persona.categoryIds.length > 0 &&
+    !persona.categoryIds.some((id) => recordMatchesFilterOption(record, id))
+  ) {
     return false
   }
-  if (aid.isOrganization !== criteria.isOrganization) return false
-  if (aid.registrationMonths != null && criteria.registrationMonths < aid.registrationMonths) {
+  if (persona.tagIds.length > 0 && !persona.tagIds.some((id) => recordMatchesFilterOption(record, id))) {
     return false
   }
-  if (aid.ageLower != null && criteria.age < aid.ageLower) return false
-  if (aid.ageUpper != null && criteria.age > aid.ageUpper) return false
-  if (aid.isNative === true && !criteria.isNative) return false
+  if (persona.identity !== '' && !recordMatchesFilterOption(record, persona.identity)) return false
   return true
+}
+
+/** An aid matches when any persona matches. An empty list matches nothing. */
+export function matchesSubscription(aid: MatchableAid, personas: Persona[], today = new Date()): boolean {
+  return personas.some((persona) => matchesPersona(aid, persona, today))
 }

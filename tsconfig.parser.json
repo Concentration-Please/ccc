@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src/cli.ts", "src/cli-youth.ts", "src/extract.ts", "src/run.ts", "src/schema.ts", "src/source.ts", "src/youth-source.ts", "test/**/*.ts"]
+  "include": ["src/cli.ts", "src/cli-youth.ts", "src/cli-classify.ts", "src/classify.ts", "src/extract.ts", "src/run.ts", "src/schema.ts", "src/source.ts", "src/youth-source.ts", "test/**/*.ts"]
 }

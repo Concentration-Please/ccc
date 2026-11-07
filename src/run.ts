@@ -1,14 +1,16 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { access, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
-import { subsidySchema, youthSubsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord, type YouthSubsidy } from './schema.js';
+import { extractAttachmentText } from './attachments.js';
+import { subsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord } from './schema.js';
 import { createAttachmentFetcher, discoverArticles, normalizeText, parseArticle, parseAttachments, SOURCE_URL, type AttachmentFetcher, type HtmlFetcher } from './source.js';
 
 const cacheEntrySchema = z.object({
   signature: z.string(),
   status: z.enum(['done', 'skipped', 'error']),
-  subsidies: z.array(z.union([subsidySchema, youthSubsidySchema])),
+  subsidies: z.array(subsidySchema),
   error: z.string().optional(),
 });
 const cacheSchema = z.object({ version: z.literal(5), entries: z.record(z.string(), cacheEntrySchema) });
@@ -17,6 +19,7 @@ type Cache = z.infer<typeof cacheSchema>;
 export interface RunOptions {
   fetchHtml: HtmlFetcher;
   fetchAttachment?: AttachmentFetcher;
+  extractAttachmentText?: typeof extractAttachmentText;
   extract: (article: Article) => Promise<Subsidy[]>;
   dataDir: string;
   stateDir: string;
@@ -40,20 +43,7 @@ export interface RunSummary {
 }
 
 function signature(article: Article, revision: string): string {
-  return createHash('sha256').update(JSON.stringify([article.category, article.title, article.publishedAt, article.body, revision])).digest('hex');
-}
-
-async function loadCache(path: string): Promise<Cache> {
-  try {
-    const value: unknown = JSON.parse(await readFile(path, 'utf8'));
-    if (value && typeof value === 'object' && 'version' in value && (value.version === 1 || value.version === 2 || value.version === 3 || value.version === 4)) {
-      return { version: 5, entries: {} };
-    }
-    return cacheSchema.parse(value);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { version: 5, entries: {} };
-    throw error;
-  }
+  return createHash('sha256').update(JSON.stringify([article.category, article.title, article.publishedAt, article.body, article.attachments, revision])).digest('hex');
 }
 
 async function writeJson(path: string, value: unknown): Promise<void> {
@@ -62,14 +52,14 @@ async function writeJson(path: string, value: unknown): Promise<void> {
   await rename(temporary, path);
 }
 
-function toRecords(article: Article, subsidies: (Subsidy | YouthSubsidy)[], startId: number): SubsidyRecord[] {
+function toRecords(article: Article, subsidies: Subsidy[], startId: number, isYouth: boolean): SubsidyRecord[] {
   return subsidies.map((subsidy, index) => {
-    const isYouth = 'category' in subsidy;
     const isOrganization = subsidy.is_organization || (isYouth && subsidy.conditions.some((condition) =>
       /^(?:申請人|對象|適用對象)(?:須)?為.*?(?:公司、商業|營利事業|人民團體|高級中等學校|大專院校|公私立學校|機構或團體)/.test(condition)));
     return {
       id: startId + index,
-      category: isYouth ? subsidy.category : article.category,
+      category: article.category,
+      label: [],
       is_organization: isOrganization,
       registration_months: isYouth && isOrganization ? null : subsidy.registration_months,
       age_lower: isYouth && isOrganization ? null : subsidy.age_lower,
@@ -80,6 +70,7 @@ function toRecords(article: Article, subsidies: (Subsidy | YouthSubsidy)[], star
       summary: subsidy.summary,
       subsidy_target: subsidy.subsidy_target,
       conditions: subsidy.conditions,
+      application_method_or_documents: subsidy.application_method_or_documents,
     };
   });
 }
@@ -99,14 +90,30 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const attachmentDir = join(options.stateDir, `${source.name}-attachments`);
   const attachmentManifestPath = join(options.stateDir, `${source.name}-attachments.json`);
   const outputPath = join(options.dataDir, source.outputFile);
+  await Promise.all([
+    rm(outputPath, { force: true }),
+    rm(join(options.dataDir, 'category.json'), { force: true }),
+    rm(cachePath, { force: true }),
+    rm(attachmentManifestPath, { force: true }),
+    rm(attachmentDir, { recursive: true, force: true }),
+  ]);
   await mkdir(attachmentDir, { recursive: true });
   const fetchAttachment = options.fetchAttachment ?? createAttachmentFetcher();
-  const cache = await loadCache(cachePath);
+  const readAttachmentText = options.extractAttachmentText ?? extractAttachmentText;
+  const cache: Cache = { version: 5, entries: {} };
   const listings = await source.discover(options.fetchHtml);
   const records: SubsidyRecord[] = [];
   const attachments: { article_url: string; url: string; title: string; file: string }[] = [];
   const failures: RunSummary['failures'] = [];
   let reused = 0;
+
+  const appendSubsidies = (article: Article, subsidies: Subsidy[]) => {
+    const unique: Subsidy[] = [];
+    for (const subsidy of subsidies) {
+      if (!unique.some((seen) => isDeepStrictEqual(seen, subsidy))) unique.push(subsidy);
+    }
+    records.push(...toRecords(article, unique, records.length + 1, source.name === 'youth'));
+  };
 
   const save = async (complete: boolean) => {
     const now = new Date();
@@ -126,30 +133,36 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
     try {
       const html = await options.fetchHtml(listing.url);
       const article = source.parseArticle(html, listing);
+      const articleAttachments: NonNullable<Article['attachments']> = [];
       for (const attachment of source.parseAttachments(html, listing.url)) {
         const file = `${createHash('sha256').update(attachment.url).digest('hex')}.${attachment.extension}`;
         const path = join(attachmentDir, file);
+        let bytes: Uint8Array;
         try {
-          await access(path);
+          bytes = new Uint8Array(await readFile(path));
         } catch (error) {
           if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-          const bytes = await fetchAttachment(attachment.url);
+          bytes = await fetchAttachment(attachment.url);
           const temporary = `${path}.${randomUUID()}.tmp`;
           await writeFile(temporary, bytes);
           await rename(temporary, path);
         }
         attachments.push({ article_url: article.url, url: attachment.url, title: attachment.title, file: join(`${source.name}-attachments`, file) });
+        const text = await readAttachmentText(bytes, attachment.extension);
+        if (text) articleAttachments.push({ title: attachment.title, text });
+        else options.log?.(`No extractable text in attachment: ${attachment.title} (${attachment.url})`);
       }
-      const hash = signature(article, options.revision);
+      const articleWithAttachments = { ...article, attachments: articleAttachments };
+      const hash = signature(articleWithAttachments, options.revision);
       const cached = cache.entries[article.url];
       if (cached?.signature === hash && (cached.status === 'done' || cached.status === 'skipped')) {
         reused += 1;
-        if (cached.status === 'done') records.push(...toRecords(article, cached.subsidies, records.length + 1));
-      } else if (!article.body) {
+        if (cached.status === 'done') appendSubsidies(article, cached.subsidies);
+      } else if (!article.body && articleAttachments.length === 0) {
         cache.entries[article.url] = { signature: hash, status: 'skipped', subsidies: [] };
       } else {
-        const subsidies = await options.extract(article);
-        records.push(...toRecords(article, subsidies, records.length + 1));
+        const subsidies = await options.extract(articleWithAttachments);
+        appendSubsidies(article, subsidies);
         cache.entries[article.url] = { signature: hash, status: 'done', subsidies };
       }
     } catch (error) {

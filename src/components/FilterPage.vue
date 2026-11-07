@@ -62,9 +62,7 @@ function onClose() {
         <span class="filter-page__chevron" aria-hidden="true" />
       </button>
       <h1 id="filter-page-title" class="filter-page__title">篩選</h1>
-      <button type="button" class="filter-page__header-btn" aria-label="關閉" @click="onClose">
-        <span class="filter-page__close" aria-hidden="true">×</span>
-      </button>
+      <span aria-hidden="true" />
     </header>
 
     <div class="filter-page__body">
@@ -167,12 +165,6 @@ function onClose() {
   border-bottom: 2px solid currentcolor;
   transform: rotate(45deg);
   margin-left: 0.2rem;
-}
-
-.filter-page__close {
-  font-size: 1.75rem;
-  font-weight: 300;
-  line-height: 1;
 }
 
 .filter-page__body {

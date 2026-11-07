@@ -1,0 +1,32 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Check committed data
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+
+          for (const path of ['data/indigenous.json', 'data/youth.json']) {
+            const data = JSON.parse(readFileSync(path, 'utf8'));
+            if (data.complete !== true) throw new Error(`${path}: complete must be true`);
+            if (!Array.isArray(data.records) || data.records.some((record) => !Array.isArray(record.application_method_or_documents))) {
+              throw new Error(`${path}: every record must include application_method_or_documents`);
+            }
+          }
+          NODE

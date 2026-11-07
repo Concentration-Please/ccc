@@ -1,6 +1,7 @@
 /** Single aid row from the Taipei indigenous subsidy JSON feed. */
 export interface GovernmentAidRecord {
   category: string
+  label: string[]
   is_organization: boolean
   registration_months: number | null
   source_url: string
@@ -8,6 +9,7 @@ export interface GovernmentAidRecord {
   summary: string
   subsidy_target: string
   conditions: string[]
+  application_method_or_documents: string[]
   age_lower?: number | null
   age_upper?: number | null
   isNative?: boolean | null
