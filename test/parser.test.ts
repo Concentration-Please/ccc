@@ -75,6 +75,16 @@ test('prefers the amended elderly placement article when both versions are liste
   assert.deepEqual(olderOnly.map((article) => new URL(article.url).searchParams.get('s')), [older]);
 });
 
+test('prefers the complete student education page over duplicate articles and FAQs', async () => {
+  const primary = '863D1C3D89869AB4';
+  const duplicates = ['203B3A62C7BE44F0', 'F9F03DF617FCAF4E', 'D023FB4AF2100A7A', '35F98F0CC4211482'];
+  const fetchHtml = async (url: string) => url === SOURCE_URL
+    ? serviceHtml([['教育扶助', 'News.aspx?n=EDUCATION']])
+    : [primary, ...duplicates].map((id) => listingHtml(id, '原住民學生教育補助')).join('');
+  const articles = await discoverArticles(fetchHtml);
+  assert.deepEqual(articles.map((article) => new URL(article.url).searchParams.get('s')), [primary]);
+});
+
 test('sends a schema-constrained request through the AI SDK provider', async () => {
   let request: Record<string, unknown> | undefined;
   const agedSubsidy: Subsidy = {
@@ -118,6 +128,8 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
   assert.match(JSON.stringify(request?.messages), /「成年」或「已成年」可推為 age_lower 18/);
   assert.match(JSON.stringify(request?.messages), /「未滿 65 歲」的 age_upper 為 64/);
   assert.match(JSON.stringify(request?.messages), /安養與養護，即使年齡、金額不同也合併一筆/);
+  assert.match(JSON.stringify(request?.messages), /原住民學生教育補助的代收代辦、交通費、午餐/);
+  assert.match(JSON.stringify(request?.messages), /部分給付才有的設籍期間只寫入 conditions，registration_months 填 null/);
   assert.match(JSON.stringify(request?.messages), /age_lower 填所有路徑中最低可申請年齡/);
   assert.deepEqual(await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth'), [youthSubsidy]);
   assert.match(JSON.stringify(request?.messages), /政策性貸款/);
@@ -233,6 +245,22 @@ test('keeps elderly placement care paths in one committed aid record', async () 
   assert.match(records[0].subsidy_target, /安養者.*2萬元.*養護者.*2萬5千元/);
   assert.ok(records[0].conditions.some((condition: string) => condition.includes('安養者：年滿60歲')));
   assert.ok(records[0].conditions.some((condition: string) => condition.includes('養護者：年滿55歲')));
+});
+
+test('keeps student education benefits in one committed aid record', async () => {
+  const dataset = JSON.parse(await readFile(join('data', 'indigenous.json'), 'utf8'));
+  const records = dataset.records.filter((record: { name: string; source_url: string }) =>
+    record.name.includes('學生教育補助') ||
+    ['203B3A62C7BE44F0', 'F9F03DF617FCAF4E', 'D023FB4AF2100A7A', '35F98F0CC4211482']
+      .some((id) => record.source_url.includes(id)));
+  assert.equal(records.length, 1);
+  assert.equal(records[0].name, '臺北市原住民學生教育補助');
+  assert.equal(records[0].registration_months, null);
+  for (const benefit of ['代收代辦', '交通費', '午餐', '學業助學金', '特殊才能助學金', '私立教育代金', '生活津貼']) {
+    assert.ok(records[0].subsidy_target.includes(benefit));
+  }
+  assert.match(records[0].subsidy_target, /生活津貼：高中職每學期3,500元、大專院校每學期7,000元/);
+  assert.ok(records[0].conditions.some((condition: string) => condition.includes('生活津貼：') && condition.includes('連續滿4個月')));
 });
 
 test('rechecks an empty youth extraction and preserves organization representative age bounds', async () => {

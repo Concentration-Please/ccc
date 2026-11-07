@@ -4,8 +4,14 @@ import type { Article, ArticleListing } from './schema.js';
 export const SOURCE_URL = 'https://www.ipc.gov.taipei/Content_List.aspx?n=082798040B8AF70C';
 const PAGE_SIZE = 200;
 const SOURCE_ORIGIN = 'https://www.ipc.gov.taipei';
-// The 2025 amendment supersedes the older elderly placement service page.
-const SUPERSEDED_ARTICLES = new Map([['B3A1E6E442FFA18B', '796DF3C8A3F35458']]);
+// Prefer the complete service page over duplicate amendments and FAQ summaries.
+const PREFERRED_ARTICLES = new Map([
+  ['B3A1E6E442FFA18B', '796DF3C8A3F35458'],
+  ['203B3A62C7BE44F0', '863D1C3D89869AB4'],
+  ['F9F03DF617FCAF4E', '863D1C3D89869AB4'],
+  ['D023FB4AF2100A7A', '863D1C3D89869AB4'],
+  ['35F98F0CC4211482', '863D1C3D89869AB4'],
+]);
 
 export type HtmlFetcher = (url: string) => Promise<string>;
 export type AttachmentFetcher = (url: string) => Promise<Uint8Array>;
@@ -169,7 +175,7 @@ export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleL
   const discoveredIds = new Set([...articles.keys()].map((url) => new URL(url).searchParams.get('s')));
   for (const url of articles.keys()) {
     const id = new URL(url).searchParams.get('s');
-    const replacement = id ? SUPERSEDED_ARTICLES.get(id) : undefined;
+    const replacement = id ? PREFERRED_ARTICLES.get(id) : undefined;
     if (replacement && discoveredIds.has(replacement)) articles.delete(url);
   }
   return [...articles.values()];

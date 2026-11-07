@@ -322,7 +322,7 @@
     },
     {
       "id": 12,
-      "summary": "補助就讀本市公私立國小或國中之原住民學生相關費用。",
+      "summary": "補助設籍並實際居住臺北市的原住民學生，就讀國小至大專院校期間的代收代辦費、交通費、午餐、學業與特殊才能助學金、私立教育代金及生活津貼。",
       "category": "學業助學",
       "is_organization": false,
       "registration_months": null,
@@ -330,18 +330,26 @@
       "age_upper": null,
       "isNative": true,
       "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=863D1C3D89869AB4",
-      "name": "臺北市原住民學生教育補助-代收代辦",
-      "subsidy_target": "國小：家長會費新臺幣120元；國中：家長會費新臺幣120元、書籍費新臺幣500元、寒暑期學藝活動每小時新臺幣30元、課後輔導學習每小時新臺幣30元。",
+      "name": "臺北市原住民學生教育補助",
+      "subsidy_target": "代收代辦：國小家長會費120元；國中家長會費120元、書籍費500元，寒暑期學藝活動與課後輔導每小時30元核實補助。交通費：國中每學期500元、本市高中職及大專院校每學期1,000元、外縣市高中職及大專院校每學期1,500元。午餐：國中小每學期按實際用餐天數與每日費用核實補助，不含寒暑期。學業助學金：國中小成績70分或乙等以上及特殊生每學期1,500元；高中職一般生成績75分以上未滿85分1,000元、85分以上未滿90分2,000元、90分以上6,000元，特殊生5,000元。特殊才能助學金：個人組第1至6名依序10,000、8,000、5,000、3,000、2,000、1,000元；團體組前3名按個人組金額的一半。私立教育代金：私立高中職每學期最高8,000元、私立大專院校每學期最高15,000元。生活津貼：高中職每學期3,500元、大專院校每學期7,000元。",
       "conditions": [
-        "設籍並實際居住本市",
-        "就讀本市公私立國民小學或國民中學",
-        "具原住民身分",
-        "未領有其他政府機關、公營事業單位與本要點各項補助之同等性質補助者"
+        "共同資格：學生具原住民身分，設籍並實際居住臺北市，就讀國小至大專院校，且未領有其他政府機關或公營事業單位同等性質補助；設籍時間依原民會公告。",
+        "大專院校限臺灣地區經教育部承認的二專、五專、二技、四技或大學法定修業年限內可取得學位的學生（含進修部），不含碩士班、博士班及學分班。",
+        "代收代辦、午餐：限就讀臺北市公私立國小或國中；午餐不補助寒暑期用餐。",
+        "交通費：限國中至大專院校學生；具低收入戶身分者向臺北市政府社會局申請。",
+        "學業助學金：限國小至高中職；國中小一般生前一學期成績總平均須達70分或乙等以上，特殊生免計學業成績。",
+        "學業助學金：高中職一般生前一學期德行評量須達80分以上（無德行評量者須未受懲處）且學業成績須達75分以上；特殊生免計學業成績。",
+        "特殊才能助學金：限國小至大專院校學生；政府機關辦理的全國級或縣市級比賽、展覽須獲個人組前6名或團體組前3名，全國級須經選拔代表本市；民間舉辦的全國級以上比賽、展覽須獲個人或團體組前3名。",
+        "特殊才能助學金：同年度以最高成績為準，同一比賽項目以獎勵一次為限；競賽成績公告日起1年內提出申請。",
+        "私立教育代金：限就讀私立高中職或大專院校，學業成績總平均及格且德行評量達80分以上（無德行評量者須未受懲處）；低收入戶向社會局申請。",
+        "生活津貼：限高中職或大專院校學生，設籍並實際居住臺北市連續滿4個月以上，最近一年家庭總收入按全家人口平均每人每月未超過本市最近一年度最低生活費標準2倍；低收入戶向社會局申請。"
       ],
       "application_method_or_documents": [
-        "向就讀學校申請",
-        "備妥戶口名簿影本1份",
-        "其他證明文件"
+        "就讀臺北市國小、國中、高中職者，備戶口名簿影本及相關證明文件向就讀學校申請。",
+        "就讀大專院校或外縣市高中職者，備申請表、當學期註冊學生證正反面影本、戶口名簿影本（原民會已有足資證明資料者免附）、金融帳簿封面影本及相關證明文件，向戶籍所在地區公所申請。",
+        "學業助學金須附前一學期學業及德行評量成績單；特殊才能助學金須附得獎證明文件。",
+        "私立教育代金須附繳費收據正本或蓋有與正本相符學校戳章的影本，以及前一學期學業及德行評量成績單。",
+        "生活津貼須附最近一年度家戶綜合所得稅清單。"
       ],
       "label": [
         "indigenous"
@@ -349,411 +357,6 @@
     },
     {
       "id": 13,
-      "summary": "補助就讀國中至大專院校之原住民學生交通費。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=863D1C3D89869AB4",
-      "name": "臺北市原住民學生教育補助-交通費",
-      "subsidy_target": "國中：每學期新臺幣500元；本市高中職、大專院校：每學期新臺幣1,000元；外縣市高中職、大專院校：每學期新臺幣1,500元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "就讀國中、高中、高職或大專院校",
-        "具原住民身分",
-        "未領有其他政府機關、公營事業單位與本要點各項補助之同等性質補助者"
-      ],
-      "application_method_or_documents": [
-        "就讀大專院校者或外縣市高中（職）者向戶籍所在地區公所或原民會申請",
-        "備妥申請表",
-        "學生證正反面影本（須蓋有當學期學校註冊章）",
-        "其他證明文件",
-        "戶口名簿影本1份（本會已有相關資料者除外）",
-        "申請人之金融帳簿封面影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 14,
-      "summary": "補助就讀本市公私立國小或國中之原住民學生午餐費。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=863D1C3D89869AB4",
-      "name": "臺北市原住民學生教育補助-午餐",
-      "subsidy_target": "每學期實際用餐天數×每日用餐費用予以核實補助（實際用餐天數包括在校全日上課用餐天數及參加課後學習輔導用餐天數，不包括寒暑期用餐天數）。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "就讀本市公私立國民小學或國民中學",
-        "具原住民身分",
-        "未領有其他政府機關、公營事業單位與本要點各項補助之同等性質補助者"
-      ],
-      "application_method_or_documents": [
-        "向就讀學校申請",
-        "備妥戶口名簿影本1份",
-        "其他證明文件"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 15,
-      "summary": "補助國小至高中(職)成績優良之原住民學生。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=863D1C3D89869AB4",
-      "name": "臺北市原住民學生教育補助-學業助學金",
-      "subsidy_target": "國小、國中一般生：學業成績學期總平均70分或乙等以上，每學期新臺幣1,500元；國小、國中特殊生：每學期新臺幣1,500元；高中(職)一般生：學業成績75分以上未滿85分每學期1,000元、85分以上未滿90分每學期2,000元、90分以上每學期6,000元；高中(職)特殊生：每學期新臺幣5,000元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "就讀國小、國中、高中或高職",
-        "具原住民身分",
-        "未領有其他政府機關、公營事業單位與本要點各項補助之同等性質補助者",
-        "國小、國中一般生：學業成績學期總平均70分或乙等以上",
-        "高中(職)一般生：德行評量達80分以上或無德行評量者須未受懲處紀錄",
-        "高中(職)一般生：學業成績學期總平均達75分以上",
-        "特殊生指特殊教育法第三條之身身障者"
-      ],
-      "application_method_or_documents": [
-        "就讀本市國小、國中、高中（職）者向就讀學校申請",
-        "備妥戶口名簿影本1份",
-        "前一學期學業及德行評量成績單",
-        "其他證明文件",
-        "就讀大專院校者或外縣市高中（職）者向戶籍所在地區公所或原民會申請",
-        "備妥申請表",
-        "學生證正反面影本（須蓋有當學期學校註冊章）",
-        "其他證明文件",
-        "戶口名簿影本1份（本會已有相關資料者除外）",
-        "申請人之金融帳簿封面影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 16,
-      "summary": "獎勵在全國或縣市級比賽獲得優異成績之原住民學生。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=863D1C3D89869AB4",
-      "name": "臺北市原住民學生教育補助-特殊才能助學金",
-      "subsidy_target": "個人組：第一名10,000元、第二名8,000元、第三名5,000元、第四名3,000元、第五名2,000元、第六名1,000元；團體組：僅以前三名為限，並以個人組補助額度二分之一。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "就讀國小至大專院校",
-        "具原住民身分",
-        "參加政府機關辦理之全國級或縣市級比賽或展覽獲得個人組前六名或團體組相當前三名之獎項",
-        "或參加民間團體或個人辦理全國級以上比賽或展覽獲得團體組或個人組前三名或相當前三名之獎項",
-        "未領有其他政府機關、公營事業單位與本要點各項補助之同等性質補助者"
-      ],
-      "application_method_or_documents": [
-        "向就讀學校或原民會申請",
-        "備妥申請表",
-        "得獎證明文件（競賽規程、獎狀影本或原始成績證明）",
-        "金融機構帳戶影本",
-        "自競賽成績公告日起算1年內提出申請"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 17,
-      "summary": "補助就讀私立高中、高職或大專院校之原住民學生學雜費。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=863D1C3D89869AB4",
-      "name": "臺北市原住民學生教育補助-私立教育代金",
-      "subsidy_target": "私立高中（職）：每學期最高補助新臺幣8,000元；私立大專院校：每學期最高補助新臺幣15,000元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "就讀私立高中、高職或大專院校",
-        "具原住民身分",
-        "學業成績學期總平均及格",
-        "德行評量成績達80分以上（無德行評量者須未受警告、小過或大過等懲處紀錄）",
-        "未領有其他政府機關、公營事業單位與本要點各項補助之同等性質補助者"
-      ],
-      "application_method_or_documents": [
-        "向戶籍所在地區公所或原民會申請",
-        "備妥申請表",
-        "學雜費繳費收據正本或影本（須蓋有與正本相符之學校戳章）",
-        "前一學期成績單",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 18,
-      "summary": "補助符合收入標準且設籍本市滿四個月之原住民高中、高職或大專院校學生。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": 4,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=863D1C3D89869AB4",
-      "name": "臺北市原住民學生教育補助-生活津貼",
-      "subsidy_target": "高中(職)：每學期補助新臺幣3,500元；大專院校：每學期補助新臺幣7,000元。",
-      "conditions": [
-        "設籍並實際居住本市連續滿四個月以上",
-        "就讀高中、高職或大專院校",
-        "具原住民身分",
-        "最近一年家庭總收入按全家人口平均分配，每人每月未超過本府公告之本市最近一年度最低生活費標準二倍之金額",
-        "未領有其他政府機關、公營事業單位與本要點各項補助之同等性質補助者"
-      ],
-      "application_method_or_documents": [
-        "向戶籍所在地區公所或原民會申請",
-        "備妥申請表",
-        "戶口名簿資料（含所得應計列人口）",
-        "金融機構帳戶影本",
-        "最近一年家庭總收入證明（如薪資證明或財稅資料）"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 19,
-      "summary": "補助設籍並實際居住臺北市之原住民國中、國小學生相關代收代辦費用。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：代收代辦",
-      "subsidy_target": "國中：書籍費500元、家長會費120元、寒暑期學藝活動每小時30元、課後輔導學習每小時30元；國小：家長會費120元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "具原住民身分",
-        "就讀本市公私立國中或國小"
-      ],
-      "application_method_or_documents": [
-        "申請書",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 20,
-      "summary": "補助設籍並實際居住臺北市之原住民國中、高中、高職或大專院校學生交通費。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：交通費",
-      "subsidy_target": "國中：每學期500元；本市高中、高職、大專院校：每學期1,000元；外縣市高中、高職、大專院校：每學期1,500元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "具原住民身分",
-        "就讀公私立大專院校、高中、高職或國中"
-      ],
-      "application_method_or_documents": [
-        "申請書",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 21,
-      "summary": "補助設籍並實際居住臺北市之原住民國中、國小學生午餐費。",
-      "category": "托育教育",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：午餐",
-      "subsidy_target": "國小：每學期依實際用餐天數 × 各校單餐費核實補助；國中：每學期依實際用餐天數 × 各校單餐費核實補助。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "具原住民身分",
-        "就讀本市公私立國中或國小"
-      ],
-      "application_method_or_documents": [
-        "申請書",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 22,
-      "summary": "補助設籍並實際居住臺北市之原住民國中、國小學生學業獎助學金。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：學業獎助學金（國中小）",
-      "subsidy_target": "國中或國小：學業成績學期總平均70分或乙等以上，每學期1,500元；特殊生（學業成績免計）每學期1,500元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "具原住民身分",
-        "就讀公私立國中或國小",
-        "學業成績學期總平均70分或乙等以上（特殊生免計）"
-      ],
-      "application_method_or_documents": [
-        "申請表",
-        "前一學期學業成績單",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 23,
-      "summary": "補助設籍並實際居住臺北市之原住民高中、高職學生學業獎助學金。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：學業獎助學金（高中高職）",
-      "subsidy_target": "一般生（德行評量80分以上，無德行評量者須未受懲處紀錄）：學業成績75-85分每學期1,000元；85-90分每學期2,000元；90分以上每學期6,000元；特殊生（學業成績及德行評量免計）每學期5,000元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "具原住民身分",
-        "就讀公私立高中或高職",
-        "一般生學業成績學期總平均達75分以上且德行評量達80分以上（無德行評量者須未受警告、小過或大過等懲處紀錄）",
-        "特殊生學業成績及德行評量免計"
-      ],
-      "application_method_or_documents": [
-        "申請表",
-        "前一學期學業及德行評量成績單",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 24,
-      "summary": "補助設籍並實際居住臺北市之原住民學生參加比賽或展覽成績優良者。",
-      "category": "文化體育",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：特殊才能獎助學金",
-      "subsidy_target": "參加政府機關辦理之全國或縣市級比賽（個人組第一名10,000元、第二名8,000元、第三名5,000元、第四名3,000元、第五名2,000元、第六名1,000元；團體組前三名以個人組補助額度二分之一）；參加民間團體或個人辦理全國級以上比賽（準用上述規定）。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "具原住民身分",
-        "就讀公私立大專院校以下",
-        "參加政府機關辦理之全國級或縣市級比賽或展覽成績優良者",
-        "參加民間團體或個人辦理全國級以上比賽或展覽成績優良者",
-        "自競賽成績公告日起算1年內提出申請"
-      ],
-      "application_method_or_documents": [
-        "申請表",
-        "得獎證明文件（競賽規程、獎狀影本或原始成績證明）",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 25,
-      "summary": "補助設籍並實際居住臺北市之原住民私立高中、高職或大專院校學生學雜費。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：私立教育代金",
-      "subsidy_target": "私立高中或高職：每學期最高補助8,000元；私立大專院校：每學期最高補助15,000元。",
-      "conditions": [
-        "設籍並實際居住本市",
-        "具原住民身分",
-        "就讀私立高中、高職或大專院校",
-        "學業成績學期總平均及格",
-        "德行評量成績達80分以上（無德行評量者須未受警告、小過或大過等懲處紀錄）"
-      ],
-      "application_method_or_documents": [
-        "申請表",
-        "學雜費繳費收據正本",
-        "金融機構帳戶影本",
-        "前一學期成績單"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 26,
-      "summary": "補助設籍並實際居住臺北市之原住民高中、高職或大專院校學生生活津貼。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": 4,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=C3AD262F1BC86C6E&sms=5D1935C174988BB7&s=203B3A62C7BE44F0",
-      "name": "臺北市原住民學生教育補助：生活津貼",
-      "subsidy_target": "高中或高職：每學期補助3,500元；大專院校：每學期補助7,000元。",
-      "conditions": [
-        "設籍並實際居住本市連續滿四個月以上",
-        "具原住民身分",
-        "就讀公私立高中、高職或大專院校",
-        "最近一年家庭總收入按全家人口平均分配，每人每月未超過本府公告之本市最近一年度最低生活費標準二倍者"
-      ],
-      "application_method_or_documents": [
-        "申請表",
-        "戶口名簿資料（含所得應計人口）",
-        "金融機構帳戶影本"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 27,
       "summary": "補助設籍並實際居住臺北市滿四個月以上之原住民，因非疾病引起之意外事故導致死亡者。",
       "category": "生活救助",
       "is_organization": false,
@@ -784,7 +387,7 @@
       ]
     },
     {
-      "id": 28,
+      "id": 14,
       "summary": "補助設籍並實際居住臺北市滿四個月以上之原住民，因非疾病引起之意外事故導致身體殘廢者。",
       "category": "醫療保健",
       "is_organization": false,
@@ -815,7 +418,7 @@
       ]
     },
     {
-      "id": 29,
+      "id": 15,
       "summary": "針對生活困難之原住民婦女提供緊急生活費用補助。",
       "category": "生活救助",
       "is_organization": false,
@@ -844,7 +447,7 @@
       ]
     },
     {
-      "id": 30,
+      "id": 16,
       "summary": "補助生活困難之原住民婦女相關訴訟及法律服務費用。",
       "category": "生活救助",
       "is_organization": false,
@@ -872,7 +475,7 @@
       ]
     },
     {
-      "id": 31,
+      "id": 17,
       "summary": "補助生活困難之原住民婦女一般醫療及心理治療費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -899,7 +502,7 @@
       ]
     },
     {
-      "id": 32,
+      "id": 18,
       "summary": "補助生活困難之原住民婦女生育相關費用及生活津貼。",
       "category": "生活救助",
       "is_organization": false,
@@ -926,7 +529,7 @@
       ]
     },
     {
-      "id": 33,
+      "id": 19,
       "summary": "補助生活困難之原住民婦女參加職業訓練之費用及生活津貼。",
       "category": "就業創業",
       "is_organization": false,
@@ -953,7 +556,7 @@
       ]
     },
     {
-      "id": 34,
+      "id": 20,
       "summary": "補助生活困難之原住民婦女租屋費用。",
       "category": "居住住宅",
       "is_organization": false,
@@ -984,7 +587,7 @@
       ]
     },
     {
-      "id": 35,
+      "id": 21,
       "summary": "針對符合生活困難條件的原住民婦女，提供每人每月最低生活費用標準之補助。",
       "category": "生活救助",
       "is_organization": false,
@@ -1009,7 +612,7 @@
       ]
     },
     {
-      "id": 36,
+      "id": 22,
       "summary": "補助原住民婦女因法律案件所需之訴訟及法律服務費用。",
       "category": "其他",
       "is_organization": false,
@@ -1034,7 +637,7 @@
       ]
     },
     {
-      "id": 37,
+      "id": 23,
       "summary": "補助原住民婦女之一般醫療費用及心理治療費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1059,7 +662,7 @@
       ]
     },
     {
-      "id": 38,
+      "id": 24,
       "summary": "補助原住民婦女分娩、早產或流產時之基本工資及醫療費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1083,7 +686,7 @@
       ]
     },
     {
-      "id": 39,
+      "id": 25,
       "summary": "補助符合條件之原住民婦女參加職業訓練之學費、材料費及生活津貼。",
       "category": "就業創業",
       "is_organization": false,
@@ -1106,7 +709,7 @@
       ]
     },
     {
-      "id": 40,
+      "id": 26,
       "summary": "補助符合條件之原住民婦女租賃房屋之費用。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1132,7 +735,7 @@
       ]
     },
     {
-      "id": 41,
+      "id": 27,
       "summary": "補助因罹患長期疾病、失業、收入不穩定或家庭成員重大變故致生活陷入困境之設籍台北市原住民。",
       "category": "生活救助",
       "is_organization": false,
@@ -1164,7 +767,7 @@
       ]
     },
     {
-      "id": 42,
+      "id": 28,
       "summary": "補助戶內人口死亡無力殮葬者或協助原住民完成殮葬程序之人。",
       "category": "生活救助",
       "is_organization": false,
@@ -1193,7 +796,7 @@
       ]
     },
     {
-      "id": 43,
+      "id": 29,
       "summary": "補助罹患嚴重傷病、住院三天以上且醫療費用非本人或扶養義務人所能負擔之設籍台北市原住民。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1223,7 +826,7 @@
       ]
     },
     {
-      "id": 44,
+      "id": 30,
       "summary": "補助於台北市遭遇天然災害或其他重大災害致家庭生活陷於困境之原住民。",
       "category": "生活救助",
       "is_organization": false,
@@ -1250,7 +853,7 @@
       ]
     },
     {
-      "id": 45,
+      "id": 31,
       "summary": "補助因急難導致生活陷困、因文化特殊性導致社會適應困難或其他經評估亟須救助之設籍台北市原住民。",
       "category": "生活救助",
       "is_organization": false,
@@ -1281,7 +884,7 @@
       ]
     },
     {
-      "id": 46,
+      "id": 32,
       "summary": "補助設籍台北市連續四個月以上之原住民，於指定醫療或心理機構接受心理諮商之費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1312,7 +915,7 @@
       ]
     },
     {
-      "id": 47,
+      "id": 33,
       "summary": "補助設籍並實際居住臺北市且年滿55歲以上之原住民，經醫師評估需製作假牙或植入人工牙根者。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1349,7 +952,7 @@
       ]
     },
     {
-      "id": 48,
+      "id": 34,
       "summary": "補助臺北市原住民進行健康檢查，每人每年最高補助新臺幣1萬元。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1376,7 +979,7 @@
       ]
     },
     {
-      "id": 49,
+      "id": 35,
       "summary": "為提升與增強本市原住民健康權益，辦理包含環境健康、傳統醫療等相關課程之保健推廣教育。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1397,7 +1000,7 @@
       ]
     },
     {
-      "id": 50,
+      "id": 36,
       "summary": "補助因非自願性失業、家庭經濟突陷困境或類似特殊情況致中斷參加全民健康保險之原住民。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1426,7 +1029,7 @@
       ]
     },
     {
-      "id": 51,
+      "id": 37,
       "summary": "因申請人無法申請或有申請困難，由其配偶或子女代為申請之補助。",
       "category": "其他",
       "is_organization": false,
@@ -1449,7 +1052,7 @@
       "label": []
     },
     {
-      "id": 52,
+      "id": 38,
       "summary": "補助設籍並實際居住臺北市連續4個月以上之原住民，就醫所需自行負擔之醫療費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1476,7 +1079,7 @@
       ]
     },
     {
-      "id": 53,
+      "id": 39,
       "summary": "提供本市原住民因族群、文化特殊性所衍生之身心健康異常者，協助其就醫之醫療保健服務。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1497,7 +1100,7 @@
       ]
     },
     {
-      "id": 54,
+      "id": 40,
       "summary": "補助設籍並實際居住臺北市之原住民長者進行假牙裝置或植體治療。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1533,7 +1136,7 @@
       ]
     },
     {
-      "id": 55,
+      "id": 41,
       "summary": "補助已接受裝置假牙補助之原住民進行假牙維修。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1559,7 +1162,7 @@
       ]
     },
     {
-      "id": 56,
+      "id": 42,
       "summary": "補助設籍臺北市連續四個月以上之原住民，於符合資格之醫療機構或私立心理機構接受心理諮商之費用。",
       "category": "醫療保健",
       "is_organization": false,
@@ -1588,7 +1191,7 @@
       ]
     },
     {
-      "id": 57,
+      "id": 43,
       "summary": "提供本市原住民因意外災害、重大生活變故或強制搬遷等原因，短時間內無法尋覓住所者住宿費用補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1614,7 +1217,7 @@
       ]
     },
     {
-      "id": 58,
+      "id": 44,
       "summary": "提供設籍外縣市（不含新北市及基隆市）原住民因就學、就業、就醫或喪葬等事由來臺北短期住宿之費用補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1643,7 +1246,7 @@
       ]
     },
     {
-      "id": 59,
+      "id": 45,
       "summary": "提供臺北市收入較低且無自有宅之原住民承租東湖原住民文化公寓。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1674,7 +1277,7 @@
       ]
     },
     {
-      "id": 60,
+      "id": 46,
       "summary": "提供臺北市收入較低且無自有宅之原住民承租東湖原住民文化公寓。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1704,7 +1307,7 @@
       ]
     },
     {
-      "id": 61,
+      "id": 47,
       "summary": "針對設籍台北市滿四個月之原住民，提供各類貸款利息補貼。",
       "category": "就業創業",
       "is_organization": false,
@@ -1732,7 +1335,7 @@
       ]
     },
     {
-      "id": 62,
+      "id": 48,
       "summary": "針對設籍台北市滿四個月之原住民且依法辦理營業登記之創業人士，提供貸款利息補貼。",
       "category": "就業創業",
       "is_organization": false,
@@ -1762,7 +1365,7 @@
       ]
     },
     {
-      "id": 63,
+      "id": 49,
       "summary": "補助臺北市經濟弱勢原住民家庭建購住宅，每戶補助三十萬元。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1807,7 +1410,7 @@
       ]
     },
     {
-      "id": 64,
+      "id": 50,
       "summary": "補助臺北市經濟弱勢原住民家庭修繕住宅，每戶以十五萬元為限。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1849,7 +1452,7 @@
       ]
     },
     {
-      "id": 65,
+      "id": 51,
       "summary": "補助臺北市經濟弱勢原住民家庭建購未逾二年的自用住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1896,7 +1499,7 @@
       ]
     },
     {
-      "id": 66,
+      "id": 52,
       "summary": "補助臺北市經濟弱勢原住民家庭修繕屋齡超過七年的自用住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1939,7 +1542,7 @@
       ]
     },
     {
-      "id": 67,
+      "id": 53,
       "summary": "補助臺北市經濟弱勢原住民家庭建購新住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -1981,7 +1584,7 @@
       ]
     },
     {
-      "id": 68,
+      "id": 54,
       "summary": "補助臺北市經濟弱勢原住民家庭修繕自有住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2023,7 +1626,7 @@
       ]
     },
     {
-      "id": 69,
+      "id": 55,
       "summary": "補助經濟弱勢原住民家庭建購新臺幣三十萬元之自用住宅。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2067,7 +1670,7 @@
       ]
     },
     {
-      "id": 70,
+      "id": 56,
       "summary": "補助經濟弱勢原住民家庭修繕自有住宅，金額以新臺幣十五萬元為限。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2112,7 +1715,7 @@
       ]
     },
     {
-      "id": 71,
+      "id": 57,
       "summary": "補助符合特定條件之原住民於職業訓練期間的生活津貼差額。",
       "category": "生活救助",
       "is_organization": false,
@@ -2143,7 +1746,7 @@
       ]
     },
     {
-      "id": 72,
+      "id": 58,
       "summary": "補助原住民參加特定機構舉辦之職業訓練、技術訓練或就業考試補習課程之學費及材料費。",
       "category": "就業創業",
       "is_organization": false,
@@ -2173,237 +1776,7 @@
       ]
     },
     {
-      "id": 73,
-      "summary": "提供設籍臺北市且家庭收入符合標準之高中職及大專院校學生每月生活津貼。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": 4,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=D023FB4AF2100A7A",
-      "name": "原住民學生生活津貼",
-      "subsidy_target": "公私立高中(職)每名每月新台幣3,500元；公私立大專院校每名每月新台幣7,000元。",
-      "conditions": [
-        "對象為設籍臺北市連續滿四個月以上之學生",
-        "就讀國內公私立高中(職)以上學校",
-        "家庭收入按全年家人口平均分配，每人每月未超過本府公告之本市最近一年度最低生活費標準二倍之金額",
-        "未領有其他政府機關公營事業單位之生活津貼補助者"
-      ],
-      "application_method_or_documents": [
-        "每年3月31日及9月30日前，向戶籍所在之區公所原住民服務員申請"
-      ],
-      "label": []
-    },
-    {
-      "id": 74,
-      "summary": "提供設籍臺北市之原住民國中或國小學生午餐補助。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "午餐補助(課後學習輔導之用餐)",
-      "subsidy_target": "午餐補助(課後學習輔導之用餐)",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀本市公私立國中或國小學校學生"
-      ],
-      "application_method_or_documents": [
-        "就讀學校代收代辦"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 75,
-      "summary": "提供設籍臺北市之原住民國中或國小學生就讀學校代收代辦費補助。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "就讀學校代收代辦費補助",
-      "subsidy_target": "就讀學校代收代辦費補助",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀本市公私立國中或國小學校學生"
-      ],
-      "application_method_or_documents": [
-        "就讀學校代收代辦"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 76,
-      "summary": "提供設籍臺北市之原住民國中或國小學生學業助學金。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "就讀學校學業助學金",
-      "subsidy_target": "就讀公私立國中或國小學校學生學業助學金",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀公私立國中或國小學校學生"
-      ],
-      "application_method_or_documents": [
-        "本市為就讀學校：就讀學校",
-        "外縣市學校：戶籍所在區公所"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 77,
-      "summary": "提供設籍臺北市之原住民高中（職）學生學業助學金。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "就讀學校學業助學金",
-      "subsidy_target": "就讀公私立高中（職）學校學生學業助學金",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀公私立高中（職）學校學生"
-      ],
-      "application_method_or_documents": [
-        "本市為就讀學校：就讀學校",
-        "外縣市學校：戶籍所在區公所"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 78,
-      "summary": "提供設籍臺北市之原住民國中、國小、高中（職）及大專院校學生特殊才能助學金。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "特殊才能助學金",
-      "subsidy_target": "特殊才能助學金",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀公私立國中或國小學校學生",
-        "就讀公私立高中（職）學校學生",
-        "就讀公私立大專院校學生"
-      ],
-      "application_method_or_documents": [
-        "本市為就讀學校：就讀學校",
-        "外縣市學校：戶籍所在區公所"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 79,
-      "summary": "提供設籍臺北市之原住民私立高中（職）及大專院校學生教育代金。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "教育代金",
-      "subsidy_target": "教育代金",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀本市私立高中（職）學校學生",
-        "就讀外縣市私立高中（職）學校學生",
-        "就讀私立大專院校學生"
-      ],
-      "application_method_or_documents": [
-        "就讀本市私立高中（職）學校：就讀學校",
-        "就讀外縣市私立高中（職）學校：戶籍所在區公所",
-        "就讀私立大專院校：戶籍所在區公所"
-      ],
-      "label": [
-        "indigenous"
-      ]
-    },
-    {
-      "id": 80,
-      "summary": "提供設籍臺北市之原住民高中(職)及大專院校學生生活津貼。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "生活津貼",
-      "subsidy_target": "生活津貼",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀公私立高中(職)學校學生",
-        "就讀公私立大專院校學生(不包含低收入戶及研究所)"
-      ],
-      "application_method_or_documents": [
-        "戶籍所在區公所"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 81,
-      "summary": "提供設籍臺北市之原住民國中至高中（職）及大專院校學生交通補助費。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=F9F03DF617FCAF4E",
-      "name": "交通補助費",
-      "subsidy_target": "交通補助費",
-      "conditions": [
-        "設籍臺北市之原住民",
-        "在學學生",
-        "就讀本市公私立國中至高中（職）學校學生",
-        "就讀外縣市公私立高中（職）學校或大專院校學生(不包含低收入戶、碩士班、博士班及學分班)"
-      ],
-      "application_method_or_documents": [
-        "就讀本市公私立國中至高中（職）學校：就讀學校",
-        "就讀外縣市公私立高中（職）學校或大專院校：戶籍所在區公所"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 82,
+      "id": 59,
       "summary": "針對學齡前原住民兒童就托臺北市立案托育機構提供每學期不等金額之補助。",
       "category": "托育教育",
       "is_organization": false,
@@ -2427,7 +1800,7 @@
       ]
     },
     {
-      "id": 83,
+      "id": 60,
       "summary": "針對學齡原住民兒童就托私立立案兒童課後照顧服務中心提供每月不等金額之補助。",
       "category": "托育教育",
       "is_organization": false,
@@ -2451,7 +1824,7 @@
       ]
     },
     {
-      "id": 84,
+      "id": 61,
       "summary": "針對本市原住民幼童就讀公立幼兒園，補助平日課後留園費用。",
       "category": "托育教育",
       "is_organization": false,
@@ -2475,7 +1848,7 @@
       ]
     },
     {
-      "id": 85,
+      "id": 62,
       "summary": "針對本市原住民幼童就讀私立、非營利、準公共、托嬰中心及公共社區托育家園，補助平日課後留園費用。",
       "category": "托育教育",
       "is_organization": false,
@@ -2499,7 +1872,7 @@
       ]
     },
     {
-      "id": 86,
+      "id": 63,
       "summary": "提供族語學習課程，對象為對族語有興趣的在學學生及社會人士。",
       "category": "文化體育",
       "is_organization": false,
@@ -2522,7 +1895,7 @@
       "label": []
     },
     {
-      "id": 87,
+      "id": 64,
       "summary": "針對設籍台北市且符合經濟弱勢條件的原住民家庭，提供建購住宅之補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2562,7 +1935,7 @@
       ]
     },
     {
-      "id": 88,
+      "id": 65,
       "summary": "提供經濟弱勢原住民家庭進行住宅建購或修繕的補助方案。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2582,7 +1955,7 @@
       ]
     },
     {
-      "id": 89,
+      "id": 66,
       "summary": "針對經濟弱勢的原住民家庭提供房屋修繕補助，最高金額為新臺幣15萬元。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2613,7 +1986,7 @@
       ]
     },
     {
-      "id": 90,
+      "id": 67,
       "summary": "提供經濟弱勢原住民家庭修繕老舊或衛生設備欠缺之自用住宅補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2648,7 +2021,7 @@
       ]
     },
     {
-      "id": 91,
+      "id": 68,
       "summary": "針對經濟弱勢的原住民家庭購置房屋提供新臺幣30萬元之補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2679,7 +2052,7 @@
       ]
     },
     {
-      "id": 92,
+      "id": 69,
       "summary": "針對設籍臺北市四個月以上、年滿十六歲且生活困難之原住民婦女提供各項扶助項目。",
       "category": "生活救助",
       "is_organization": false,
@@ -2711,7 +2084,7 @@
       ]
     },
     {
-      "id": 93,
+      "id": 70,
       "summary": "針對負擔家計者因疾病、失業或家庭變故致生活困境之原住民提供救助。",
       "category": "生活救助",
       "is_organization": false,
@@ -2735,7 +2108,7 @@
       ]
     },
     {
-      "id": 94,
+      "id": 71,
       "summary": "針對罹患嚴重傷病且醫療費用無法負擔之原住民提供醫療補助。",
       "category": "醫療保健",
       "is_organization": false,
@@ -2760,7 +2133,7 @@
       ]
     },
     {
-      "id": 95,
+      "id": 72,
       "summary": "針對戶內人口死亡無力殮葬或協助原住民完成殮葬程序者提供救助。",
       "category": "生活救助",
       "is_organization": false,
@@ -2785,7 +2158,7 @@
       ]
     },
     {
-      "id": 96,
+      "id": 73,
       "summary": "針對在本市內遭遇天然災害或其他重大災害之原住民提供救助。",
       "category": "生活救助",
       "is_organization": false,
@@ -2809,7 +2182,7 @@
       ]
     },
     {
-      "id": 97,
+      "id": 74,
       "summary": "針對設籍並實際居住於臺北市之原住民兒童及其父母或監護人提供托育及協力照顧補助。",
       "category": "托育教育",
       "is_organization": false,
@@ -2832,7 +2205,7 @@
       ]
     },
     {
-      "id": 98,
+      "id": 75,
       "summary": "為減輕原住民租用住宅之壓力所提供之租屋補助。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2867,7 +2240,7 @@
       ]
     },
     {
-      "id": 99,
+      "id": 76,
       "summary": "提供都市原住民家庭相關的租屋補助措施。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2887,7 +2260,7 @@
       ]
     },
     {
-      "id": 100,
+      "id": 77,
       "summary": "提供原住民婦女相關的房租補助措施。",
       "category": "居住住宅",
       "is_organization": false,
@@ -2907,7 +2280,7 @@
       ]
     },
     {
-      "id": 101,
+      "id": 78,
       "summary": "補助設籍台北市滿四個月且非在學學生之原住民參加職業訓練或技術訓練相關課程之學費及材料費。",
       "category": "就業創業",
       "is_organization": false,
@@ -2940,7 +2313,7 @@
       ]
     },
     {
-      "id": 102,
+      "id": 79,
       "summary": "補助於臺北市內經營的原住民族合作社或原住民族事業體，提供營運設備、房租、研習或交流活動等經費。",
       "category": "就業創業",
       "is_organization": true,
@@ -2970,7 +2343,7 @@
       ]
     },
     {
-      "id": 103,
+      "id": 80,
       "summary": "針對符合條件之貸款提供利息補貼，最長以六年為限。",
       "category": "其他",
       "is_organization": false,
@@ -2993,7 +2366,7 @@
       "label": []
     },
     {
-      "id": 104,
+      "id": 81,
       "summary": "補助符合就業促進津貼實施辦法規定，且已申領勞動部職業訓練生活津貼之原住民。",
       "category": "就業創業",
       "is_organization": false,
@@ -3024,7 +2397,7 @@
       ]
     },
     {
-      "id": 105,
+      "id": 82,
       "summary": "提供原住民法人機構或團體申請證明書之服務。",
       "category": "其他",
       "is_organization": true,
@@ -3051,7 +2424,7 @@
       ]
     },
     {
-      "id": 106,
+      "id": 83,
       "summary": "提供本市原住民族人就（轉）業服務需求之媒合與諮詢服務。",
       "category": "就業創業",
       "is_organization": false,
@@ -3075,38 +2448,7 @@
       ]
     },
     {
-      "id": 107,
-      "summary": "補助設籍臺北市且就讀國中以上至大專院校之原住民在學學生交通費用。",
-      "category": "學業助學",
-      "is_organization": false,
-      "registration_months": null,
-      "age_lower": null,
-      "age_upper": null,
-      "isNative": true,
-      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=AB641EDE68F3450F&sms=87415A8B9CE81B16&s=35F98F0CC4211482",
-      "name": "原住民學生交通補助費",
-      "subsidy_target": "就讀國中者，每人每學期補助新台幣500元；就讀本市高中、職以上者，每人每學期補助新臺幣1,000元；就讀外縣市高中職以上者，每人每學期補助新臺幣1,500元。",
-      "conditions": [
-        "對象為原住民在學學生",
-        "設籍並實際居住本市",
-        "就讀國中以上至大專院校之學生",
-        "大專院校指就讀臺灣地區經教育部承認之二專、五專、二技、四技或大學之法定修業年限以內之學生（含夜間部）",
-        "不包含碩士班、博士班、空中大學（專科）、推廣部、進修補習學校、遠距教學、學分班及在職進修班學生",
-        "未領有其他政府機關之相同補助者",
-        "具有低收入戶身分之原住民學生，請逕向臺北市政府社會局辦理申請"
-      ],
-      "application_method_or_documents": [
-        "就讀本市公私立高中職以下者向就讀學校申請",
-        "就讀公私立大專校院者或外縣市高中職者，向戶籍所在區公所原住民服務員申請",
-        "申請時間依本府原民會公告"
-      ],
-      "label": [
-        "indigenous",
-        "youth"
-      ]
-    },
-    {
-      "id": 108,
+      "id": 84,
       "summary": "提供國小一年級以上對原住民族傳統曲謠、舞蹈有興趣者參加的合唱團訓練服務。",
       "category": "文化體育",
       "is_organization": false,
@@ -3134,7 +2476,7 @@
       ]
     },
     {
-      "id": 109,
+      "id": 85,
       "summary": "補助臺北市轄內學校、非營利團體、單項體育團體或登錄原住民組織辦理單項體育活動。",
       "category": "文化體育",
       "is_organization": true,
@@ -3169,7 +2511,7 @@
       "label": []
     },
     {
-      "id": 110,
+      "id": 86,
       "summary": "獎勵代表臺北市參加全國原住民族運動會並獲得指定名次之績優選手。",
       "category": "文化體育",
       "is_organization": false,
@@ -3200,7 +2542,7 @@
       ]
     },
     {
-      "id": 111,
+      "id": 87,
       "summary": "獎勵代表臺北市參加全國原住民族運動會並符合資格之有功教練。",
       "category": "文化體育",
       "is_organization": false,
@@ -3229,7 +2571,7 @@
       ]
     },
     {
-      "id": 112,
+      "id": 88,
       "summary": "補助原住民團體辦理文化及社會教育相關活動計畫。",
       "category": "文化體育",
       "is_organization": true,
@@ -3254,7 +2596,7 @@
       ]
     },
     {
-      "id": 113,
+      "id": 89,
       "summary": "補助原住民族類之藝文創作或相關活動，以提昇原住民族文化領域。",
       "category": "文化體育",
       "is_organization": true,
@@ -3287,7 +2629,7 @@
       ]
     },
     {
-      "id": 114,
+      "id": 90,
       "summary": "補助原住民族合作社及事業體之營運設備、房租、業務研習及參與經貿交流費用。",
       "category": "就業創業",
       "is_organization": true,
@@ -3314,7 +2656,7 @@
       ]
     },
     {
-      "id": 115,
+      "id": 91,
       "summary": "補助設籍並實際居住臺北市滿四個月以上之原住民，提供法院裁判費及相關律師費補助。",
       "category": "其他",
       "is_organization": false,
