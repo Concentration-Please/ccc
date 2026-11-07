@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -25,6 +25,9 @@ const testArticleUrl = 'https://www.ipc.gov.taipei/News_Content.aspx?n=TEST&s=A'
 const subsidy: Subsidy = {
   is_organization: false,
   registration_months: null,
+  age_lower: null,
+  age_upper: null,
+  isNative: true,
   name: '托育補助',
   summary: '原住民家庭可申請托育補助。',
   subsidy_target: '托育費用補助',
@@ -50,6 +53,15 @@ test('reads service links, skips venue rental, and extracts page bodies', () => 
 
 test('sends a schema-constrained request through the AI SDK provider', async () => {
   let request: Record<string, unknown> | undefined;
+  const agedSubsidy: Subsidy = {
+    ...subsidy,
+    name: '長者補助',
+    summary: '符合年齡條件的原住民長者可申請補助。',
+    subsidy_target: '長者費用補助',
+    conditions: ['申請人須具原住民身分', '申請人年滿55歲、未滿65歲'],
+    age_lower: 55,
+    age_upper: 65,
+  };
   const openrouter = createOpenRouter({
     apiKey: 'test-key',
     compatibility: 'strict',
@@ -57,20 +69,20 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
       request = JSON.parse(String(init?.body));
       return new Response(JSON.stringify({
         id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
-        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: [subsidy] }) } }],
+        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: [agedSubsidy] }) } }],
         usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
       }), { status: 200, headers: { 'content-type': 'application/json' } });
     },
   });
   const article: Article = {
     url: testArticleUrl,
-    title: '托育補助',
-    category: '托育服務',
+    title: '長者補助',
+    category: '長青服務',
     publishedAt: '2026-11-07',
-    body: '原住民家庭可申請托育補助',
+    body: '具原住民身分且年滿55歲、未滿65歲者可申請。',
   };
   const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
-  assert.equal(result.length, 1);
+  assert.deepEqual(result, [agedSubsidy]);
   assert.equal(request?.model, MODEL_ID);
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
 });
@@ -122,6 +134,15 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     const second = await runParser(options);
     assert.equal(second.reused, 4);
     assert.equal(modelCalls, 3);
+    assert.equal(attachmentCalls, 1);
+
+    const cachePath = join(rootDir, 'tmp', 'ipc-parser-state.json');
+    const oldCache = JSON.parse(await readFile(cachePath, 'utf8'));
+    oldCache.version = 4;
+    await writeFile(cachePath, JSON.stringify(oldCache));
+    const third = await runParser(options);
+    assert.equal(third.reused, 0);
+    assert.equal(modelCalls, 6);
     assert.equal(attachmentCalls, 1);
 
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'subsidies.json'), 'utf8'));
