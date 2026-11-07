@@ -1,0 +1,4 @@
+- Do not deploy to production with wrangler unless explicitly asked.
+- Commit small completed edits with conventional commit messages.
+- When using npm install or other commands that requires internet access, remember to requestelevated permissions.
+- Avoid creating excessive test files. Create a new test file only when required by repository conventions or when no existing file is a suitable home. Avoid unrelated cleanup and unnecessary complexity. Reuse suitable existing utilities. Read relevant repository instructions and inspect nearby code, tests, documentation, and CI. Follow established conventions. The goal is clean, mergeable code.
