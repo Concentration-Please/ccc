@@ -1,10 +1,10 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { generateText, Output, type LanguageModel } from 'ai';
-import { extractionSchema, sharedCategories, youthExtractionSchema, type Article, type Subsidy } from './schema.js';
+import { extractionSchema, type Article, type Subsidy } from './schema.js';
 
 export const MODEL_ID = 'google/gemma-4-26b-a4b-it';
 export const EXTRACTION_REVISION = `${MODEL_ID}:ipc-prompt-8:schema-6`;
-export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-6:schema-6`;
+export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-7:schema-7`;
 
 type ExtractSource = 'indigenous' | 'youth';
 const SOURCE_PROMPTS: Record<ExtractSource, string> = {
@@ -13,7 +13,7 @@ const SOURCE_PROMPTS: Record<ExtractSource, string> = {
 };
 const OUTPUT_RULES: Record<ExtractSource, string> = {
   indigenous: '每項服務輸出一筆；若不同補助項目或不同資格路徑的補助內容不同，分筆輸出。僅輸出以下欄位，不要輸出來源網址或分類，這兩項由程式填入。',
-  youth: '每項服務輸出一筆；若不同補助項目或不同資格路徑的補助內容不同，分筆輸出。貸款與利息補貼若有不同的補助內容或資格，利息補貼須另輸出一筆；同一頁各項目共享的申請資格及申請方式，須完整保留在每筆資料，利息補貼也須保留同一貸款的年齡、設籍等共同資格。僅輸出以下欄位與 category，不要輸出來源網址，這項由程式填入。',
+  youth: '每項服務輸出一筆；若不同補助項目或不同資格路徑的補助內容不同，分筆輸出。貸款與利息補貼若有不同的補助內容或資格，利息補貼須另輸出一筆；同一頁各項目共享的申請資格及申請方式，須完整保留在每筆資料，利息補貼也須保留同一貸款的年齡、設籍等共同資格。僅輸出以下欄位，不要輸出來源網址或分類，這兩項由程式填入。',
 };
 
 const FIELD_PROMPT = `name：直接取用網頁標題或正文的原話，可以截短，但盡量不改語意，不要自創名稱。
@@ -25,7 +25,6 @@ age_lower、age_upper：實際受益或可申請者本人明確的最低、最�
 isNative：正文明確要求實際受益或可申請者具原住民身分才能申請時為 true；沒有明確要求時為 false。不要僅因網站、分類或方案名稱提及原住民就推定為 true；其他角色的原住民身分限制只保留在 conditions。
 conditions：所有明確的申請或受益資格與限制，逐項寫成字串；一個獨立條件一項。保留條件所屬對象、數值、單位及例外，例如原住民身分、設籍地與期間、年齡、性別、收入、就學、團體組成、服務提供者、申請期間、不得重複申請等。對象不同的條件不要混成一項。沒有明確條件時用空陣列。不要根據發布日推算年齡或有效性，也不要補上正文沒有的條件。
 application_method_or_documents：逐項記錄提供的正文或附件文字明示的申請方式、送件管道或步驟，以及應備文件。不要把申請資格、補助內容或僅供參考的連結填入此欄；未提及時用空陣列，不要推測未提供文字的附件或外部頁面的內容。`;
-const YOUTH_CATEGORY_PROMPT = `category：依每筆補助的實際用途選一個分類：${sharedCategories.join('、')}。只有明確符合分類名稱時才使用該分類；沒有適合分類時選「其他」。不得因服務來自青年局而自行新增分類。`;
 const YOUTH_ROLE_PROMPT = '若申請人是公司、商業、有限合夥、學校、機構或團體，即使其代表人是青年，is_organization 仍為 true，age_lower 和 age_upper 都為 null；代表人的年齡保留在 conditions。個人「已成年」不是明示的整數歲數，不可換算為 18 歲。';
 
 export function createExtractor(apiKey: string, source: ExtractSource = 'indigenous'): (article: Article) => Promise<Subsidy[]> {
@@ -55,9 +54,9 @@ export async function extractSubsidies(article: Article, model: LanguageModel, s
     try {
       const result = await generateText({
         model,
-        system: `${SOURCE_PROMPTS[source]}\n\n${OUTPUT_RULES[source]}\n\n${FIELD_PROMPT}${source === 'youth' ? `\n${YOUTH_CATEGORY_PROMPT}\n${YOUTH_ROLE_PROMPT}` : ''}`,
+        system: `${SOURCE_PROMPTS[source]}\n\n${OUTPUT_RULES[source]}\n\n${FIELD_PROMPT}${source === 'youth' ? `\n${YOUTH_ROLE_PROMPT}` : ''}`,
         prompt: `來源網址：${article.url}\n${source === 'indigenous' ? `分類：${article.category}\n` : ''}標題：${article.title}\n發布日期：${article.publishedAt ?? '未提供'}\n內文：\n${article.body}${formatAttachments(article)}${source === 'youth' && attempt > 0 ? '\n請再次檢查：若有具體的補助、津貼或貸款資格與內容，不可回傳空陣列。' : ''}`,
-        output: Output.object({ schema: source === 'youth' ? youthExtractionSchema : extractionSchema }),
+        output: Output.object({ schema: extractionSchema }),
         temperature: 0,
         maxRetries: 2,
         abortSignal: AbortSignal.timeout(90_000),

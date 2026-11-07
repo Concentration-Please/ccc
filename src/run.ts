@@ -4,13 +4,13 @@ import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import { extractAttachmentText } from './attachments.js';
-import { subsidySchema, youthSubsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord, type YouthSubsidy } from './schema.js';
+import { subsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord } from './schema.js';
 import { createAttachmentFetcher, discoverArticles, normalizeText, parseArticle, parseAttachments, SOURCE_URL, type AttachmentFetcher, type HtmlFetcher } from './source.js';
 
 const cacheEntrySchema = z.object({
   signature: z.string(),
   status: z.enum(['done', 'skipped', 'error']),
-  subsidies: z.array(z.union([subsidySchema, youthSubsidySchema])),
+  subsidies: z.array(subsidySchema),
   error: z.string().optional(),
 });
 const cacheSchema = z.object({ version: z.literal(5), entries: z.record(z.string(), cacheEntrySchema) });
@@ -52,14 +52,14 @@ async function writeJson(path: string, value: unknown): Promise<void> {
   await rename(temporary, path);
 }
 
-function toRecords(article: Article, subsidies: (Subsidy | YouthSubsidy)[], startId: number): SubsidyRecord[] {
+function toRecords(article: Article, subsidies: Subsidy[], startId: number, isYouth: boolean): SubsidyRecord[] {
   return subsidies.map((subsidy, index) => {
-    const isYouth = 'category' in subsidy;
     const isOrganization = subsidy.is_organization || (isYouth && subsidy.conditions.some((condition) =>
       /^(?:申請人|對象|適用對象)(?:須)?為.*?(?:公司、商業|營利事業|人民團體|高級中等學校|大專院校|公私立學校|機構或團體)/.test(condition)));
     return {
       id: startId + index,
-      category: isYouth ? subsidy.category : article.category,
+      category: article.category,
+      label: [],
       is_organization: isOrganization,
       registration_months: isYouth && isOrganization ? null : subsidy.registration_months,
       age_lower: isYouth && isOrganization ? null : subsidy.age_lower,
@@ -92,6 +92,7 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const outputPath = join(options.dataDir, source.outputFile);
   await Promise.all([
     rm(outputPath, { force: true }),
+    rm(join(options.dataDir, 'category.json'), { force: true }),
     rm(cachePath, { force: true }),
     rm(attachmentManifestPath, { force: true }),
     rm(attachmentDir, { recursive: true, force: true }),
@@ -106,12 +107,12 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   const failures: RunSummary['failures'] = [];
   let reused = 0;
 
-  const appendSubsidies = (article: Article, subsidies: (Subsidy | YouthSubsidy)[]) => {
-    const unique: (Subsidy | YouthSubsidy)[] = [];
+  const appendSubsidies = (article: Article, subsidies: Subsidy[]) => {
+    const unique: Subsidy[] = [];
     for (const subsidy of subsidies) {
       if (!unique.some((seen) => isDeepStrictEqual(seen, subsidy))) unique.push(subsidy);
     }
-    records.push(...toRecords(article, unique, records.length + 1));
+    records.push(...toRecords(article, unique, records.length + 1, source.name === 'youth'));
   };
 
   const save = async (complete: boolean) => {

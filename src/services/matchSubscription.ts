@@ -56,6 +56,7 @@ export function ageInYears(birthDate: string, today = new Date()): number | null
 function asFilterRecord(aid: MatchableAid): GovernmentAidRecord {
   return {
     category: aid.classification,
+    label: [],
     is_organization: aid.isOrganization,
     registration_months: aid.registrationMonths,
     age_lower: aid.ageLower,

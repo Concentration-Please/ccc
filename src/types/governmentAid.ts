@@ -1,6 +1,7 @@
 /** Single aid row from the Taipei indigenous subsidy JSON feed. */
 export interface GovernmentAidRecord {
   category: string
+  label: string[]
   is_organization: boolean
   registration_months: number | null
   source_url: string

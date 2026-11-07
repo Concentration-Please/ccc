@@ -6,6 +6,7 @@ import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import JSZip from 'jszip';
 import { extractAttachmentText } from '../src/attachments.js';
+import { classifyDatasets, createGemmaClassificationEngine } from '../src/classify.js';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
 import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
@@ -69,7 +70,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     age_lower: 55,
     age_upper: 65,
   };
-  const youthSubsidy = { ...agedSubsidy, category: '其他' as const };
+  const youthSubsidy = { ...agedSubsidy };
   const openrouter = createOpenRouter({
     apiKey: 'test-key',
     compatibility: 'strict',
@@ -180,7 +181,7 @@ test('skips identical model records within an article and preserves other source
 
 test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {
   let calls = 0;
-  const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45, category: '其他' as const };
+  const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45 };
   const openrouter = createOpenRouter({
     apiKey: 'test-key',
     compatibility: 'strict',
@@ -266,7 +267,6 @@ test('reads youth subsidy pages and writes a separate output with shared categor
           ...subsidy,
           isNative: false,
           conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥'] : [],
-          category: article.title.includes('貸款') ? '貸款利息補貼' as const : '其他' as const,
         };
         return article.title.includes('貸款') ? [record, { ...record, subsidy_target: '另一貸款額度' }] : [record];
       },
@@ -288,7 +288,8 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     assert.equal(extractCalls, 2);
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'youth.json'), 'utf8'));
     assert.equal(output.source, YOUTH_SOURCE_URL);
-    assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['貸款利息補貼', '貸款利息補貼', '其他']);
+    assert.deepEqual(output.records.map(({ category }: { category: string }) => category), ['其他', '其他', '其他']);
+    assert.deepEqual(output.records.map(({ label }: { label: string[] }) => label), [[], [], []]);
     assert.deepEqual(output.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl, otherUrl]);
     assert.deepEqual(output.records.map(({ application_method_or_documents }: { application_method_or_documents: string[] }) => application_method_or_documents), [[], [], []]);
     const ids = output.records.map(({ id }: { id: number }) => id);
@@ -359,11 +360,14 @@ test('crawls nested service pages and starts each run from fresh data', async ()
 
     const staleAttachment = join(rootDir, 'tmp', 'ipc-attachments', 'stale.pdf');
     await writeFile(staleAttachment, 'stale');
+    const staleCategories = join(rootDir, 'data', 'category.json');
+    await writeFile(staleCategories, '["舊分類"]');
     const second = await runParser(options);
     assert.equal(second.reused, 0);
     assert.equal(modelCalls, 6);
     assert.equal(attachmentCalls, 2);
     await assert.rejects(readFile(staleAttachment), { code: 'ENOENT' });
+    await assert.rejects(readFile(staleCategories), { code: 'ENOENT' });
 
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'indigenous.json'), 'utf8'));
     assert.equal(output.source, SOURCE_URL);
@@ -375,11 +379,99 @@ test('crawls nested service pages and starts each run from fresh data', async ()
       id: 1,
       ...subsidy,
       category: '托育服務',
+      label: [],
       source_url: testArticleUrl,
     });
     const attachments = JSON.parse(await readFile(join(rootDir, 'tmp', 'ipc-attachments.json'), 'utf8'));
     assert.equal(attachments.length, 1);
     assert.equal((await readFile(join(rootDir, 'tmp', attachments[0].file))).toString(), '%PDF-test');
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('classifies every completed dataset from summaries and writes category and label outputs', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-classify-test-'));
+  const labels = { indigenous: '原住民', youth: '青年' };
+  const firstPath = join(rootDir, 'indigenous.json');
+  const secondPath = join(rootDir, 'youth.json');
+  const first = { source: 'ipc', generated_at: '2026-11-07T00:00:00.000Z', complete: true, records: [{ id: 1, summary: '原住民青年可申請托育補助。', category: '其他' }] };
+  const second = { source: 'youth', generated_at: '2026-11-07T00:00:00.000Z', complete: true, records: [{ id: 1, summary: '青年可申請貸款利息補貼。', category: '其他' }] };
+  try {
+    await writeFile(firstPath, JSON.stringify(first));
+    await writeFile(secondPath, JSON.stringify(second));
+    const seen: string[] = [];
+    const count = await classifyDatasets(rootDir, {
+      createCategories: async (summaries) => {
+        assert.deepEqual(summaries, [first.records[0]!.summary, second.records[0]!.summary]);
+        return ['托育服務', '貸款利息補貼', '其他'];
+      },
+      classify: async (summary, categories) => {
+        seen.push(summary);
+        assert.deepEqual(categories, ['托育服務', '貸款利息補貼', '其他']);
+        return summary.includes('托育')
+          ? { category: '托育服務', label: ['indigenous', 'youth'] }
+          : { category: '貸款利息補貼', label: ['youth'] };
+      },
+    }, labels);
+    assert.equal(count, 2);
+    assert.deepEqual(seen, [first.records[0]!.summary, second.records[0]!.summary]);
+    const classifiedFirst = JSON.parse(await readFile(firstPath, 'utf8'));
+    const classifiedSecond = JSON.parse(await readFile(secondPath, 'utf8'));
+    assert.equal(classifiedFirst.records[0].category, '托育服務');
+    assert.deepEqual(classifiedFirst.records[0].label, ['indigenous', 'youth']);
+    assert.equal(classifiedSecond.records[0].category, '貸款利息補貼');
+    assert.deepEqual(classifiedSecond.records[0].label, ['youth']);
+    assert.equal(classifiedFirst.generated_at, first.generated_at);
+    assert.deepEqual(JSON.parse(await readFile(join(rootDir, 'category.json'), 'utf8')), ['托育服務', '貸款利息補貼']);
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('Gemma creates categories and assigns category and multiple labels from summaries', async () => {
+  const requests: Record<string, unknown>[] = [];
+  const openrouter = createOpenRouter({
+    apiKey: 'test-key',
+    compatibility: 'strict',
+    fetch: async (_input, init) => {
+      const request = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      requests.push(request);
+      const output = requests.length === 1
+        ? { categories: ['托育服務', '教育扶助', '其他'] }
+        : { category: '托育服務', label: ['indigenous', 'youth'] };
+      return new Response(JSON.stringify({
+        id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
+        choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify(output) } }],
+        usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    },
+  });
+  const engine = createGemmaClassificationEngine('test-key', { indigenous: '原住民', youth: '青年' }, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
+  const summaries = ['原住民青年可申請托育補助。', '學生可申請教育補助。'];
+  const categories = await engine.createCategories(summaries);
+  assert.deepEqual(categories, ['托育服務', '教育扶助', '其他']);
+  assert.deepEqual(await engine.classify(summaries[0]!, categories), { category: '托育服務', label: ['indigenous', 'youth'] });
+  assert.equal(requests.length, 2);
+  assert.match(JSON.stringify(requests[0]?.messages), /學生可申請教育補助/);
+  assert.match(JSON.stringify(requests[1]?.messages), /indigenous（原住民）/);
+  assert.match(JSON.stringify(requests[1]?.messages), /原住民青年可申請托育補助/);
+});
+
+test('does not change datasets when one is incomplete', async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-classify-incomplete-test-'));
+  const firstPath = join(rootDir, 'indigenous.json');
+  const secondPath = join(rootDir, 'youth.json');
+  const first = JSON.stringify({ complete: true, records: [{ id: 1, summary: '托育補助' }] });
+  try {
+    await writeFile(firstPath, first);
+    await writeFile(secondPath, JSON.stringify({ complete: false, records: [] }));
+    await assert.rejects(classifyDatasets(rootDir, {
+      createCategories: async () => { throw new Error('should not classify incomplete datasets'); },
+      classify: async () => { throw new Error('should not classify incomplete datasets'); },
+    }, {}));
+    assert.equal(await readFile(firstPath, 'utf8'), first);
+    await assert.rejects(readFile(join(rootDir, 'category.json')), { code: 'ENOENT' });
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }
