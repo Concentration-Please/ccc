@@ -8,6 +8,8 @@ export interface GovernmentAidRecord {
   summary: string
   subsidy_target: string
   conditions: string[]
+  /** Optional attachment or related pages in addition to source_url. */
+  ref_urls?: string[]
 }
 
 /** Failed page recorded by the subsidy parser. */

@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchGovernmentAidBySource } from '@/services/database'
 import type { GovernmentAidRecord } from '@/types/governmentAid'
+import ExternalLink from '@/components/ExternalLink.vue'
 import { organizationLabel, registrationLabel } from '@/utils/aidLabels'
 
 const route = useRoute()
@@ -48,6 +49,12 @@ async function loadAid(source: string, name: string) {
 watch([sourceUrl, aidName], ([source, name]) => {
   void loadAid(source, name)
 }, { immediate: true })
+
+const referenceUrls = computed(() => {
+  if (!aid.value) return []
+  const urls = [aid.value.source_url, ...(aid.value.ref_urls ?? [])]
+  return [...new Set(urls.filter(Boolean))]
+})
 </script>
 
 <template>
@@ -88,9 +95,15 @@ watch([sourceUrl, aidName], ([source, name]) => {
         </ul>
       </section>
 
-      <p class="detail__source">
-        <a :href="aid.source_url" target="_blank" rel="noopener noreferrer">公告原文</a>
-      </p>
+      <section v-if="referenceUrls.length" class="detail__refs" aria-label="外部連結">
+        <ul class="detail__refs-list">
+          <li v-for="url in referenceUrls" :key="url">
+            <ExternalLink :href="url">
+              {{ url === aid.source_url ? '公告原文' : '參考連結' }}
+            </ExternalLink>
+          </li>
+        </ul>
+      </section>
     </template>
   </article>
 </template>
@@ -184,15 +197,21 @@ watch([sourceUrl, aidName], ([source, name]) => {
   margin-top: 4px;
 }
 
-.detail__source {
+.detail__refs {
   margin: 0;
   padding: 1rem var(--aid-inset) 0;
+}
+
+.detail__refs-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
 }
 
-.detail__source a {
-  color: var(--color-primary);
+.detail__refs-list li + li {
+  margin-top: 0.5rem;
 }
 </style>
