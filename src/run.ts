@@ -25,7 +25,6 @@ export interface RunOptions {
 
 export interface RunSummary {
   total: number;
-  candidates: number;
   records: number;
   reused: number;
   failures: { url: string; error: string }[];
@@ -62,13 +61,12 @@ function toRecords(article: Article, subsidies: Subsidy[]): SubsidyRecord[] {
 export async function runParser(options: RunOptions): Promise<RunSummary> {
   await mkdir(options.dataDir, { recursive: true });
   await mkdir(options.stateDir, { recursive: true });
-  const cachePath = join(options.stateDir, 'parser-state.json');
+  const cachePath = join(options.stateDir, 'ipc-parser-state.json');
   const outputPath = join(options.dataDir, 'subsidies.json');
   const cache = await loadCache(cachePath);
   const listings = await discoverArticles(options.fetchHtml);
   const records: SubsidyRecord[] = [];
   const failures: RunSummary['failures'] = [];
-  let candidates = 0;
   let reused = 0;
 
   const save = async (complete: boolean) => {
@@ -86,13 +84,11 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
     try {
       const article = parseArticle(await options.fetchHtml(listing.url), listing);
       const hash = signature(article, options.revision);
-      const match = article.title.includes('疫苗') || article.title.includes('免費') || article.body.includes('疫苗') || article.body.includes('免費');
-      if (match) candidates += 1;
       const cached = cache.entries[article.url];
       if (cached?.signature === hash && (cached.status === 'done' || cached.status === 'skipped')) {
         reused += 1;
         if (cached.status === 'done') records.push(...toRecords(article, cached.subsidies));
-      } else if (!match) {
+      } else if (!article.body) {
         cache.entries[article.url] = { signature: hash, status: 'skipped', subsidies: [] };
       } else {
         const subsidies = await options.extract(article);
@@ -108,10 +104,10 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
     }
     await save(false);
     if ((index + 1) % 25 === 0 || index + 1 === listings.length) {
-      options.log?.(`Processed ${index + 1}/${listings.length} articles; ${records.length} subsidy records; ${failures.length} errors`);
+      options.log?.(`Processed ${index + 1}/${listings.length} pages; ${records.length} subsidy records; ${failures.length} errors`);
     }
   }
 
   await save(failures.length === 0);
-  return { total: listings.length, candidates, records: records.length, reused, failures };
+  return { total: listings.length, records: records.length, reused, failures };
 }

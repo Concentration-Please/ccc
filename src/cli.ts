@@ -17,7 +17,7 @@ if (!apiKey) {
       revision: EXTRACTION_REVISION,
       log: console.log,
     });
-    console.log(`Finished: ${summary.total} articles, ${summary.candidates} candidates, ${summary.records} subsidy records, ${summary.reused} reused`);
+    console.log(`Finished: ${summary.total} pages, ${summary.records} subsidy records, ${summary.reused} reused`);
     if (summary.failures.length) {
       for (const failure of summary.failures) console.error(`${failure.url}: ${failure.error}`);
       process.exitCode = 1;

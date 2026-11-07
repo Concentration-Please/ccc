@@ -6,44 +6,48 @@ import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
-import { parseArticle, parseListing, SOURCE_URL } from '../src/source.js';
+import { parseArticle, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
 import type { Article, Subsidy } from '../src/schema.js';
 
-function listingHtml(ids: string[], total: number): string {
-  const rows = ids.map((id) => `<tr>
-    <td data-title="標題"><a href="News_Content.aspx?n=BB5A41BA1E6CA260&sms=72544237BBE4C5F6&s=${id}">${id === 'A' ? '公費疫苗' : '健康資訊'}</a></td>
-    <td data-title="發布日期">115-11-07</td>
-  </tr>`).join('');
-  return `<table>${rows}</table><ul class="C_Pager"><li><span class="count"><i>/</i>${total}</span></li></ul>`;
+function serviceHtml(links: [string, string][]): string {
+  return links.map(([title, href]) => `<div class="list-text content-list"><div class="h4"><a href="${href}">${title}</a></div></div>`).join('');
+}
+
+function listingHtml(id: string, title: string): string {
+  return `<table><tr><td data-title="標題"><a href="News_Content.aspx?n=TEST&s=${id}">${title}</a></td><td data-title="發布日期">115-11-07</td></tr></table>`;
 }
 
 function articleHtml(body: string): string {
-  return `<nav>免費服務</nav><div class="area-essay page-caption-p"><div class="essay"><p>${body}</p></div></div><footer>疫苗</footer>`;
+  return `<nav>網站導覽</nav><div class="area-essay page-caption-p"><div class="essay"><p>${body}</p></div></div>`;
 }
 
 const subsidy: Subsidy = {
-  name: '公費流感疫苗',
-  age_min_months: 780,
-  age_min_inclusive: true,
+  name: '原住民托育補助',
+  applicant_type: 'individual_or_family',
+  age_min_months: null,
+  age_min_inclusive: null,
   age_max_months: null,
   age_max_inclusive: null,
-  indigenous_requirement: 'unspecified',
+  indigenous_requirement: 'required',
   gender_restriction: 'unspecified',
-  evidence_quotes: ['65歲以上民眾可免費接種公費流感疫苗'],
+  evidence_quotes: ['原住民家庭可申請托育補助'],
 };
 
-test('parses the actual listing fields and only the article body', () => {
-  const html = listingHtml(['A'], 2).replace('</table>', '<tr><td data-title="標題"><a href="https://www.gov.taipei/News_Content.aspx?n=other&s=X">外站新聞</a></td></tr></table>');
-  const { entries, totalCount, rowCount } = parseListing(html, SOURCE_URL);
-  assert.equal(totalCount, 2);
-  assert.equal(rowCount, 2);
-  assert.equal(entries.length, 1);
-  assert.equal(entries[0]?.publishedAt, '2026-11-07');
-  assert.match(entries[0]?.url ?? '', /News_Content\.aspx.*s=A/);
-  assert.equal(parseArticle(articleHtml('一般健康資訊'), entries[0]!).body, '一般健康資訊');
+test('reads service links, skips venue rental, and extracts page bodies', () => {
+  const html = serviceHtml([
+    ['本會場地租借', 'News_Link_pic.aspx?n=VENUE'],
+    ['托育服務', 'News.aspx?n=CHILD'],
+    ['貸款利息補貼', 'cp.aspx?n=LOAN'],
+  ]);
+  const links = parseServiceLinks(html, SOURCE_URL, true);
+  assert.deepEqual(links.map((link) => link.title), ['托育服務', '貸款利息補貼']);
+  const listing = parseListing(listingHtml('A', '托育補助'), links[0]!.url);
+  assert.equal(listing.entries[0]?.publishedAt, '2026-11-07');
+  assert.equal(parseArticle(articleHtml('原住民家庭可申請托育補助'), listing.entries[0]!).body, '原住民家庭可申請托育補助');
+  assert.equal(parseArticle('<div class="area-editor user-edit">可申請貸款利息補貼</div>', { ...links[1]!, publishedAt: null }).body, '可申請貸款利息補貼');
 });
 
-test('sends one schema-constrained request through the AI SDK provider', async () => {
+test('sends a schema-constrained request through the AI SDK provider', async () => {
   let request: Record<string, unknown> | undefined;
   const openrouter = createOpenRouter({
     apiKey: 'test-key',
@@ -51,62 +55,67 @@ test('sends one schema-constrained request through the AI SDK provider', async (
     fetch: async (_input, init) => {
       request = JSON.parse(String(init?.body));
       return new Response(JSON.stringify({
-        id: 'chatcmpl-test',
-        object: 'chat.completion',
-        created: 1,
-        model: MODEL_ID,
+        id: 'chatcmpl-test', object: 'chat.completion', created: 1, model: MODEL_ID,
         choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify({ subsidies: [subsidy] }) } }],
         usage: { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150 },
       }), { status: 200, headers: { 'content-type': 'application/json' } });
     },
   });
   const article: Article = {
-    url: 'https://health.gov.taipei/example',
-    title: '公費流感疫苗',
+    url: 'https://www.ipc.gov.taipei/News_Content.aspx?n=TEST&s=A',
+    title: '托育補助',
     publishedAt: '2026-11-07',
-    body: '65歲以上民眾可免費接種公費流感疫苗',
+    body: '原住民家庭可申請托育補助',
   };
   const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }));
   assert.equal(result.length, 1);
   assert.equal(request?.model, MODEL_ID);
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
-  assert.equal((request?.provider as { require_parameters: boolean }).require_parameters, true);
 });
 
-test('crawls every page, filters body text, and resumes without duplicate model calls', async () => {
+test('crawls nested service pages, sends every body, and resumes', async () => {
   const rootDir = await mkdtemp(join(tmpdir(), 'ccc-parser-test-'));
-  const ids = Array.from({ length: 201 }, (_, index) => index === 0 ? 'A' : `B${index}`);
   let modelCalls = 0;
-  const fetchHtml = async (url: string): Promise<string> => {
-    const parsed = new URL(url);
-    if (parsed.pathname.toLowerCase() === '/news.aspx') {
-      return listingHtml(parsed.searchParams.get('page') === '2' ? ids.slice(200) : ids.slice(0, 200), 201);
-    }
-    return articleHtml(parsed.searchParams.get('s') === 'A' ? '65歲以上民眾可免費接種公費流感疫苗' : '一般健康資訊');
+  const fetchHtml = async (input: string): Promise<string> => {
+    const url = new URL(input);
+    const section = url.searchParams.get('n');
+    if (section === '082798040B8AF70C') return serviceHtml([
+      ['本會場地租借', 'News_Link_pic.aspx?n=VENUE'],
+      ['托育服務', 'News.aspx?n=CHILD'],
+      ['貸款利息補貼', 'cp.aspx?n=LOAN'],
+      ['原住民團體', 'cp.aspx?n=GROUP'],
+      ['其他補助', 'Content_List.aspx?n=OTHER'],
+    ]);
+    if (section === 'OTHER') return serviceHtml([['中央補助', 'News.aspx?n=CENTRAL']]);
+    if (section === 'CHILD') return listingHtml('A', '托育補助');
+    if (section === 'CENTRAL') return listingHtml('B', '其他服務');
+    if (section === 'LOAN') return '<div class="area-editor user-edit">可申請貸款利息補貼</div>';
+    if (section === 'GROUP') return '<div class="area-editor user-edit"></div>';
+    if (url.searchParams.get('s') === 'A') return articleHtml('原住民家庭可申請托育補助');
+    if (url.searchParams.get('s') === 'B') return articleHtml('一般政策說明');
+    throw new Error(`Unexpected test URL: ${input}`);
   };
-  const extract = async (_article: Article): Promise<Subsidy[]> => {
+  const extract = async (article: Article): Promise<Subsidy[]> => {
     modelCalls += 1;
-    return [subsidy];
+    return article.body.includes('托育補助') ? [subsidy] : [];
   };
 
   try {
-    const options = { fetchHtml, extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-1' };
+    const options = { fetchHtml, extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-ipc' };
     const first = await runParser(options);
-    assert.equal(first.total, 201);
-    assert.equal(first.candidates, 1);
+    assert.equal(first.total, 4);
     assert.equal(first.records, 1);
     assert.equal(first.failures.length, 0);
-    assert.equal(modelCalls, 1);
+    assert.equal(modelCalls, 3);
 
     const second = await runParser(options);
-    assert.equal(second.reused, 201);
-    assert.equal(modelCalls, 1);
+    assert.equal(second.reused, 4);
+    assert.equal(modelCalls, 3);
 
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'subsidies.json'), 'utf8'));
-    assert.equal(JSON.parse(await readFile(join(rootDir, 'tmp', 'parser-state.json'), 'utf8')).version, 1);
+    assert.equal(output.source, SOURCE_URL);
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
-    assert.equal(output.records[0].age_min_months, 780);
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }

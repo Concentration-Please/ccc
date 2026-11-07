@@ -1,9 +1,9 @@
 import { load } from 'cheerio';
 import type { Article, ArticleListing } from './schema.js';
 
-export const SOURCE_URL = 'https://health.gov.taipei/News.aspx?n=BB5A41BA1E6CA260&sms=72544237BBE4C5F6&page=1&PageSize=200';
+export const SOURCE_URL = 'https://www.ipc.gov.taipei/Content_List.aspx?n=082798040B8AF70C';
 const PAGE_SIZE = 200;
-const SECTION_ID = 'BB5A41BA1E6CA260';
+const SOURCE_ORIGIN = 'https://www.ipc.gov.taipei';
 
 export type HtmlFetcher = (url: string) => Promise<string>;
 
@@ -24,82 +24,122 @@ function parseRocDate(value: string): string {
   return `${year}-${match[2]}-${match[3]}`;
 }
 
-function articleUrl(href: string, pageUrl: string): string | null {
+function sameSiteUrl(href: string, pageUrl: string): URL | null {
   const url = new URL(href, pageUrl);
-  if (url.origin !== 'https://health.gov.taipei') return null;
-  if (url.pathname.toLowerCase() !== '/news_content.aspx') {
-    throw new Error(`Unexpected article URL: ${url}`);
-  }
-  const id = url.searchParams.get('s');
-  if (url.searchParams.get('n') !== SECTION_ID || !id) {
-    throw new Error(`Article is outside the news section: ${url}`);
-  }
-  const canonical = new URL('/News_Content.aspx', url.origin);
-  canonical.searchParams.set('n', SECTION_ID);
-  canonical.searchParams.set('sms', '72544237BBE4C5F6');
-  canonical.searchParams.set('s', id);
-  return canonical.toString();
+  if (url.origin !== SOURCE_ORIGIN) return null;
+  url.hash = '';
+  return url;
 }
 
-export function parseListing(html: string, pageUrl: string): { entries: ArticleListing[]; totalCount: number; rowCount: number } {
+interface ServiceLink {
+  url: string;
+  title: string;
+}
+
+export function parseServiceLinks(html: string, pageUrl: string, excludeVenue = false): ServiceLink[] {
+  const $ = load(html);
+  const blocks = $('.list-text.content-list');
+  if (!blocks.length) throw new Error(`Cannot find service links at ${pageUrl}`);
+  const links: ServiceLink[] = [];
+  blocks.each((_, block) => {
+    const anchor = $(block).find('.h4 a[href]').first();
+    const href = anchor.attr('href');
+    const title = normalizeText(anchor.text());
+    if (!href || !title) throw new Error(`Invalid service link at ${pageUrl}`);
+    if (excludeVenue && title.includes('場地租借')) return;
+    const url = sameSiteUrl(href, pageUrl);
+    if (url) links.push({ url: url.toString(), title });
+  });
+  return links;
+}
+
+export function parseListing(html: string, pageUrl: string): { entries: ArticleListing[]; totalCount: number | null; rowCount: number } {
   const $ = load(html);
   const totalText = normalizeText($('.C_Pager .count').first().text());
   const totalMatch = /^\/\s*(\d+)$/.exec(totalText);
-  if (!totalMatch) throw new Error(`Cannot find listing total at ${pageUrl}`);
 
   const entries: ArticleListing[] = [];
   let rowCount = 0;
   $('table tr').each((_, row) => {
-    const titleCell = $(row).find('td[data-title="標題"]');
+    const titleCell = $(row).find('td[data-title="標題"], td[data-title="主題"]');
     if (!titleCell.length) return;
     rowCount += 1;
     const anchor = titleCell.find('a[href]').first();
     const href = anchor.attr('href');
     const title = normalizeText(anchor.text());
     if (!href || !title) throw new Error(`Invalid listing row at ${pageUrl}`);
-    const url = articleUrl(href, pageUrl);
+    const url = sameSiteUrl(href, pageUrl);
     if (!url) return;
-    const date = normalizeText($(row).find('td[data-title="發布日期"]').text());
-    entries.push({ url, title, publishedAt: parseRocDate(date) });
+    if (url.pathname.toLowerCase() !== '/news_content.aspx') {
+      throw new Error(`Unexpected article URL: ${url}`);
+    }
+    const date = normalizeText($(row).find('td[data-title="發布日期"], td[data-title="上版日期"]').text());
+    entries.push({ url: url.toString(), title, publishedAt: date ? parseRocDate(date) : null });
   });
 
-  if (Number(totalMatch[1]) > 0 && rowCount === 0) {
-    throw new Error(`No article rows found at ${pageUrl}`);
-  }
-  return { entries, totalCount: Number(totalMatch[1]), rowCount };
+  const totalCount = totalMatch ? Number(totalMatch[1]) : null;
+  if (totalCount !== null && totalCount > 0 && rowCount === 0) throw new Error(`No article rows found at ${pageUrl}`);
+  return { entries, totalCount, rowCount };
 }
 
 export function parseArticle(html: string, listing: ArticleListing): Article {
   const $ = load(html);
-  const bodyNode = $('.area-essay.page-caption-p .essay').first();
+  const isContentPage = new URL(listing.url).pathname.toLowerCase() === '/cp.aspx';
+  const bodyNode = $(isContentPage ? '.area-editor.user-edit' : '.area-essay.page-caption-p .essay').first();
   if (!bodyNode.length) throw new Error(`Cannot find article body at ${listing.url}`);
   bodyNode.find('script, style').remove();
   bodyNode.find('br').replaceWith(' ');
   const body = normalizeText(bodyNode.text());
-  if (!body) throw new Error(`Article body is empty at ${listing.url}`);
   return { ...listing, body };
 }
 
 export async function discoverArticles(fetchHtml: HtmlFetcher): Promise<ArticleListing[]> {
-  const first = parseListing(await fetchHtml(SOURCE_URL), SOURCE_URL);
-  const pageCount = Math.ceil(first.totalCount / PAGE_SIZE);
-  const all = [...first.entries];
-  let rowCount = first.rowCount;
-  for (let page = 2; page <= pageCount; page += 1) {
-    const url = new URL(SOURCE_URL);
-    url.searchParams.set('page', String(page));
-    const result = parseListing(await fetchHtml(url.toString()), url.toString());
-    if (result.totalCount !== first.totalCount) {
-      throw new Error('Listing changed while crawling; rerun to get a consistent set of articles');
+  const queue = parseServiceLinks(await fetchHtml(SOURCE_URL), SOURCE_URL, true);
+  const visitedSections = new Set([SOURCE_URL]);
+  const articles = new Map<string, ArticleListing>();
+
+  for (const section of queue) {
+    if (visitedSections.has(section.url)) continue;
+    visitedSections.add(section.url);
+    const pathname = new URL(section.url).pathname.toLowerCase();
+    if (pathname === '/content_list.aspx') {
+      queue.push(...parseServiceLinks(await fetchHtml(section.url), section.url));
+    } else if (pathname === '/news.aspx') {
+      const firstUrl = new URL(section.url);
+      firstUrl.searchParams.set('page', '1');
+      firstUrl.searchParams.set('PageSize', String(PAGE_SIZE));
+      let page = 1;
+      let observed = 0;
+      let expectedCount: number | null = null;
+      const seenInSection = new Set<string>();
+      let current;
+      do {
+        firstUrl.searchParams.set('page', String(page));
+        current = parseListing(await fetchHtml(firstUrl.toString()), firstUrl.toString());
+        if (page === 1) expectedCount = current.totalCount;
+        if (expectedCount !== null && current.totalCount !== null && current.totalCount !== expectedCount) {
+          throw new Error(`Listing changed while crawling ${section.url}`);
+        }
+        if (page > 1 && current.entries.length > 0 && current.entries.every((article) => seenInSection.has(article.url))) {
+          throw new Error(`Listing page repeated at ${firstUrl}`);
+        }
+        observed += current.rowCount;
+        for (const article of current.entries) {
+          seenInSection.add(article.url);
+          articles.set(article.url, article);
+        }
+        page += 1;
+      } while (expectedCount !== null ? observed < expectedCount : current.rowCount === PAGE_SIZE);
+      if (expectedCount !== null && observed !== expectedCount) {
+        throw new Error(`Listing count changed at ${section.url}: expected ${expectedCount}, found ${observed}`);
+      }
+    } else if (pathname === '/cp.aspx' || pathname === '/news_content.aspx') {
+      articles.set(section.url, { ...section, publishedAt: null });
+    } else {
+      throw new Error(`Unsupported service page: ${section.url}`);
     }
-    all.push(...result.entries);
-    rowCount += result.rowCount;
   }
-  const unique = new Map(all.map((entry) => [entry.url, entry]));
-  if (rowCount !== first.totalCount || unique.size !== all.length) {
-    throw new Error(`Listing expected ${first.totalCount} rows, found ${rowCount}; ${unique.size} unique same-site articles`);
-  }
-  return [...unique.values()];
+  return [...articles.values()];
 }
 
 function retryDelay(response: Response, attempt: number): number {
@@ -122,7 +162,7 @@ export function createHtmlFetcher(fetchImpl: typeof fetch = fetch): HtmlFetcher 
       lastRequestAt = Date.now();
       try {
         const response = await fetchImpl(url, {
-          headers: { 'User-Agent': 'taipei-health-subsidy-parser/1.0' },
+          headers: { 'User-Agent': 'taipei-ipc-subsidy-parser/1.0' },
           signal: AbortSignal.timeout(20_000),
         });
         if (response.ok) return response.text();
