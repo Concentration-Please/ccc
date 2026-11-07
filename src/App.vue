@@ -30,7 +30,7 @@ function pushNewMatches(personas: Persona[]) {
     .filter((record) => !seen.has(record.source_url))
     .map((record) => ({ url: record.source_url, title: record.name }))
   const fresh = uniqueNotifications(pending)
-  for (const item of fresh) notifyMatchingAid(item.title)
+  for (const item of fresh) notifyMatchingAid(item.title, item.url)
   if (pending.length > 0) markNotified(pending.map((item) => item.url))
 }
 
@@ -44,7 +44,7 @@ async function notifySubscribedAnnouncements() {
     .filter((item) => matchesSubscription(item, personas) && !seen.has(item.id))
     .map((item) => ({ url: item.id, title: item.title }))
   const fresh = uniqueNotifications(pending)
-  for (const item of fresh) notifyMatchingAid(item.title)
+  for (const item of fresh) notifyMatchingAid(item.title, item.url)
   if (pending.length > 0) markNotified(pending.map((item) => item.url))
   markBatchSeen(batch.batchId)
 }
