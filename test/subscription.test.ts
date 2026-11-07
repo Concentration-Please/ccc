@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { ageInYears, matchesSubscription, type MatchableAid, type Persona } from '../src/services/matchSubscription.js'
+import {
+  ageInYears,
+  hasDuplicatePersona,
+  matchesSubscription,
+  personaCriteriaEqual,
+  type MatchableAid,
+  type Persona,
+} from '../src/services/matchSubscription.js'
 import { uniqueNotifications } from '../src/services/subscription.js'
 
 const today = new Date(2026, 10, 7)
@@ -100,6 +107,40 @@ test('keeps one notification for a repeated source url or title', () => {
     { url: 'https://example.test/a', title: '甲' },
     { url: 'https://example.test/c', title: '丙' },
   ])
+})
+
+test('detects duplicate persona criteria ignoring id and tag order', () => {
+  const existing = persona({ categoryIds: ['category:托育服務', 'category:貸款'], tagIds: ['registration_months:6'] })
+  assert.equal(
+    personaCriteriaEqual(existing, {
+      birthDate: existing.birthDate,
+      identity: existing.identity,
+      categoryIds: ['category:貸款', 'category:托育服務'],
+      tagIds: ['registration_months:6'],
+    }),
+    true,
+  )
+  assert.equal(
+    hasDuplicatePersona(
+      [existing],
+      {
+        birthDate: existing.birthDate,
+        identity: existing.identity,
+        categoryIds: ['category:貸款', 'category:托育服務'],
+        tagIds: ['registration_months:6'],
+      },
+    ),
+    true,
+  )
+  assert.equal(
+    hasDuplicatePersona([existing], {
+      birthDate: existing.birthDate,
+      identity: existing.identity,
+      categoryIds: existing.categoryIds,
+      tagIds: ['registration_months:4'],
+    }),
+    false,
+  )
 })
 
 test('keeps the computed age inside the aid bounds', () => {
