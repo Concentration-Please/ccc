@@ -84,11 +84,13 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   let reused = 0;
 
   const save = async (complete: boolean) => {
+    const now = new Date();
     await writeJson(cachePath, cache);
     await writeJson(attachmentManifestPath, attachments);
     await writeJson(outputPath, {
       source: SOURCE_URL,
-      generated_at: new Date().toISOString(),
+      generated_at: now.toISOString(),
+      updated_at: new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().replace('Z', '+08:00'),
       complete,
       records,
       errors: failures,

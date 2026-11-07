@@ -23,7 +23,7 @@ npm run parse
 
 ## 結果格式
 
-`data/subsidies.json` 包含 `source`、`generated_at`、`complete`、`records`、`errors`。每個 `records` 項目代表一個網頁中的一項服務及一組資格；同一方案有不同申請資格時分成多筆，跨網頁不合併。
+`data/subsidies.json` 包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目代表一個網頁中的一項服務及一組資格；同一方案有不同申請資格時分成多筆，跨網頁不合併。
 
 - `category`：網站「為民服務」最上層分類名稱；子分類文章沿用其所屬的最上層分類。
 - `is_organization`：團體或機構為實際受益／申請者時為 `true`；個人或家庭為 `false`。

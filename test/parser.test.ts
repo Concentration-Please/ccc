@@ -126,6 +126,8 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
 
     const output = JSON.parse(await readFile(join(rootDir, 'data', 'subsidies.json'), 'utf8'));
     assert.equal(output.source, SOURCE_URL);
+    assert.match(output.updated_at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}\+08:00$/);
+    assert.equal(Date.parse(output.updated_at), Date.parse(output.generated_at));
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
     assert.deepEqual(output.records[0], {
