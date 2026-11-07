@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { onUnmounted } from 'vue'
 import searchIcon from '@/assets/searchIcon.svg'
 import filterIcon from '@/assets/filterIcon.svg'
 import type { AppliedFilterTag } from '@/services/filter'
+import { notifyMatchingAid } from '@/services/townpass'
 
 const searchQuery = defineModel<string>('searchQuery', { default: '' })
 
@@ -19,6 +21,31 @@ const emit = defineEmits<{
 function onSubmit() {
   emit('submitSearch')
 }
+
+// BEGIN TEMPORARY: delete this block. Three quick taps on the search button send a mock eligible-aid notification.
+const TEMP_MOCK_ELIGIBLE_AID = '【測試】模擬符合補助'
+const TEMP_CLICK_WINDOW_MS = 600
+let tempSearchClicks = 0
+let tempSearchTimer = 0
+
+function onSearchClick() {
+  onSubmit()
+  tempSearchClicks += 1
+  window.clearTimeout(tempSearchTimer)
+  if (tempSearchClicks >= 3) {
+    tempSearchClicks = 0
+    notifyMatchingAid(TEMP_MOCK_ELIGIBLE_AID)
+    return
+  }
+  tempSearchTimer = window.setTimeout(() => {
+    tempSearchClicks = 0
+  }, TEMP_CLICK_WINDOW_MS)
+}
+
+onUnmounted(() => {
+  window.clearTimeout(tempSearchTimer)
+})
+// END TEMPORARY
 
 function onOpenFilter() {
   emit('openFilter')
@@ -45,7 +72,7 @@ function onRemoveFilter(id: string) {
         type="button"
         class="search-filter-bar__action"
         aria-label="搜尋"
-        @click="onSubmit"
+        @click="onSearchClick"
       >
         <img class="search-filter-bar__icon" :src="searchIcon" alt="" width="24" height="24" />
       </button>
