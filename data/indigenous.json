@@ -3250,6 +3250,88 @@
         "裁判費或律師費收據正本各乙份",
         "金融機構存簿封面影本各乙份"
       ]
+    },
+    {
+      "id": 76,
+      "category": "托育服務",
+      "is_organization": false,
+      "registration_months": null,
+      "age_lower": null,
+      "age_upper": null,
+      "isNative": true,
+      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=F2D7E9CA53A442A8&sms=E939F40E49EF42B3&s=BE5BF829EA28149D",
+      "name": "臺北市原住民托育補助(testing notification3)",
+      "summary": "提供具有原住民身分且設籍台北市之國民小學以下兒童托育費用補助。",
+      "subsidy_target": "未明確提及補助金額上限",
+      "conditions": [
+        "對象為具有原住民身分之國民小學以下兒童",
+        "兒童須設籍並實際居住本市",
+        "父母一方須設籍並實際居住本市",
+        "家庭總收入平均分配全家人口，每人每月未達本市最近一年平均消費支出百分之八十者",
+        "實際就托於本市居家式托育服務人員、公私立幼兒園及兒童課後照顧服務中心",
+        "第一學期申請期限：9月1日至11月20日止",
+        "第二學期申請期限：2月1日至5月20日止",
+        "符合本府或其他政府同性質之補助者，應優先申請該項補助",
+        "前項優先申請之補助核准金額未達本補助之最高額度者，得申請補助差額"
+      ]
+    },
+    {
+      "id": 77,
+      "category": "法律服務",
+      "is_organization": false,
+      "registration_months": 4,
+      "age_lower": null,
+      "age_upper": null,
+      "isNative": true,
+      "source_url": "https://www.ipc.gov.taipei/cp.aspx?n=8F68AA3E7B9C198C333",
+      "name": "法律服務",
+      "summary": "補助設籍並實際居住臺北市滿四個月以上之原住民之法律訴訟相關費用。",
+      "subsidy_target": "裁判費或律師費",
+      "conditions": [
+        "對象為原住民",
+        "設籍並實際居住臺北市滿四個月以上"
+      ]
+    },
+    {
+      "id": 78,
+      "category": "托育服務",
+      "is_organization": false,
+      "registration_months": null,
+      "age_lower": null,
+      "age_upper": null,
+      "isNative": true,
+      "source_url": "https://www.ipc.gov.taipei/News_Content.aspx?n=F2D7E9CA53A442A8&sms=E939F40E49EF42B3&s=BE5BF829EA28149D",
+      "name": "臺北市原住民托育補助(testing notification3)",
+      "summary": "提供具有原住民身分且設籍台北市之國民小學以下兒童托育費用補助。",
+      "subsidy_target": "未明確提及補助金額上限",
+      "conditions": [
+        "對象為具有原住民身分之國民小學以下兒童",
+        "兒童須設籍並實際居住本市",
+        "父母一方須設籍並實際居住本市",
+        "家庭總收入平均分配全家人口，每人每月未達本市最近一年平均消費支出百分之八十者",
+        "實際就托於本市居家式托育服務人員、公私立幼兒園及兒童課後照顧服務中心",
+        "第一學期申請期限：9月1日至11月20日止",
+        "第二學期申請期限：2月1日至5月20日止",
+        "符合本府或其他政府同性質之補助者，應優先申請該項補助",
+        "前項優先申請之補助核准金額未達本補助之最高額度者，得申請補助差額"
+      ]
+    },
+    {
+      "id": 79,
+      "category": "托育服務",
+      "is_organization": false,
+      "registration_months": null,
+      "age_lower": null,
+      "age_upper": null,
+      "isNative": true,
+      "source_url": "https://example.test/notify-new-url",
+      "name": "跑馬燈測試：全新托育補助",
+      "summary": "這是一筆用來測試新網址推播的假資料。",
+      "subsidy_target": "測試用，沒有實際金額",
+      "conditions": [
+        "具有原住民身分",
+        "個人申請"
+      ]
     }
   ],
   "errors": []

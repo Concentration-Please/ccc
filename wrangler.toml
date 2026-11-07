@@ -3,8 +3,17 @@
 # CLI: npm run cf:pages:deploy
 
 name = "ccc"
+main = "worker/index.ts"
 compatibility_date = "2025-01-01"
 pages_build_output_dir = "./dist"
+
+[triggers]
+crons = ["* * * * *"]
+
+[[kv_namespaces]]
+binding = "NOTIFY"
+id = "d0609641ea414bcc94eede2a5ce75b96"
+remote = true
 
 # Required for `wrangler preview` (Worker open beta); `pages_build_output_dir` alone is not enough.
 [assets]

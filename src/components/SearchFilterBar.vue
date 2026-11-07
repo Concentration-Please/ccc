@@ -12,6 +12,7 @@ defineProps<{
 const emit = defineEmits<{
   submitSearch: []
   openFilter: []
+  openSubscribe: []
   removeFilter: [id: string]
 }>()
 
@@ -55,6 +56,13 @@ function onRemoveFilter(id: string) {
         @click="onOpenFilter"
       >
         <img class="search-filter-bar__icon" :src="filterIcon" alt="" width="24" height="24" />
+      </button>
+      <button
+        type="button"
+        class="search-filter-bar__action search-filter-bar__action--text"
+        @click="emit('openSubscribe')"
+      >
+        訂閱
       </button>
     </div>
 
@@ -127,6 +135,15 @@ function onRemoveFilter(id: string) {
 
 .search-filter-bar__action:active {
   opacity: 0.92;
+}
+
+.search-filter-bar__action--text {
+  width: auto;
+  padding: 0 0.85rem;
+  color: var(--color-primary-text);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .search-filter-bar__icon {
