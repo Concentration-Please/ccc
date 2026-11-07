@@ -86,6 +86,7 @@ export function parseArticle(html: string, listing: ArticleListing): Article {
   const $ = load(html);
   const isContentPage = new URL(listing.url).pathname.toLowerCase() === '/cp.aspx';
   const bodyNode = $(isContentPage ? '.area-editor.user-edit' : '.area-essay.page-caption-p .essay').first();
+  if (!bodyNode.length && $('.list-text.file-download-multiple').length) return { ...listing, body: '' };
   if (!bodyNode.length) throw new Error(`Cannot find article body at ${listing.url}`);
   bodyNode.find('script, style').remove();
   bodyNode.find('br').replaceWith(' ');

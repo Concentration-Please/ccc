@@ -23,13 +23,23 @@ function articleHtml(body: string): string {
 
 const subsidy: Subsidy = {
   name: '原住民托育補助',
-  applicant_type: 'individual_or_family',
+  beneficiary_type: 'individual',
+  application_by: 'service_provider',
   age_min_months: null,
   age_min_inclusive: null,
   age_max_months: null,
   age_max_inclusive: null,
+  school_stage: null,
   indigenous_requirement: 'required',
   gender_restriction: 'unspecified',
+  registered_in: null,
+  registration_min_months: null,
+  actual_residence_required: null,
+  income_requirement: null,
+  other_requirements: [],
+  benefit_detail: null,
+  application_period: null,
+  source_kind: 'service_detail',
   evidence_quotes: ['原住民家庭可申請托育補助'],
 };
 
@@ -44,6 +54,7 @@ test('reads service links, skips venue rental, and extracts page bodies', () => 
   const listing = parseListing(listingHtml('A', '托育補助'), links[0]!.url);
   assert.equal(listing.entries[0]?.publishedAt, '2026-11-07');
   assert.equal(parseArticle(articleHtml('原住民家庭可申請托育補助'), listing.entries[0]!).body, '原住民家庭可申請托育補助');
+  assert.equal(parseArticle('<div class="list-text file-download-multiple"><a href="rules.pdf">PDF</a></div>', listing.entries[0]!).body, '');
   assert.equal(parseArticle('<div class="area-editor user-edit">可申請貸款利息補貼</div>', { ...links[1]!, publishedAt: null }).body, '可申請貸款利息補貼');
 });
 
@@ -116,6 +127,8 @@ test('crawls nested service pages, sends every body, and resumes', async () => {
     assert.equal(output.source, SOURCE_URL);
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
+    assert.equal(output.records[0].beneficiary_type, 'individual');
+    assert.equal(output.records[0].application_by, 'service_provider');
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }

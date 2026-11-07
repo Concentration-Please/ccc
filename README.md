@@ -17,16 +17,21 @@ npm run parse
 
 完整抓取會對每篇有正文的網頁呼叫付費模型，不做關鍵字初篩；只有附件而無正文的頁面會略過。程式依序處理網頁，每篇完成後將結果寫入 `data/subsidies.json`，並將續跑狀態寫入 Git 忽略的 `tmp/ipc-parser-state.json`。執行時會覆寫先前衛生局來源產生的 `data/subsidies.json`；重新執行會重抓網頁內文，但內容與抽取版本未變時不再呼叫模型。網站或模型暫時失敗時會有限次重試；仍失敗的網頁列在輸出檔 `errors`，程式以非零狀態結束，下次執行會重試。
 
+欄位改版後，舊版續跑狀態不相容；下一次執行 `npm run parse` 會重新呼叫模型並覆寫既有結果。
+
 ## 結果格式
 
-`data/subsidies.json` 包含 `source`、`generated_at`、`complete`、`records`、`errors`。每個 `records` 項目代表一個網頁中的一項補助及一組資格；同一方案有不同族群門檻時分成多筆，跨網頁不合併。
+`data/subsidies.json` 包含 `source`、`generated_at`、`complete`、`records`、`errors`。每個 `records` 項目代表一個網頁中的一項服務及一組資格；同一方案有不同申請資格時分成多筆，跨網頁不合併。
 
 - `name`：補助或免費服務名稱。
-- `applicant_type`：`individual_or_family`（個人或家庭）、`organization`（團體或機構）或 `unspecified`。
-- `age_min_months`、`age_max_months`：整數月；原文沒有可換算的數值年齡時為 `null`。
-- `age_min_inclusive`、`age_max_inclusive`：界線是否包含該月；對應年齡為 `null` 時也為 `null`。
+- `beneficiary_type`：實際受益者為 `individual`、`family`、`organization` 或 `unspecified`；`application_by` 則記錄誰遞交申請，避免把代辦機構當成受益者。
+- `age_min_months`、`age_max_months`：整數月的年齡門檻；`age_min_inclusive`、`age_max_inclusive` 表示是否包含門檻。只有學籍或年級時，年齡欄位為 `null`，資格寫在 `school_stage`。
 - `indigenous_requirement`：個人的原住民身分限制，為 `required`、`excluded`、`not_required`（明確不限）或 `unspecified`（未說明或團體申請）。
 - `gender_restriction`：`male_only`、`female_only`、`none`（明確不限）或 `unspecified`（未說明）。
+- `registered_in`、`registration_min_months`、`actual_residence_required`：設籍地、設籍月數、是否要求實際居住；未提及時為 `null`。
+- `income_requirement`、`other_requirements`：原文的所得門檻及其餘條件，例如房產、家庭人數、失能或重複請領限制。
+- `benefit_detail`、`application_period`：補助內容／金額及申請期間；未提及時為 `null`。
+- `source_kind`：`service_detail`（服務說明）、`faq`（問答或摘要）、`amendment`（僅說明修正內容）；修正公告不視為完整資格規則。
 - `evidence_quotes`：從網頁正文逐字擷取的原文；年級或出生年度等無法可靠換算的資格也保留在此。
 - `source_url`、`article_title`、`published_at`：來源網址、網頁標題與發布日期，供人工查證。未提供發布日期的頁面以 `null` 表示；程式不判定歷史公告是否仍有效。
 
