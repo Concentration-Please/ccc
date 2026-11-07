@@ -1,5 +1,6 @@
 export interface SubsidyRecord {
   category: string
+  label: string[]
   is_organization: boolean
   registration_months: number | null
   source_url: string
