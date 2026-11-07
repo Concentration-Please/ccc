@@ -24,7 +24,7 @@ function onSubmit() {
 }
 
 // BEGIN TEMPORARY: delete this block. Three quick taps on the search button notify indigenous record 85.
-const TEMP_ELIGIBLE_AID = indigenousFile.records.find((record) => record.id === 85)
+const TEMP_ELIGIBLE_AID_NAME = indigenousFile.records.find((record) => record.id === 85)?.name
 const TEMP_CLICK_WINDOW_MS = 600
 let tempSearchClicks = 0
 let tempSearchTimer = 0
@@ -35,7 +35,7 @@ function onSearchClick() {
   window.clearTimeout(tempSearchTimer)
   if (tempSearchClicks >= 3) {
     tempSearchClicks = 0
-    if (TEMP_ELIGIBLE_AID) notifyMatchingAid(TEMP_ELIGIBLE_AID.name, TEMP_ELIGIBLE_AID.source_url)
+    if (TEMP_ELIGIBLE_AID_NAME) notifyMatchingAid(TEMP_ELIGIBLE_AID_NAME)
     return
   }
   tempSearchTimer = window.setTimeout(() => {
