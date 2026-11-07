@@ -9,7 +9,7 @@ import { extractAttachmentText } from '../src/attachments.js';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
 import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
-import { discoverYouthArticles, parseYouthArticle, parseYouthListing, YOUTH_SOURCE_URL } from '../src/youth-source.js';
+import { discoverYouthArticles, parseYouthArticle, parseYouthAttachments, parseYouthListing, YOUTH_SOURCE_URL } from '../src/youth-source.js';
 import type { Article, Subsidy } from '../src/schema.js';
 
 function serviceHtml(links: [string, string][]): string {
@@ -212,6 +212,9 @@ test('reads youth subsidy pages and writes a separate output with shared categor
   const listings = parseYouthListing(listingHtml);
   assert.deepEqual(listings.map(({ category }) => category), ['其他', '其他']);
   assert.equal(parseYouthArticle(loanHtml, listings[0]!).body, '青年留學貸款\n貸款利息補貼');
+  assert.deepEqual(parseYouthAttachments('<article class="article"><div class="wysiwyg"><div class="content"><a href="https://www.fubon.com/forms/application.pdf">申請書</a><a href="https://example.com/details">詳情</a></div></div></article>', loanUrl), [
+    { url: 'https://www.fubon.com/forms/application.pdf', title: '申請書', extension: 'pdf' },
+  ]);
   assert.throws(() => parseYouthListing(listingHtml.replace('2 筆', '3 筆')), /incomplete/);
 
   try {

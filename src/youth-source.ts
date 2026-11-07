@@ -1,6 +1,6 @@
 import { load } from 'cheerio';
 import type { Article, ArticleListing } from './schema.js';
-import { normalizeText, type HtmlFetcher } from './source.js';
+import { normalizeText, type AttachmentLink, type HtmlFetcher } from './source.js';
 
 export const YOUTH_SOURCE_URL = 'https://youth.gov.taipei/services/05eb79e5-46b5-41e5-b1fd-0519d782b04a';
 
@@ -47,6 +47,21 @@ export function parseYouthArticle(html: string, listing: ArticleListing): Articl
   content.find('p, li, tr, h2, h3, h4').append('\n');
   const body = content.text().split(/\n+/).map(normalizeText).filter(Boolean).join('\n');
   return { ...listing, body };
+}
+
+export function parseYouthAttachments(html: string, pageUrl: string): AttachmentLink[] {
+  const $ = load(html);
+  const attachments: AttachmentLink[] = [];
+  $('article.article .wysiwyg .content a[href]').each((_, element) => {
+    const href = $(element).attr('href');
+    if (!href) return;
+    const url = new URL(href, pageUrl);
+    const extension = /\.(pdf|odt|ods|docx)$/i.exec(url.pathname)?.[1]?.toLowerCase();
+    if (url.protocol !== 'https:' || !extension) return;
+    const title = normalizeText($(element).text());
+    attachments.push({ url: url.toString(), title: title || url.pathname.split('/').at(-1) || '附件', extension });
+  });
+  return attachments;
 }
 
 export async function discoverYouthArticles(fetchHtml: HtmlFetcher): Promise<ArticleListing[]> {

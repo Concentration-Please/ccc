@@ -100,4 +100,4 @@ npm run typecheck
 npm run parse:youth
 ```
 
-青年局資料的 `category` 從原住民資料現有分類及新增的「其他」中選擇；每筆補助獨立分類。只有網頁正文會送模型，附件與外部連結內容不解析。每次執行同樣會清除青年局的舊輸出與暫存；當次進度與附件索引分別存於 Git 忽略的 `tmp/youth-parser-state.json`、`tmp/youth-attachments.json`，與原住民 parser 分開。
+青年局資料的 `category` 從原住民資料現有分類及新增的「其他」中選擇；每筆補助獨立分類。網頁正文與頁面直接連結的可讀附件文字會送模型，其他外部網頁內容不解析。每次執行同樣會清除青年局的舊輸出與暫存；當次進度與附件索引分別存於 Git 忽略的 `tmp/youth-parser-state.json`、`tmp/youth-attachments.json`，與原住民 parser 分開。

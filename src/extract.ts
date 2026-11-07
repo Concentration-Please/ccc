@@ -4,12 +4,12 @@ import { extractionSchema, sharedCategories, youthExtractionSchema, type Article
 
 export const MODEL_ID = 'google/gemma-4-26b-a4b-it';
 export const EXTRACTION_REVISION = `${MODEL_ID}:ipc-prompt-8:schema-6`;
-export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-5:schema-6`;
+export const YOUTH_EXTRACTION_REVISION = `${MODEL_ID}:youth-prompt-6:schema-6`;
 
 type ExtractSource = 'indigenous' | 'youth';
 const SOURCE_PROMPTS: Record<ExtractSource, string> = {
   indigenous: '你是臺灣原住民族公共服務資訊擷取器。只根據提供的臺北市政府原住民族事務委員會「為民服務」網頁正文與可讀附件文字，擷取可申請的補助、津貼、費用減免、獎勵或免費服務。正文或附件列有具體補助資格與內容時，不可回傳空陣列。純宣導、自費服務、已停止的方案，以及只有外部連結而沒有服務內容的頁面，回傳空陣列。不要從未提供文字的附件或連結推測內容。',
-  youth: '你是臺北市政府青年局公共服務資訊擷取器。只根據提供的「補助貸款」網頁正文，擷取補助、津貼、利息補貼或政策性貸款。只要正文列有具體申請資格與補助內容，即使是修正公告或要點全文也要擷取。當年度預算用罄或暫停受理只是不受理該期間的申請，仍要記錄方案，並將此限制寫入 conditions。純宣導、永久停止的方案，以及只有外部連結或附件而沒有服務內容的頁面，回傳空陣列。不要從未提供的附件或連結推測內容。',
+  youth: '你是臺北市政府青年局公共服務資訊擷取器。只根據提供的「補助貸款」網頁正文與可讀附件文字，擷取補助、津貼、利息補貼或政策性貸款。只要正文或附件列有具體申請資格與補助內容，即使是修正公告或要點全文也要擷取。當年度預算用罄或暫停受理只是不受理該期間的申請，仍要記錄方案，並將此限制寫入 conditions。純宣導、永久停止的方案，以及只有外部連結而沒有服務內容的頁面，回傳空陣列。不要從未提供文字的附件或連結推測內容。',
 };
 const OUTPUT_RULES: Record<ExtractSource, string> = {
   indigenous: '每項服務輸出一筆；若不同補助項目或不同資格路徑的補助內容不同，分筆輸出。僅輸出以下欄位，不要輸出來源網址或分類，這兩項由程式填入。',
