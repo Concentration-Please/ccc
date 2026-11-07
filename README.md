@@ -70,8 +70,9 @@ npm run parse
 
 附件原檔存於 Git 忽略的 `tmp/ipc-attachments/`，來源網址、標題及檔名索引存於 `tmp/ipc-attachments.json`。目前模型只讀網頁正文；附件內容不送模型。
 
-`data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十一個欄位：
+`data/indigenous.json` 頂層包含 `source`、`generated_at`（UTC）、`updated_at`（GMT+8，每次寫檔更新）、`complete`、`records`、`errors`。每個 `records` 項目有十二個欄位：
 
+- `id`：由來源網址、補助名稱與該頁同名項目的序號產生的 surrogate key；名稱及同名項目順序不變時，重新執行可保留 ID，不交給模型生成。
 - `category`：網站「為民服務」最上層分類名稱；子分類文章沿用最上層分類。
 - `is_organization`：團體或機構為實際受益／申請者時為 `true`；個人或家庭為 `false`。
 - `registration_months`：受益／申請者本人明確要求的最短設籍月數，否則為 `null`；其他設籍限制保留在 `conditions`。
