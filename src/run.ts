@@ -17,7 +17,8 @@ type Cache = z.infer<typeof cacheSchema>;
 export interface RunOptions {
   fetchHtml: HtmlFetcher;
   extract: (article: Article) => Promise<Subsidy[]>;
-  outputDir: string;
+  dataDir: string;
+  stateDir: string;
   revision: string;
   log?: (message: string) => void;
 }
@@ -59,9 +60,10 @@ function toRecords(article: Article, subsidies: Subsidy[]): SubsidyRecord[] {
 }
 
 export async function runParser(options: RunOptions): Promise<RunSummary> {
-  await mkdir(options.outputDir, { recursive: true });
-  const cachePath = join(options.outputDir, 'parser-state.json');
-  const outputPath = join(options.outputDir, 'subsidies.json');
+  await mkdir(options.dataDir, { recursive: true });
+  await mkdir(options.stateDir, { recursive: true });
+  const cachePath = join(options.stateDir, 'parser-state.json');
+  const outputPath = join(options.dataDir, 'subsidies.json');
   const cache = await loadCache(cachePath);
   const listings = await discoverArticles(options.fetchHtml);
   const records: SubsidyRecord[] = [];

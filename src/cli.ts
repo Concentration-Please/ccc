@@ -12,7 +12,8 @@ if (!apiKey) {
     const summary = await runParser({
       fetchHtml: createHtmlFetcher(),
       extract: createExtractor(apiKey),
-      outputDir: resolve('tmp'),
+      dataDir: resolve('data'),
+      stateDir: resolve('tmp'),
       revision: EXTRACTION_REVISION,
       log: console.log,
     });

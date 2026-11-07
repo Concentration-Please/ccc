@@ -11,11 +11,11 @@ npm install
 OPENROUTER_API_KEY=你的金鑰 npm run parse
 ```
 
-完整抓取會呼叫付費模型。程式依序處理文章，每篇完成後將結果寫入 Git 忽略的 `tmp/subsidies.json`，並將續跑狀態寫入 `tmp/parser-state.json`。重新執行會重抓文章內文，但內容與抽取版本未變時不再呼叫模型。網站或模型暫時失敗時會有限次重試；仍失敗的文章列在輸出檔 `errors`，程式以非零狀態結束，下次執行會重試。
+完整抓取會呼叫付費模型。程式依序處理文章，每篇完成後將結果寫入 `data/subsidies.json`，並將續跑狀態寫入 Git 忽略的 `tmp/parser-state.json`。重新執行會重抓文章內文，但內容與抽取版本未變時不再呼叫模型。網站或模型暫時失敗時會有限次重試；仍失敗的文章列在輸出檔 `errors`，程式以非零狀態結束，下次執行會重試。
 
 ## 結果格式
 
-`tmp/subsidies.json` 包含 `source`、`generated_at`、`complete`、`records`、`errors`。每個 `records` 項目代表一篇文章中的一項補助及一組資格；同一方案有不同族群門檻時分成多筆，跨文章不合併。
+`data/subsidies.json` 包含 `source`、`generated_at`、`complete`、`records`、`errors`。每個 `records` 項目代表一篇文章中的一項補助及一組資格；同一方案有不同族群門檻時分成多筆，跨文章不合併。
 
 - `name`：補助或免費服務名稱。
 - `age_min_months`、`age_max_months`：整數月；原文沒有可換算的數值年齡時為 `null`。

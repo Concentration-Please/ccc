@@ -71,7 +71,7 @@ test('sends one schema-constrained request through the AI SDK provider', async (
 });
 
 test('crawls every page, filters body text, and resumes without duplicate model calls', async () => {
-  const outputDir = await mkdtemp(join(tmpdir(), 'ccc-parser-test-'));
+  const rootDir = await mkdtemp(join(tmpdir(), 'ccc-parser-test-'));
   const ids = Array.from({ length: 201 }, (_, index) => index === 0 ? 'A' : `B${index}`);
   let modelCalls = 0;
   const fetchHtml = async (url: string): Promise<string> => {
@@ -87,7 +87,7 @@ test('crawls every page, filters body text, and resumes without duplicate model 
   };
 
   try {
-    const options = { fetchHtml, extract, outputDir, revision: 'test-1' };
+    const options = { fetchHtml, extract, dataDir: join(rootDir, 'data'), stateDir: join(rootDir, 'tmp'), revision: 'test-1' };
     const first = await runParser(options);
     assert.equal(first.total, 201);
     assert.equal(first.candidates, 1);
@@ -99,11 +99,12 @@ test('crawls every page, filters body text, and resumes without duplicate model 
     assert.equal(second.reused, 201);
     assert.equal(modelCalls, 1);
 
-    const output = JSON.parse(await readFile(join(outputDir, 'subsidies.json'), 'utf8'));
+    const output = JSON.parse(await readFile(join(rootDir, 'data', 'subsidies.json'), 'utf8'));
+    assert.equal(JSON.parse(await readFile(join(rootDir, 'tmp', 'parser-state.json'), 'utf8')).version, 1);
     assert.equal(output.complete, true);
     assert.equal(output.records.length, 1);
     assert.equal(output.records[0].age_min_months, 780);
   } finally {
-    await rm(outputDir, { recursive: true, force: true });
+    await rm(rootDir, { recursive: true, force: true });
   }
 });
