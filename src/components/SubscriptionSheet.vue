@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import unsubscribeIcon from '@/assets/unsubscribeIcon.svg'
 import { FILTER_GROUPS, tagsFromSelectedIds } from '@/services/filter'
 import type { Persona } from '@/services/matchSubscription'
 
@@ -18,6 +19,13 @@ const identity = ref('')
 const categoryIds = ref<string[]>([])
 const tagIds = ref<string[]>([])
 const expanded = ref<Record<string, boolean>>({})
+const pendingUnsubscribeId = ref<string | null>(null)
+
+const pendingUnsubscribePersona = computed(() =>
+  pendingUnsubscribeId.value
+    ? props.personas.find((persona) => persona.id === pendingUnsubscribeId.value)
+    : undefined,
+)
 
 const identityGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'is_organization'))
 const categoryGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'category'))
@@ -69,6 +77,21 @@ function removePersona(id: string) {
   emit('save', props.personas.filter((persona) => persona.id !== id))
 }
 
+function requestUnsubscribe(id: string) {
+  pendingUnsubscribeId.value = id
+}
+
+function cancelUnsubscribe() {
+  pendingUnsubscribeId.value = null
+}
+
+function confirmUnsubscribe() {
+  const id = pendingUnsubscribeId.value
+  if (!id) return
+  removePersona(id)
+  pendingUnsubscribeId.value = null
+}
+
 function personaChips(persona: Persona): string[] {
   const labels = [
     ...(persona.birthDate ? [persona.birthDate] : []),
@@ -99,11 +122,18 @@ function personaChips(persona: Persona): string[] {
         <ul v-if="!drafting && personas.length > 0" class="personas">
           <li v-for="persona in personas" :key="persona.id" class="persona">
             <div class="persona__row">
-              <span v-for="(chip, index) in personaChips(persona)" :key="`${chip}-${index}`" class="persona__chip">
+              <span v-for="(chip, index) in personaChips(persona)" :key="`${chip}-${index}`" class="subscription-tag">
                 {{ chip }}
               </span>
             </div>
-            <button type="button" class="persona__delete" @click="removePersona(persona.id)">刪除</button>
+            <button
+              type="button"
+              class="persona__unsubscribe"
+              aria-label="取消訂閱"
+              @click="requestUnsubscribe(persona.id)"
+            >
+              <img class="persona__unsubscribe-icon" :src="unsubscribeIcon" alt="" width="24" height="24" />
+            </button>
           </li>
         </ul>
 
@@ -216,6 +246,40 @@ function personaChips(persona: Persona): string[] {
       </template>
     </div>
 
+    <div
+      v-if="pendingUnsubscribePersona"
+      class="unsubscribe-confirm"
+      role="presentation"
+      @click.self="cancelUnsubscribe"
+    >
+      <div
+        class="unsubscribe-confirm__dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="unsubscribe-confirm-title"
+      >
+        <div class="unsubscribe-confirm__icon" aria-hidden="true">!</div>
+        <h2 id="unsubscribe-confirm-title" class="unsubscribe-confirm__title">確認取消訂閱？</h2>
+        <div class="unsubscribe-confirm__content">
+          <div class="unsubscribe-confirm__chips">
+            <span
+              v-for="(chip, index) in personaChips(pendingUnsubscribePersona)"
+              :key="`${chip}-${index}`"
+              class="subscription-tag"
+            >
+              {{ chip }}
+            </span>
+          </div>
+        </div>
+        <div class="unsubscribe-confirm__actions">
+          <button type="button" class="unsubscribe-confirm__action" @click="cancelUnsubscribe">取消</button>
+          <button type="button" class="unsubscribe-confirm__action unsubscribe-confirm__action--primary" @click="confirmUnsubscribe">
+            確認
+          </button>
+        </div>
+      </div>
+    </div>
+
     <footer v-if="drafting" class="subscribe-page__footer">
       <button type="button" class="subscribe-page__cancel" @click="drafting = false">取消</button>
       <button type="button" class="subscribe-page__done" @click="completeDraft">完成</button>
@@ -230,7 +294,7 @@ function personaChips(persona: Persona): string[] {
   z-index: 100;
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
+  background: white;
 }
 
 .subscribe-page__header {
@@ -306,6 +370,7 @@ function personaChips(persona: Persona): string[] {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
 }
@@ -318,23 +383,133 @@ function personaChips(persona: Persona): string[] {
   overflow-x: auto;
 }
 
-.persona__chip {
+.subscription-tag {
   flex: none;
-  padding: 0.35rem 0.7rem;
-  font-size: 0.95rem;
-  color: var(--color-chip-text);
-  background: var(--color-chip-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
   border-radius: 999px;
 }
 
-.persona__delete {
+.persona__unsubscribe {
   flex: none;
-  padding: 0.35rem 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
   font: inherit;
-  color: #c62828;
   background: transparent;
   border: none;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.persona__unsubscribe-icon {
+  display: block;
+}
+
+.unsubscribe-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgb(0 0 0 / 35%);
+}
+
+.unsubscribe-confirm__dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 20rem);
+  max-height: min(80vh, 28rem);
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: 0.875rem;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 12%);
+}
+
+.unsubscribe-confirm__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 1.5rem auto 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background: #f5a623;
+  border-radius: 999px;
+}
+
+.unsubscribe-confirm__title {
+  margin: 0;
+  padding: 0 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.unsubscribe-confirm__content {
+  flex: 1;
+  min-height: 0;
+  margin-top: 1rem;
+  padding: 0 1.25rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.unsubscribe-confirm__chips {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 1.25rem;
+}
+
+.unsubscribe-confirm__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--color-border);
+}
+
+.unsubscribe-confirm__action {
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: none;
+  border-right: 1px solid var(--color-border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.unsubscribe-confirm__action:last-child {
+  border-right: none;
+  border-bottom-right-radius: 0.875rem;
+}
+
+.unsubscribe-confirm__action:first-child {
+  border-bottom-left-radius: 0.875rem;
+}
+
+.unsubscribe-confirm__action--primary {
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .plus {
