@@ -2,6 +2,7 @@
 import { onUnmounted } from 'vue'
 import searchIcon from '@/assets/searchIcon.svg'
 import filterIcon from '@/assets/filterIcon.svg'
+import { indigenousRecords } from '@/data/indigenousDataset'
 import type { AppliedFilterTag } from '@/services/filter'
 import { notifyMatchingAid } from '@/services/townpass'
 
@@ -23,7 +24,7 @@ function onSubmit() {
 }
 
 // BEGIN TEMPORARY: delete this block. Three quick taps on the search button notify indigenous record 85.
-const TEMP_ELIGIBLE_AID_NAME = indigenousFile.records.find((record) => record.id === 85)?.name
+const TEMP_ELIGIBLE_AID_NAME = indigenousRecords.find((record) => record.id === 85)?.name
 const TEMP_CLICK_WINDOW_MS = 600
 let tempSearchClicks = 0
 let tempSearchTimer = 0
