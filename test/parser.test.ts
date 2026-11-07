@@ -5,11 +5,12 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import JSZip from 'jszip';
+import { auditIndigenousRecords } from '../src/audit.js';
 import { extractAttachmentText } from '../src/attachments.js';
 import { classifyDatasets, createGemmaClassificationEngine } from '../src/classify.js';
 import { extractSubsidies, MODEL_ID } from '../src/extract.js';
 import { runParser } from '../src/run.js';
-import { parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
+import { discoverArticles, parseArticle, parseAttachments, parseListing, parseServiceLinks, SOURCE_URL } from '../src/source.js';
 import { discoverYouthArticles, parseYouthArticle, parseYouthAttachments, parseYouthListing, YOUTH_SOURCE_URL } from '../src/youth-source.js';
 import type { Article, Subsidy } from '../src/schema.js';
 
@@ -58,6 +59,32 @@ test('reads service links, skips excluded categories, and extracts page bodies',
   assert.equal(parseArticle('<div class="area-editor user-edit">可申請貸款利息補貼</div>', { ...links[1]!, category: links[1]!.title, publishedAt: null }).body, '可申請貸款利息補貼');
 });
 
+test('prefers the amended elderly placement article when both versions are listed', async () => {
+  const older = 'B3A1E6E442FFA18B';
+  const amended = '796DF3C8A3F35458';
+  let includeAmended = true;
+  const fetchHtml = async (url: string) => {
+    if (url === SOURCE_URL) return serviceHtml([['長青服務', 'News.aspx?n=ELDER']]);
+    return listingHtml(older, '原住民老人收容安置補助') +
+      (includeAmended ? listingHtml(amended, '公告修正原住民老人收容安置補助作業要點') : '');
+  };
+  const articles = await discoverArticles(fetchHtml);
+  assert.deepEqual(articles.map((article) => new URL(article.url).searchParams.get('s')), [amended]);
+  includeAmended = false;
+  const olderOnly = await discoverArticles(fetchHtml);
+  assert.deepEqual(olderOnly.map((article) => new URL(article.url).searchParams.get('s')), [older]);
+});
+
+test('prefers the complete student education page over duplicate articles and FAQs', async () => {
+  const primary = '863D1C3D89869AB4';
+  const duplicates = ['203B3A62C7BE44F0', 'F9F03DF617FCAF4E', 'D023FB4AF2100A7A', '35F98F0CC4211482'];
+  const fetchHtml = async (url: string) => url === SOURCE_URL
+    ? serviceHtml([['教育扶助', 'News.aspx?n=EDUCATION']])
+    : [primary, ...duplicates].map((id) => listingHtml(id, '原住民學生教育補助')).join('');
+  const articles = await discoverArticles(fetchHtml);
+  assert.deepEqual(articles.map((article) => new URL(article.url).searchParams.get('s')), [primary]);
+});
+
 test('sends a schema-constrained request through the AI SDK provider', async () => {
   let request: Record<string, unknown> | undefined;
   const agedSubsidy: Subsidy = {
@@ -68,7 +95,7 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
     conditions: ['申請人須具原住民身分', '申請人年滿55歲、未滿65歲'],
     application_method_or_documents: ['向區公所提出申請', '檢附身分證明文件'],
     age_lower: 55,
-    age_upper: 65,
+    age_upper: 64,
   };
   const youthSubsidy = { ...agedSubsidy };
   const openrouter = createOpenRouter({
@@ -98,9 +125,17 @@ test('sends a schema-constrained request through the AI SDK provider', async () 
   assert.equal((request?.response_format as { type: string }).type, 'json_schema');
   assert.match(JSON.stringify(request?.messages), /application_method_or_documents/);
   assert.match(JSON.stringify(request?.messages), /應備文件：戶籍謄本/);
+  assert.match(JSON.stringify(request?.messages), /「成年」或「已成年」可推為 age_lower 18/);
+  assert.match(JSON.stringify(request?.messages), /「未滿 65 歲」的 age_upper 為 64/);
+  assert.match(JSON.stringify(request?.messages), /安養與養護，即使年齡、金額不同也合併一筆/);
+  assert.match(JSON.stringify(request?.messages), /原住民學生教育補助的代收代辦、交通費、午餐/);
+  assert.match(JSON.stringify(request?.messages), /部分給付才有的設籍期間只寫入 conditions，registration_months 填 null/);
+  assert.match(JSON.stringify(request?.messages), /age_lower 填所有路徑中最低可申請年齡/);
   assert.deepEqual(await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth'), [youthSubsidy]);
   assert.match(JSON.stringify(request?.messages), /政策性貸款/);
   assert.match(JSON.stringify(request?.messages), /利息補貼須另輸出一筆/);
+  assert.match(JSON.stringify(request?.messages), /代表人或負責人的年齡限制須填入 age_lower、age_upper/);
+  assert.match(JSON.stringify(request?.messages), /「成年」或「已成年」的 age_lower 為 18/);
 });
 
 test('reads OpenDocument attachment text and parses an attachment-only article', async () => {
@@ -179,7 +214,56 @@ test('skips identical model records within an article and preserves other source
   }
 });
 
-test('rechecks an empty youth extraction and excludes organization representatives from age bounds', async () => {
+test('flags indigenous extraction conflicts without discarding distinct source pages', () => {
+  const base = {
+    source_url: testArticleUrl,
+    name: '體育補助',
+    summary: '補助學校辦理體育活動。',
+    subsidy_target: '最高30萬元',
+    is_organization: false,
+  };
+  assert.deepEqual(auditIndigenousRecords([
+    { ...base, id: 1 },
+    { ...base, id: 2, name: '體育補助－棒球', summary: '補助棒球活動。' },
+    { ...base, id: 3, source_url: `${testArticleUrl}&other=1` },
+    { ...base, id: 4, name: '建購補助', summary: '補助房屋修繕。', subsidy_target: '最高1,000元（註：應為8,000元）' },
+  ]), [
+    { kind: 'organization', ids: [1] },
+    { kind: 'organization', ids: [3] },
+    { kind: 'amount_conflict', ids: [4] },
+    { kind: 'name_conflict', ids: [4] },
+    { kind: 'parent_and_child', ids: [1, 2] },
+    { kind: 'same_name', ids: [1, 3] },
+  ]);
+});
+
+test('keeps elderly placement care paths in one committed aid record', async () => {
+  const dataset = JSON.parse(await readFile(join('data', 'indigenous.json'), 'utf8'));
+  const records = dataset.records.filter((record: { name: string }) => record.name.startsWith('原住民老人收容安置補助'));
+  assert.equal(records.length, 1);
+  assert.equal(records[0].age_lower, 55);
+  assert.match(records[0].subsidy_target, /安養者.*2萬元.*養護者.*2萬5千元/);
+  assert.ok(records[0].conditions.some((condition: string) => condition.includes('安養者：年滿60歲')));
+  assert.ok(records[0].conditions.some((condition: string) => condition.includes('養護者：年滿55歲')));
+});
+
+test('keeps student education benefits in one committed aid record', async () => {
+  const dataset = JSON.parse(await readFile(join('data', 'indigenous.json'), 'utf8'));
+  const records = dataset.records.filter((record: { name: string; source_url: string }) =>
+    record.name.includes('學生教育補助') ||
+    ['203B3A62C7BE44F0', 'F9F03DF617FCAF4E', 'D023FB4AF2100A7A', '35F98F0CC4211482']
+      .some((id) => record.source_url.includes(id)));
+  assert.equal(records.length, 1);
+  assert.equal(records[0].name, '臺北市原住民學生教育補助');
+  assert.equal(records[0].registration_months, null);
+  for (const benefit of ['代收代辦', '交通費', '午餐', '學業助學金', '特殊才能助學金', '私立教育代金', '生活津貼']) {
+    assert.ok(records[0].subsidy_target.includes(benefit));
+  }
+  assert.match(records[0].subsidy_target, /生活津貼：高中職每學期3,500元、大專院校每學期7,000元/);
+  assert.ok(records[0].conditions.some((condition: string) => condition.includes('生活津貼：') && condition.includes('連續滿4個月')));
+});
+
+test('rechecks an empty youth extraction and preserves organization representative age bounds', async () => {
   let calls = 0;
   const organization = { ...subsidy, is_organization: true, age_lower: 18, age_upper: 45 };
   const openrouter = createOpenRouter({
@@ -199,11 +283,11 @@ test('rechecks an empty youth extraction and excludes organization representativ
     title: '活動補助',
     category: '其他',
     publishedAt: null,
-    body: '團體可申請活動補助，代表人須年滿18歲。',
+    body: '團體可申請活動補助，代表人須已成年且未滿46歲。',
   };
   const result = await extractSubsidies(article, openrouter.chat(MODEL_ID, { provider: { require_parameters: true } }), 'youth');
   assert.equal(calls, 2);
-  assert.deepEqual(result, [{ ...organization, age_lower: null, age_upper: null }]);
+  assert.deepEqual(result, [organization]);
 });
 
 test('rechecks an empty indigenous extraction when the page describes an application', async () => {
@@ -266,7 +350,9 @@ test('reads youth subsidy pages and writes a separate output with shared categor
         const record = {
           ...subsidy,
           isNative: false,
-          conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥'] : [],
+          age_lower: article.title.includes('貸款') ? 18 : null,
+          age_upper: article.title.includes('貸款') ? 45 : null,
+          conditions: article.title.includes('貸款') ? ['申請人為依法完成登記之公司、商業或有限合夥', '代表人已成年且未滿46歲'] : [],
         };
         return article.title.includes('貸款') ? [record, { ...record, subsidy_target: '另一貸款額度' }] : [record];
       },
@@ -303,7 +389,10 @@ test('reads youth subsidy pages and writes a separate output with shared categor
     assert.deepEqual(updated.records.map(({ source_url }: { source_url: string }) => source_url), [loanUrl, loanUrl]);
     await assert.rejects(runParser({ ...options, source: { ...options.source, discover: async () => { throw new Error('discovery failed'); } } }), /discovery failed/);
     await assert.rejects(readFile(join(rootDir, 'data', 'youth.json')), { code: 'ENOENT' });
-    assert.equal(output.records[0].age_lower, null);
+    assert.equal(output.records[0].age_lower, 18);
+    assert.equal(output.records[0].age_upper, 45);
+    assert.equal(output.records[1].age_lower, 18);
+    assert.equal(output.records[2].age_lower, null);
     assert.equal(output.records[0].isNative, false);
     assert.equal(output.records[0].is_organization, true);
     assert.equal(output.records[2].is_organization, false);
