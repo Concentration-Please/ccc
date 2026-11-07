@@ -112,6 +112,6 @@ npm run parse:youth
 
 ## License
 
-本專案的程式以 [GNU General Public License v3.0 only](LICENSE)（SPDX: `GPL-3.0-only`）授權。再散布時須附上同一授權，並提供對應原始碼；原始碼即這個 GitHub 儲存庫。
+本專案的程式以 [GNU Affero General Public License v3.0 only](LICENSE)（SPDX: `AGPL-3.0-only`）授權。再散布時須附上同一授權，並提供對應原始碼；透過網路提供這個服務時，也要讓使用者取得對應原始碼。原始碼即這個 GitHub 儲存庫。
 
 第三方套件、字型與資料來源的說明見 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。政府公告不受著作權保護；蘋方（PingFangTC）是 TownPass 要求的字型，本專案假設可以使用。
