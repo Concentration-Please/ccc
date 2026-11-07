@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import unsubscribeIcon from '@/assets/unsubscribeIcon.svg'
 import { FILTER_GROUPS, tagsFromSelectedIds } from '@/services/filter'
-import type { Persona } from '@/services/matchSubscription'
+import { hasDuplicatePersona, type Persona } from '@/services/matchSubscription'
 
 const props = defineProps<{
   personas: Persona[]
@@ -20,12 +20,7 @@ const categoryIds = ref<string[]>([])
 const tagIds = ref<string[]>([])
 const expanded = ref<Record<string, boolean>>({})
 const pendingUnsubscribeId = ref<string | null>(null)
-
-const pendingUnsubscribePersona = computed(() =>
-  pendingUnsubscribeId.value
-    ? props.personas.find((persona) => persona.id === pendingUnsubscribeId.value)
-    : undefined,
-)
+const duplicateDraft = ref(false)
 
 const identityGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'is_organization'))
 const categoryGroup = computed(() => FILTER_GROUPS.find((group) => group.id === 'category'))
@@ -47,8 +42,13 @@ function startDraft() {
   categoryIds.value = []
   tagIds.value = []
   expanded.value = {}
+  duplicateDraft.value = false
   drafting.value = true
 }
+
+watch([birthDate, identity, categoryIds, tagIds], () => {
+  duplicateDraft.value = false
+})
 
 function toggle(selected: string[], id: string): string[] {
   const next = new Set(selected)
@@ -62,13 +62,21 @@ function selectIdentity(id: string) {
 }
 
 function completeDraft() {
-  const persona: Persona = {
-    id: crypto.randomUUID(),
+  const criteria = {
     birthDate: birthDate.value,
     identity: identity.value,
     categoryIds: [...categoryIds.value],
     tagIds: [...tagIds.value],
   }
+  if (hasDuplicatePersona(props.personas, criteria)) {
+    duplicateDraft.value = true
+    return
+  }
+  const persona: Persona = {
+    id: crypto.randomUUID(),
+    ...criteria,
+  }
+  duplicateDraft.value = false
   drafting.value = false
   emit('save', [...props.personas, persona])
 }
@@ -247,7 +255,7 @@ function personaChips(persona: Persona): string[] {
     </div>
 
     <div
-      v-if="pendingUnsubscribePersona"
+      v-if="pendingUnsubscribeId"
       class="unsubscribe-confirm"
       role="presentation"
       @click.self="cancelUnsubscribe"
@@ -260,20 +268,13 @@ function personaChips(persona: Persona): string[] {
       >
         <div class="unsubscribe-confirm__icon" aria-hidden="true">!</div>
         <h2 id="unsubscribe-confirm-title" class="unsubscribe-confirm__title">確認取消訂閱？</h2>
-        <div class="unsubscribe-confirm__content">
-          <div class="unsubscribe-confirm__chips">
-            <span
-              v-for="(chip, index) in personaChips(pendingUnsubscribePersona)"
-              :key="`${chip}-${index}`"
-              class="subscription-tag"
-            >
-              {{ chip }}
-            </span>
-          </div>
-        </div>
         <div class="unsubscribe-confirm__actions">
           <button type="button" class="unsubscribe-confirm__action" @click="cancelUnsubscribe">取消</button>
-          <button type="button" class="unsubscribe-confirm__action unsubscribe-confirm__action--primary" @click="confirmUnsubscribe">
+          <button
+            type="button"
+            class="unsubscribe-confirm__action unsubscribe-confirm__action--primary"
+            @click="confirmUnsubscribe"
+          >
             確認
           </button>
         </div>
@@ -281,6 +282,7 @@ function personaChips(persona: Persona): string[] {
     </div>
 
     <footer v-if="drafting" class="subscribe-page__footer">
+      <p v-if="duplicateDraft" class="subscribe-page__duplicate" role="alert">已有相同條件的訂閱</p>
       <button type="button" class="subscribe-page__cancel" @click="drafting = false">取消</button>
       <button type="button" class="subscribe-page__done" @click="completeDraft">完成</button>
     </footer>
@@ -295,6 +297,7 @@ function personaChips(persona: Persona): string[] {
   display: flex;
   flex-direction: column;
   background: white;
+  isolation: isolate;
 }
 
 .subscribe-page__header {
@@ -418,22 +421,20 @@ function personaChips(persona: Persona): string[] {
 }
 
 .unsubscribe-confirm {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 110;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: rgb(0 0 0 / 35%);
+  background: rgb(0 0 0 / 25%);
 }
 
 .unsubscribe-confirm__dialog {
   display: flex;
   flex-direction: column;
   width: min(100%, 20rem);
-  max-height: min(80vh, 28rem);
-  overflow: hidden;
   background: var(--color-surface);
   border-radius: 0.875rem;
   box-shadow: 0 8px 32px rgb(0 0 0 / 12%);
@@ -456,27 +457,10 @@ function personaChips(persona: Persona): string[] {
 
 .unsubscribe-confirm__title {
   margin: 0;
-  padding: 0 1.25rem;
+  padding: 0 1.25rem 1.25rem;
   font-size: 1.125rem;
   font-weight: 700;
   text-align: center;
-}
-
-.unsubscribe-confirm__content {
-  flex: 1;
-  min-height: 0;
-  margin-top: 1rem;
-  padding: 0 1.25rem;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.unsubscribe-confirm__chips {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding-bottom: 1.25rem;
 }
 
 .unsubscribe-confirm__actions {
@@ -612,6 +596,15 @@ function personaChips(persona: Persona): string[] {
   background: var(--color-accent);
 }
 
+.subscribe-page__duplicate {
+  flex: 1 1 100%;
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+  color: #c62828;
+}
+
 .subscribe-page__footer {
   position: fixed;
   left: 0;
@@ -619,6 +612,7 @@ function personaChips(persona: Persona): string[] {
   bottom: 0;
   z-index: 101;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   padding: 1rem;
   padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));

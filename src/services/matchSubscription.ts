@@ -96,3 +96,22 @@ function matchesPersona(aid: MatchableAid, persona: Persona, today: Date): boole
 export function matchesSubscription(aid: MatchableAid, personas: Persona[], today = new Date()): boolean {
   return personas.some((persona) => matchesPersona(aid, persona, today))
 }
+
+export type PersonaCriteria = Pick<Persona, 'birthDate' | 'identity' | 'categoryIds' | 'tagIds'>
+
+function normalizeIdList(ids: string[]): string {
+  return [...new Set(ids)].sort().join('\0')
+}
+
+export function personaCriteriaEqual(a: PersonaCriteria, b: PersonaCriteria): boolean {
+  return (
+    a.birthDate === b.birthDate &&
+    a.identity === b.identity &&
+    normalizeIdList(a.categoryIds) === normalizeIdList(b.categoryIds) &&
+    normalizeIdList(a.tagIds) === normalizeIdList(b.tagIds)
+  )
+}
+
+export function hasDuplicatePersona(personas: Persona[], candidate: PersonaCriteria): boolean {
+  return personas.some((persona) => personaCriteriaEqual(persona, candidate))
+}
