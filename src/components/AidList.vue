@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AidListItem from '@/components/AidListItem.vue'
-import type { GovernmentAidRecord } from '@/types/governmentAid'
+import type { GovernmentAidItem } from '@/types/governmentAid'
 import { aidRecordKey } from '@/utils/aidLabels'
 
 defineProps<{
-  aids: GovernmentAidRecord[]
+  aids: GovernmentAidItem[]
 }>()
 </script>
 

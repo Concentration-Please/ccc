@@ -1,6 +1,7 @@
 {
   "name": "ccc",
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +18,7 @@
     "format": "prettier --write --experimental-cli src/",
     "parse": "run-s parse:indigenous parse:youth classify",
     "parse:indigenous": "node --env-file-if-exists=.dev.vars --import tsx src/cli.ts",
+    "audit:indigenous": "node --import tsx src/audit.ts",
     "parse:youth": "node --env-file-if-exists=.dev.vars --import tsx src/cli-youth.ts",
     "classify": "node --env-file-if-exists=.dev.vars --import tsx src/cli-classify.ts",
     "test": "node --import tsx --test test/*.test.ts",

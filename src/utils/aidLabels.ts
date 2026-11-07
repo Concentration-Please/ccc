@@ -1,8 +1,8 @@
-import type { GovernmentAidRecord } from '@/types/governmentAid'
+import type { GovernmentAidItem } from '@/types/governmentAid'
 
-/** Stable key when multiple subsidies share the same official page URL. */
-export function aidRecordKey(aid: GovernmentAidRecord): string {
-  return `${aid.source_url}::${aid.name}`
+/** Unique key across the indigenous and youth datasets. */
+export function aidRecordKey(aid: GovernmentAidItem): string {
+  return `${aid.dataset}:${aid.id}`
 }
 
 export function organizationLabel(isOrganization: boolean): string {

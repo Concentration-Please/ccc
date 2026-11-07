@@ -1,9 +1,6 @@
-import labelMap from '../../data/label.json'
-import { identityFilterId } from './filterCatalog'
 import { ageInYears } from './matchSubscription'
 
-/** TownPass nativePeople maps to the 身份別 named 原住民 in data/label.json. */
-const INDIGENOUS_ID = identityFilterId(labelMap, '原住民')
+const INDIGENOUS_ID = 'label:indigenous'
 const MIN_AGE = 1
 const MAX_AGE = 100
 
@@ -24,7 +21,7 @@ export function applyUserInfoFilters(
   today = new Date(),
 ): string[] {
   let next = [...selectedIds]
-  if (INDIGENOUS_ID && info.nativePeople === true && !next.includes(INDIGENOUS_ID)) {
+  if (info.nativePeople === true && !next.includes(INDIGENOUS_ID)) {
     next.push(INDIGENOUS_ID)
   }
   if (typeof info.birthday !== 'string') return next

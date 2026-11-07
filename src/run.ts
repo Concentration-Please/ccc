@@ -3,6 +3,7 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
+import { auditIndigenousRecords } from './audit.js';
 import { extractAttachmentText } from './attachments.js';
 import { subsidySchema, type Article, type ArticleListing, type Subsidy, type SubsidyRecord } from './schema.js';
 import { createAttachmentFetcher, discoverArticles, normalizeText, parseArticle, parseAttachments, SOURCE_URL, type AttachmentFetcher, type HtmlFetcher } from './source.js';
@@ -62,8 +63,8 @@ function toRecords(article: Article, subsidies: Subsidy[], startId: number, isYo
       label: [],
       is_organization: isOrganization,
       registration_months: isYouth && isOrganization ? null : subsidy.registration_months,
-      age_lower: isYouth && isOrganization ? null : subsidy.age_lower,
-      age_upper: isYouth && isOrganization ? null : subsidy.age_upper,
+      age_lower: subsidy.age_lower,
+      age_upper: subsidy.age_upper,
       isNative: subsidy.isNative,
       source_url: article.url,
       name: subsidy.name,
@@ -179,5 +180,10 @@ export async function runParser(options: RunOptions): Promise<RunSummary> {
   }
 
   await save(failures.length === 0);
+  if (source.name === 'ipc') {
+    for (const issue of auditIndigenousRecords(records)) {
+      options.log?.(`Review ${issue.kind}: records ${issue.ids.join(', ')}`);
+    }
+  }
   return { total: listings.length, records: records.length, reused, failures };
 }

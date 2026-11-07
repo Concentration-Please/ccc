@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import groupIcon from '@/assets/groupIcon.svg'
 import personIcon from '@/assets/personIcon.svg'
-import type { GovernmentAidRecord } from '@/types/governmentAid'
+import type { GovernmentAidItem } from '@/types/governmentAid'
 import { organizationLabel } from '@/utils/aidLabels'
 
 defineProps<{
-  aid: GovernmentAidRecord
+  aid: GovernmentAidItem
 }>()
 </script>
 
 <template>
   <RouterLink
     class="aid-item"
-    :to="{ name: 'aid-detail', query: { source: aid.source_url, name: aid.name } }"
+    :to="{ name: 'record-detail', query: { dataset: aid.dataset, id: aid.id } }"
   >
     <h2 class="aid-item__title">
       {{ aid.name }}

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { fetchGovernmentAidBySource } from '@/services/database'
-import type { GovernmentAidRecord } from '@/types/governmentAid'
+import { fetchGovernmentAidById } from '@/services/database'
+import type { AidDataset, GovernmentAidRecord } from '@/types/governmentAid'
 import ExternalLink from '@/components/ExternalLink.vue'
 import { organizationLabel, registrationLabel } from '@/utils/aidLabels'
 
@@ -11,29 +11,31 @@ const aid = ref<GovernmentAidRecord | null>(null)
 const loading = ref(true)
 const missing = ref(false)
 
-const sourceUrl = computed(() => {
-  const value = route.query.source
-  return typeof value === 'string' ? value : ''
+const dataset = computed<AidDataset | null>(() => {
+  const value = route.query.dataset
+  return value === 'indigenous' || value === 'youth' ? value : null
 })
 
-const aidName = computed(() => {
-  const value = route.query.name
-  return typeof value === 'string' ? value : ''
+const recordId = computed(() => {
+  const value = route.query.id
+  if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) return null
+  const id = Number(value)
+  return Number.isSafeInteger(id) ? id : null
 })
 
-async function loadAid(source: string, name: string) {
+async function loadAid(dataset: AidDataset | null, id: number | null) {
   loading.value = true
   missing.value = false
   aid.value = null
 
-  if (!source) {
+  if (!dataset || id === null) {
     missing.value = true
     loading.value = false
     return
   }
 
   try {
-    const record = await fetchGovernmentAidBySource(source, name || undefined)
+    const record = await fetchGovernmentAidById(dataset, id)
     if (!record) {
       missing.value = true
       return
@@ -46,9 +48,13 @@ async function loadAid(source: string, name: string) {
   }
 }
 
-watch([sourceUrl, aidName], ([source, name]) => {
-  void loadAid(source, name)
-}, { immediate: true })
+watch(
+  [dataset, recordId],
+  ([dataset, id]) => {
+    void loadAid(dataset, id)
+  },
+  { immediate: true },
+)
 
 const referenceUrls = computed(() => {
   if (!aid.value) return []

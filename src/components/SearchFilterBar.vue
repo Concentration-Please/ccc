@@ -2,7 +2,6 @@
 import { onUnmounted } from 'vue'
 import searchIcon from '@/assets/searchIcon.svg'
 import filterIcon from '@/assets/filterIcon.svg'
-import indigenousFile from '@data/indigenous.json'
 import type { AppliedFilterTag } from '@/services/filter'
 import { notifyMatchingAid } from '@/services/townpass'
 
@@ -65,9 +64,7 @@ function onRemoveFilter(id: string) {
         type="search"
         class="search-filter-bar__input"
         placeholder="搜尋..."
-        enterkeyhint="search"
         autocomplete="off"
-        @keydown.enter.prevent="onSubmit"
       />
       <button
         type="button"
