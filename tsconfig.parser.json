@@ -9,5 +9,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/cli.ts", "src/extract.ts", "src/run.ts", "src/schema.ts", "src/source.ts", "test/**/*.ts"]
+  "include": ["src/cli.ts", "src/cli-youth.ts", "src/extract.ts", "src/run.ts", "src/schema.ts", "src/source.ts", "src/youth-source.ts", "test/**/*.ts"]
 }
