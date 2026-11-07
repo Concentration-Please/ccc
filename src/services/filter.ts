@@ -1,9 +1,9 @@
-import type { GovernmentAid } from '@/types/governmentAid'
+import type { GovernmentAidRecord } from '@/types/governmentAid'
 
 /** Placeholder filter criteria (expand when filter UI is implemented). */
 export interface FilterCriteria {
-  classification?: string
-  demographic?: string
+  category?: string
+  isOrganization?: boolean
 }
 
 /**
@@ -17,8 +17,8 @@ export function openFilter(): void {
  * TODO: Apply real criteria from database / user selection.
  */
 export function applyFilter(
-  aids: GovernmentAid[],
+  aids: GovernmentAidRecord[],
   _criteria: FilterCriteria = {},
-): GovernmentAid[] {
+): GovernmentAidRecord[] {
   return aids
 }

@@ -1,37 +1,46 @@
 <script setup lang="ts">
-import type { GovernmentAid } from '@/types/governmentAid'
-import { formatEffectiveDates } from '@/utils/formatEffectiveDates'
+import type { GovernmentAidRecord } from '@/types/governmentAid'
+import { organizationLabel } from '@/utils/aidLabels'
 
 defineProps<{
-  aid: GovernmentAid
+  aid: GovernmentAidRecord
 }>()
 </script>
 
 <template>
-  <article class="aid-item">
-    <div class="aid-item__row aid-item__row--top">
-      <h2 class="aid-item__title">{{ aid.title }}</h2>
-      <span class="aid-item__chip">{{ aid.classification }}</span>
+  <RouterLink
+    class="aid-item"
+    :to="{ name: 'aid-detail', query: { source: aid.source_url } }"
+  >
+    <div class="aid-item__row">
+      <h2 class="aid-item__title">{{ aid.name }}</h2>
+      <span class="aid-item__chip">{{ organizationLabel(aid.is_organization) }}</span>
     </div>
-    <div class="aid-item__row aid-item__row--bottom">
-      <p class="aid-item__demographic">{{ aid.demographic }}</p>
-      <p class="aid-item__dates">
-        {{ formatEffectiveDates(aid.effectiveFrom, aid.effectiveTo) }}
-      </p>
-    </div>
-  </article>
+    <p class="aid-item__summary">{{ aid.summary }}</p>
+  </RouterLink>
 </template>
 
 <style scoped>
 .aid-item {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 0.65rem;
-  min-height: clamp(4.75rem, calc((100dvh - var(--fab-reserve)) / 4), 11rem);
+  gap: 0.55rem;
   padding: 1rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.aid-item:hover,
+.aid-item:focus-visible {
+  background: #f7f8fa;
+}
+
+.aid-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .aid-item__row {
@@ -39,10 +48,6 @@ defineProps<{
   grid-template-columns: 1fr auto;
   gap: 0.75rem;
   align-items: start;
-}
-
-.aid-item__row--bottom {
-  align-items: end;
 }
 
 .aid-item__title {
@@ -64,19 +69,10 @@ defineProps<{
   white-space: nowrap;
 }
 
-.aid-item__demographic {
+.aid-item__summary {
   margin: 0;
   font-size: 1rem;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--color-text-secondary);
-}
-
-.aid-item__dates {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.35;
-  text-align: right;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
 }
 </style>
