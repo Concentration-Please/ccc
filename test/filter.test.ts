@@ -8,6 +8,7 @@ import {
 } from '../src/services/filterQuery.js'
 
 const baseAid: GovernmentAidRecord = {
+  id: 1,
   label: [],
   category: '托育服務',
   is_organization: false,
