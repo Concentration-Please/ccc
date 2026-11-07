@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, onActivated, onMounted, ref, type Ref } from 'vue'
+import { computed, inject, nextTick, onActivated, onMounted, ref, watch, type Ref } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import AidList from '@/components/AidList.vue'
 import FilterPage from '@/components/FilterPage.vue'
@@ -24,15 +24,32 @@ const error = ref<string | null>(null)
 const listPage = ref<HTMLElement | null>(null)
 const subscriptionOpen = ref(false)
 let savedScrollTop = 0
+let restoringListScroll = false
 
 onBeforeRouteLeave(() => {
   savedScrollTop = listPage.value?.scrollTop ?? 0
 })
 
 onActivated(async () => {
+  restoringListScroll = true
   await nextTick()
-  if (listPage.value) listPage.value.scrollTop = savedScrollTop
+  const el = listPage.value
+  if (el) el.scrollTop = savedScrollTop
+  await nextTick()
+  restoringListScroll = false
 })
+
+async function scrollListToTop() {
+  savedScrollTop = 0
+  await nextTick()
+  await nextTick()
+  requestAnimationFrame(() => {
+    const el = listPage.value
+    if (!el) return
+    el.scrollTop = 0
+    el.scrollTo(0, 0)
+  })
+}
 
 const searchQuery = ref('')
 const appliedFilterIds = ref<string[]>([])
@@ -44,6 +61,23 @@ const filterCriteria = computed<FilterCriteria>(() => ({
 }))
 
 const displayedAids = computed(() => queryGovernmentAids(filterCriteria.value))
+
+/** Stable snapshot so filter/search changes reset scroll without firing on detail return. */
+const filterCriteriaKey = computed(() =>
+  JSON.stringify({
+    search: filterCriteria.value.searchQuery ?? '',
+    ids: [...(filterCriteria.value.selectedOptionIds ?? [])].sort(),
+  }),
+)
+
+watch(
+  filterCriteriaKey,
+  (_next, prev) => {
+    if (restoringListScroll || prev === undefined) return
+    void scrollListToTop()
+  },
+  { flush: 'post' },
+)
 
 const hasActiveFilter = computed(
   () => Boolean(filterCriteria.value.searchQuery) || (filterCriteria.value.selectedOptionIds?.length ?? 0) > 0,
