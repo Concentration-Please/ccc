@@ -4,7 +4,7 @@
     {
       "id": 1,
       "summary": "補助符合條件的青年訂閱AI工具之費用，以提升數位競爭力。",
-      "category": "青年發展獎勵",
+      "category": "就業創業",
       "label": [
         "youth"
       ],
@@ -48,7 +48,7 @@
     {
       "id": 2,
       "summary": "提供依法完成登記之公司、商業或有限合夥進行創業週轉或購置設備之融資貸款。",
-      "category": "就業創業扶助",
+      "category": "就業創業",
       "label": [],
       "is_organization": true,
       "registration_months": null,
@@ -80,7 +80,7 @@
     {
       "id": 3,
       "summary": "提供依法完成登記之公司、商業或有限合夥進行創業週轉或購置設備之融資貸款。",
-      "category": "就業創業扶助",
+      "category": "就業創業",
       "label": [],
       "is_organization": true,
       "registration_months": null,
@@ -112,7 +112,7 @@
     {
       "id": 4,
       "summary": "為協助青年赴海外深造修讀碩、博士學位或專業技術證照，提供專屬留學貸款。",
-      "category": "青年發展獎勵",
+      "category": "教育助學",
       "label": [
         "youth"
       ],
@@ -156,7 +156,7 @@
     {
       "id": 5,
       "summary": "為協助青年赴海外深造修讀碩、博士學位或專業技術證照，提供專屬留學貸款。",
-      "category": "青年發展獎勵",
+      "category": "教育助學",
       "label": [
         "youth"
       ],
@@ -200,7 +200,7 @@
     {
       "id": 6,
       "summary": "為協助青年赴海外深造修讀碩、博士學位或專業技術證照，提供專屬留學貸款。",
-      "category": "青年發展獎勵",
+      "category": "教育助學",
       "label": [
         "youth"
       ],
@@ -244,7 +244,7 @@
     {
       "id": 7,
       "summary": "臺北市政府補助青年留學貸款前十年（含寬限期）之部分或全額利息。",
-      "category": "青年發展獎勵",
+      "category": "教育助學",
       "label": [
         "youth"
       ],
@@ -293,7 +293,7 @@
     {
       "id": 8,
       "summary": "補助臺北市設籍、求學或就業之青年參與國際性公共展演、公開競技或大型會議等國際活動。",
-      "category": "青年發展獎勵",
+      "category": "文化體育",
       "label": [
         "youth"
       ],
@@ -328,7 +328,7 @@
     {
       "id": 9,
       "summary": "補助學校或特定性質團體支持青年參與國際性公共展演、公開競技或大型會議等國際活動。",
-      "category": "青年發展獎勵",
+      "category": "文化體育",
       "label": [
         "youth"
       ],
@@ -367,7 +367,7 @@
     {
       "id": 10,
       "summary": "提供臺北市青年實習津貼、交通津貼及健康檢查補助，以減輕實習負擔並提升職場準備力。",
-      "category": "就業創業扶助",
+      "category": "就業創業",
       "label": [
         "youth"
       ],
@@ -400,7 +400,7 @@
     {
       "id": 11,
       "summary": "補助學校、學生社團、學生自治組織及人民團體辦理十五歲至四十五歲青年團體活動。",
-      "category": "青年發展獎勵",
+      "category": "文化體育",
       "label": [
         "youth"
       ],
@@ -429,7 +429,7 @@
     {
       "id": 12,
       "summary": "補助於臺北市創業初期之營利事業或人民團體租賃空間之費用。",
-      "category": "就業創業扶助",
+      "category": "居住租賃",
       "label": [],
       "is_organization": true,
       "registration_months": null,
@@ -461,7 +461,7 @@
     {
       "id": 13,
       "summary": "補助於臺北市辦理之職涯培力或創業主題團體活動，或補助青年創業團隊參與國內實質展示活動。",
-      "category": "就業創業扶助",
+      "category": "就業創業",
       "label": [
         "youth"
       ],
@@ -498,7 +498,7 @@
     {
       "id": 14,
       "summary": "補助於臺北市辦理之職涯培力或創業主題團體活動，或補助青年創業團隊參與國內實質展示活動。",
-      "category": "就業創業扶助",
+      "category": "就業創業",
       "label": [
         "youth"
       ],
@@ -535,7 +535,7 @@
     {
       "id": 15,
       "summary": "補助民間組織提供實習職缺給青年，協助增強組織競爭力並培育青年職涯視野。",
-      "category": "就業創業扶助",
+      "category": "就業創業",
       "label": [
         "youth"
       ],
@@ -573,6 +573,6 @@
   ],
   "source": "https://youth.gov.taipei/services/05eb79e5-46b5-41e5-b1fd-0519d782b04a",
   "generated_at": "2026-11-07T18:44:42.576Z",
-  "updated_at": "2026-11-08T02:45:37.459+08:00",
+  "updated_at": "2026-11-08T03:01:14.664+08:00",
   "errors": []
 }
