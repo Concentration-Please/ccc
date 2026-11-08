@@ -23,8 +23,8 @@ function onSubmit() {
   emit('submitSearch')
 }
 
-// BEGIN TEMPORARY: delete this block. Three quick taps on the search button notify indigenous record 85.
-const TEMP_ELIGIBLE_AID_NAME = indigenousRecords.find((record) => record.id === 85)?.name
+// BEGIN TEMPORARY: delete this block. Three quick taps on the search button notify indigenous record 5.
+const TEMP_ELIGIBLE_AID_NAME = indigenousRecords.find((record) => record.id === 5)?.name
 const TEMP_CLICK_WINDOW_MS = 600
 let tempSearchClicks = 0
 let tempSearchTimer = 0
