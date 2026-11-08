@@ -1,5 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import categoryList from '../data/category.json' with { type: 'json' }
+import labelMap from '../data/label.json' with { type: 'json' }
+import indigenousFile from '../data/indigenous.json' with { type: 'json' }
+import youthFile from '../data/youth.json' with { type: 'json' }
+import {
+  identityFilterId,
+  identityFilterOptions,
+  subsidyCategories,
+} from '../src/services/filterCatalog.js'
 import type { GovernmentAidRecord } from '../src/types/governmentAid.js'
 import {
   applyFilter,
@@ -113,4 +122,31 @@ test('applyFilter combines search and filters', () => {
     selectedOptionIds: ['category:托育服務', 'category:教育扶助', 'is_organization:false'],
   })
   assert.deepEqual(filtered.map((a) => a.source_url), [baseAid.source_url])
+})
+
+test('category filter follows category.json and includes categories only present on records', () => {
+  const used = [...indigenousFile.records, ...youthFile.records].map((record) => record.category)
+  const categories = subsidyCategories(categoryList, used)
+  assert.deepEqual(categories, categoryList)
+  for (const category of categories) {
+    assert.equal(
+      recordMatchesFilterGroups({ ...baseAid, category }, [`category:${category}`]),
+      true,
+    )
+  }
+
+  const withMissing = subsidyCategories(categoryList, [...used, '法律服務'])
+  assert.deepEqual(withMissing.at(-1), '法律服務')
+  assert.equal(withMissing.includes(categoryList[0]!), true)
+})
+
+test('身份別 options follow the label map', () => {
+  assert.deepEqual(identityFilterOptions(labelMap), [
+    { id: 'label:indigenous', label: '原住民' },
+    { id: 'label:youth', label: '青年' },
+  ])
+  assert.equal(identityFilterId(labelMap, '原住民'), 'label:indigenous')
+  assert.equal(identityFilterId(labelMap, '青年'), 'label:youth')
+  assert.equal(identityFilterId({ elder: '長者' }, '長者'), 'label:elder')
+  assert.equal(identityFilterId(labelMap, '長者'), null)
 })
